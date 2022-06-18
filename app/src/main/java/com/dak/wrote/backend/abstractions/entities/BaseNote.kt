@@ -2,8 +2,9 @@ package com.dak.wrote.backend.abstractions.entities
 
 import com.dak.wrote.backend.abstractions.entities.constants.NoteType
 
-interface BaseNote : TreeEntity, SearchableEntity, UniqueEntity {
+interface BaseNote : SearchableEntity, UniqueEntity {
     var title: String
     val type: NoteType
-    fun getSaveData(): ByteArray
+    fun generateSaveData(): ByteArray
+    fun loadSaveData(value: ByteArray)
 }
