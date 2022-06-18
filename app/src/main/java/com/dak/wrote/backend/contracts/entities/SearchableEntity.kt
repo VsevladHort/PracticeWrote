@@ -1,4 +1,4 @@
-package com.dak.wrote.backend.abstractions.entities
+package com.dak.wrote.backend.contracts.entities
 
 interface SearchableEntity {
     fun getIndexingData(): String

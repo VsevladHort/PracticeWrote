@@ -1,6 +1,6 @@
-package com.dak.wrote.backend.abstractions.entities
+package com.dak.wrote.backend.contracts.entities
 
-import com.dak.wrote.backend.abstractions.entities.constants.NoteType
+import com.dak.wrote.backend.contracts.entities.constants.NoteType
 
 interface BaseNote : SearchableEntity, UniqueEntity {
     var title: String
