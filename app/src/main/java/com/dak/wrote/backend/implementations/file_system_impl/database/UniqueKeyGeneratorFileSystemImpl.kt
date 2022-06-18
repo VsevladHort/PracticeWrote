@@ -17,9 +17,11 @@ class UniqueKeyGeneratorFileSystemImpl private constructor(private val baseDir: 
     private val currentFile: File = File(baseDir, UNIQUE_KEY_CACHE_STORAGE_FILE)
 
     init {
-        val firstLine = currentFile.readLines()[0]
-        if (firstLine.isNotBlank() && firstLine.isNotBlank())
-            currentUniqueKey = firstLine.toInt()
+        if (currentFile.exists()) {
+            val firstLine = currentFile.readLines()[0]
+            if (firstLine.isNotBlank() && firstLine.isNotBlank())
+                currentUniqueKey = firstLine.toInt()
+        }
     }
 
     companion object {
