@@ -47,6 +47,8 @@ class UniqueKeyGeneratorFileSystemImpl private constructor(private val baseDir: 
                     if (parent == null)
                         throw IllegalStateException("Note has to have a parent")
                     val path = File(parent.uniqueKey, currentUniqueKey.toString())
+                    if (!path.exists())
+                        path.mkdirs()
                     currentUniqueKey++
                     currentFile.writeText(currentUniqueKey.toString())
                     path.absolutePath
