@@ -142,6 +142,11 @@ interface WroteDao {
     suspend fun getParentKey(entry: BaseNote): String
 
     /**
+     * @return name of the entity identified by the given uniqueKey
+     */
+    suspend fun getName(uniqueKey: String): String
+
+    /**
      * deletes the given uniqueEntity
      *
      * @return true if successful, false otherwise
