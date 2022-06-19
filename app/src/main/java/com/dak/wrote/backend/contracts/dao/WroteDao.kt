@@ -127,7 +127,7 @@ interface WroteDao {
     /**
      * @return A list of attributes of the note identified by the given key
      */
-    suspend fun getAttributes(uniqueKey: String): List<Attribute>
+    suspend fun getAttributes(uniqueKey: String): Set<Attribute>
 
     /**
      * inserts attributes for the Note identified with the given key

@@ -5,8 +5,7 @@ import com.dak.wrote.backend.contracts.database.UniqueEntityKeyGenerator
 import com.dak.wrote.backend.contracts.entities.Book
 import com.dak.wrote.backend.contracts.entities.UniqueEntity
 import com.dak.wrote.backend.implementations.file_system_impl.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+
 import java.io.File
 
 private var currentUniqueKey = UNIQUE_ID_INITIAL_VALUE
@@ -41,7 +40,7 @@ class UniqueKeyGeneratorFileSystemImpl private constructor(private val baseDir: 
     }
 
     override suspend fun getKey(parent: UniqueEntity?, type: EntryType): String {
-        return withContext(Dispatchers.IO) {
+        return run {
             when (type) {
                 EntryType.NOTE -> {
                     if (parent == null)
