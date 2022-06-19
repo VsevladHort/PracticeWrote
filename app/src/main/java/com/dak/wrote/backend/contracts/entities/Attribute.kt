@@ -14,11 +14,11 @@ data class Attribute(override val uniqueKey: String, var name: String) : UniqueE
             }
         }
 
-    fun addEntity(entity: UniqueEntity) {
-        _associatedEntities += entity.uniqueKey
+    fun addEntity(uniqueKey: String) {
+        _associatedEntities += uniqueKey
     }
 
-    fun removeEntity(entity: UniqueEntity) {
-        _associatedEntities.remove(entity.uniqueKey)
+    fun removeEntity(uniqueKey: String) {
+        _associatedEntities.remove(uniqueKey)
     }
 }
