@@ -32,7 +32,7 @@ class UniqueKeyAndDirectoryGenerationInstrumentedTest {
     class UniqueEntitySpoof(override val uniqueKey: String) : UniqueEntity
 
     @Test
-    fun fileAndKeyGeneration() {
+    fun fileAndKeyGenerationTest() {
         // Context of the app under test.
         logger.log(Level.INFO, "fileGenerationTestRuns")
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
@@ -40,9 +40,9 @@ class UniqueKeyAndDirectoryGenerationInstrumentedTest {
         val booksDir0 = File(File(baseDir, DIR_BOOKS), "0")
         val booksDirChild = File(booksDir0, "3")
         val booksDirChildChild = File(booksDirChild, "4")
-        val attributeDir1 = File(File(baseDir, DIR_ATTRIBUTES), "1")
+        val attributeDir1 = File(File(booksDir0, DIR_ATTRIBUTES), "1")
         val presetDir2 = File(File(baseDir, DIR_PRESETS), "2")
-        val presetChild = File(booksDirChild, "4")
+        val presetChild = File(presetDir2, "5")
         baseDir.deleteRecursively()
         assertTrue(baseDir.mkdir())
         assertFalse(booksDir0.exists())
@@ -53,21 +53,29 @@ class UniqueKeyAndDirectoryGenerationInstrumentedTest {
         var book: Book?
         var presets: UniqueEntitySpoof?
         var firstChild: UniqueEntitySpoof?
+        var firstChildChild: UniqueEntitySpoof?
+        var presetNote: UniqueEntitySpoof?
+        var attributes: UniqueEntitySpoof?
         runBlocking {
             logger.log(Level.INFO, "Coroutine Launched")
             book = Book(generator.getKey(null, EntryType.BOOK), "This is a book")
-            generator.getKey(null, EntryType.ATTRIBUTE)
+            attributes = UniqueEntitySpoof(generator.getKey(book, EntryType.ATTRIBUTE))
             presets = UniqueEntitySpoof(generator.getKey(null, EntryType.PRESET))
             firstChild = UniqueEntitySpoof(generator.getKey(book, EntryType.NOTE))
-            generator.getKey(firstChild, EntryType.NOTE)
-            generator.getKey(presets, EntryType.NOTE)
+            firstChildChild = UniqueEntitySpoof(generator.getKey(firstChild, EntryType.NOTE))
+            presetNote = UniqueEntitySpoof(generator.getKey(presets, EntryType.NOTE))
         }
-        assertTrue(booksDir0.exists())
         assertTrue(attributeDir1.exists())
         assertTrue(presetDir2.exists())
         assertTrue(booksDirChild.exists())
         assertTrue(booksDirChildChild.exists())
         assertTrue(presetChild.exists())
+        assertEquals(booksDir0.absolutePath, book?.uniqueKey)
+        assertEquals(attributeDir1.absolutePath, attributes?.uniqueKey)
+        assertEquals(presetDir2.absolutePath, presets?.uniqueKey)
+        assertEquals(booksDirChild.absolutePath, firstChild?.uniqueKey)
+        assertEquals(booksDirChildChild.absolutePath, firstChildChild?.uniqueKey)
+        assertEquals(presetChild.absolutePath, presetNote?.uniqueKey)
         assertEquals("com.dak.wrote", appContext.packageName)
     }
 
