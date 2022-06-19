@@ -316,6 +316,6 @@ class WroteDaoFileSystemImpl(private val baseDir: File) : WroteDao {
             fixedAttrs.remove(entity)
             insertAttributes(it, fixedAttrs)
         }
-        return true
+        return File(entity.uniqueKey).deleteRecursively()
     }
 }
