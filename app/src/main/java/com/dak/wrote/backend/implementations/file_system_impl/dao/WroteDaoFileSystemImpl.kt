@@ -1,6 +1,7 @@
 package com.dak.wrote.backend.implementations.file_system_impl.dao
 
 import com.dak.wrote.backend.contracts.dao.WroteDao
+import com.dak.wrote.backend.contracts.database.UniqueEntityKeyGenerator
 import com.dak.wrote.backend.contracts.entities.Attribute
 import com.dak.wrote.backend.contracts.entities.BaseNote
 import com.dak.wrote.backend.contracts.entities.Book
@@ -8,9 +9,26 @@ import com.dak.wrote.backend.contracts.entities.UniqueEntity
 import com.dak.wrote.backend.contracts.entities.constants.NoteType
 import com.dak.wrote.backend.implementations.file_system_impl.*
 import com.dak.wrote.backend.implementations.file_system_impl.dao.exceptions.UnknownKeyException
+import com.dak.wrote.backend.implementations.file_system_impl.database.UniqueKeyGeneratorFileSystemImpl
 import java.io.File
 
-class WroteDaoFileSystemImpl(private val baseDir: File) : WroteDao {
+class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : WroteDao {
+
+    companion object {
+        @Volatile
+        private var instance: WroteDaoFileSystemImpl? = null
+
+        fun getInstance(baseDir: File): WroteDaoFileSystemImpl {
+            synchronized(this) {
+                var localInstance = instance
+                if (localInstance == null) {
+                    localInstance = WroteDaoFileSystemImpl(baseDir)
+                    instance = localInstance
+                }
+                return localInstance
+            }
+        }
+    }
 
     override suspend fun insertBook(book: Book): Boolean {
         val file = File(book.uniqueKey)
