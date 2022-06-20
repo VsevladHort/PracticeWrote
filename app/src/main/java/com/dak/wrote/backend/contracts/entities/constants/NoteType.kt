@@ -1,4 +1,4 @@
-package com.dak.wrote.backend.abstractions.entities.constants
+package com.dak.wrote.backend.contracts.entities.constants
 
 enum class NoteType(val type: String, val dataFileName: String) {
     PLAIN_TEXT(

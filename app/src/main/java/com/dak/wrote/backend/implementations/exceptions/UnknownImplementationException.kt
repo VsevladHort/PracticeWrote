@@ -1,4 +1,4 @@
-package com.dak.wrote.backend.implementations.dao.exceptions
+package com.dak.wrote.backend.implementations.exceptions
 
 import java.lang.IllegalStateException
 
