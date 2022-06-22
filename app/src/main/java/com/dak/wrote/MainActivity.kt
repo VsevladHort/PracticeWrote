@@ -8,6 +8,9 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.rememberNavController
+import com.dak.wrote.frontend.NavigationScreens
 import com.dak.wrote.ui.theme.WroteTheme
 
 class MainActivity : ComponentActivity() {
@@ -34,5 +37,15 @@ fun Greeting(name: String) {
 fun DefaultPreview() {
     WroteTheme {
         Greeting("Android")
+    }
+}
+
+
+
+@Composable
+fun ApplicationStart() {
+    val controller = rememberNavController()
+    NavHost(navController = controller, startDestination = NavigationScreens.BookNavigation.path) {
+
     }
 }
