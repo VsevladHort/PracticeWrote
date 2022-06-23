@@ -7,8 +7,10 @@ import androidx.compose.runtime.saveable.autoSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dak.wrote.backend.contracts.entities.BaseNote
 import com.dak.wrote.frontend.editor.*
+import com.dak.wrote.frontend.viewmodel.NoteAdditionViewModel
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.Delete
 import compose.icons.feathericons.Edit3
@@ -16,12 +18,14 @@ import kotlinx.serialization.Serializable
 
 abstract class Preset(
     name: String,
+    alternateTitles: List<String>,
     attributes: List<String>,
     val pageLayout: SerializablePageLayout
 ) {
     protected val mutError = mutableStateOf(true)
     val name = mutableStateOf(name)
-    val attributes = mutableStateOf(attributes)
+    val attributes = mutableStateListOf(*attributes.toTypedArray())
+    val alternateTitles = mutableStateListOf(*alternateTitles.toTypedArray())
 
     val error: State<Boolean>
         get() = mutError
@@ -30,22 +34,32 @@ abstract class Preset(
 
 }
 
-class SerializableUserPreset(val name: String, val attributes: List<String>, val pageLayout: SerializablePageLayout) {
-    fun toPreset() = UserPreset(name, attributes, pageLayout)
+class SerializableUserPreset(
+    val name: String,
+    val alternateTitles: List<String>,
+    val attributes: List<String>,
+    val pageLayout: SerializablePageLayout
+) {
+    fun toPreset() = UserPreset(name, alternateTitles, attributes, pageLayout)
 }
 
 
-class UserPreset(name: String, attributes: List<String>, pageLayout: SerializablePageLayout) :
-    Preset(name, attributes, pageLayout) {
+class UserPreset(
+    name: String,
+    alternateTitles: List<String>,
+    attributes: List<String>,
+    pageLayout: SerializablePageLayout
+) :
+    Preset(name, alternateTitles, attributes, pageLayout) {
 
     override fun create(): BaseNote {
         TODO("Not yet implemented")
     }
 
-    fun toSerializable() = SerializableUserPreset(name.value, attributes.value, pageLayout)
+    fun toSerializable() = SerializableUserPreset(name.value, alternateTitles, attributes, pageLayout)
 }
 
-class CharacterPreset() : Preset("Character", listOf("character"), CharacterPresetLayout) {
+class CharacterPreset() : Preset("Character", listOf(), listOf("character"), CharacterPresetLayout) {
     override fun create(): BaseNote {
         TODO("Not yet implemented")
     }
@@ -53,6 +67,12 @@ class CharacterPreset() : Preset("Character", listOf("character"), CharacterPres
 
 private val CharacterPresetLayout = SerializablePageLayout(listOf())
 
+@Composable
+fun NoteAdditionDisplay() {
+    val noteAdditionViewModel = viewModel<NoteAdditionViewModel>()
+}
+
+val normalPresets = listOf<Preset>(CharacterPreset())
 
 //@Composable
 //fun PresetViewTop(presets: List<SerializableUserPreset>) {
