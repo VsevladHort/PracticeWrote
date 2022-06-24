@@ -13,7 +13,7 @@ val LightLightBlue = Color(0x3167D8E6)
 val SoftBlueTransparent = Color(0xC43F84EC)
 val BrightTransparent = Color(0xC43FD9EC)
 
-val SoftBlue = Color(0xFF55A5E6)
+val SoftBlue = Color(0xFF5085D8)
 val Bright = Color(0xFF45DEF1)
 
 val LightGray = Color(0x36C1D5D8)

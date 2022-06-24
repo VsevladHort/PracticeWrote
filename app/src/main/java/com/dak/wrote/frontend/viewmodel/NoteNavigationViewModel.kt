@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.*
 import com.dak.wrote.backend.contracts.entities.Book
 import com.dak.wrote.frontend.noteNavigation.map
+import com.dak.wrote.frontend.noteNavigation.parent
 
 data class NavigationState(
     val currentNote: String,
@@ -31,7 +32,7 @@ class NoteNavigationViewModel(
 
     fun changeNote(newNote: String) {
         val paragraphs: List<Book> = map[newNote] ?: emptyList()
-        val hasParent: Boolean = true
+        val hasParent: Boolean = parent(newNote) != null
 
         _navigationState.value = NavigationState(
             currentNote = newNote,
@@ -49,7 +50,4 @@ class NoteNavigationViewModelFactory(
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         return NoteNavigationViewModel(initialNote, paragraphs, hasParent) as T
     }
-//        modelClass.getConstructor(NoteNavigationViewModel::class.java)
-//            .newInstance(initialNote, paragraphs, hasParent)
-
 }

@@ -5,10 +5,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.Divider
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,9 +21,10 @@ import com.dak.wrote.ui.theme.SoftBlueTransparent
 import com.dak.wrote.ui.theme.WroteTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import com.dak.wrote.frontend.viewmodel.NavigationState
+import compose.icons.FeatherIcons
+import compose.icons.feathericons.ArrowLeft
+import compose.icons.feathericons.Trash2
 
 val map = mapOf(
     "Characters" to List(30) { Book("Character №$it", "Character №$it") },
@@ -92,9 +90,11 @@ fun NavigationDisplay(
     val state = navigationState ?: NavigationState("", emptyList(), false)
     MainNavigation(state.currentNote, state.paragraphs,
         onNoteTapped = { newNoteForNavigation -> thisViewModel.changeNote(newNoteForNavigation) },
+        backButtonEnabled = state.hasParent,
         onBackButton = { parent(state.currentNote)?.let { thisViewModel.changeNote(it) } },
         onEnterButton = { /*TODO*/ },
-        onCreateButton = { /*TODO*/ }
+        onCreateButton = { /*TODO*/ },
+        onDeleteButton = { /*TODO*/ }
     )
 }
 
@@ -103,22 +103,28 @@ fun MainNavigation(
     title: String,
     paragraphs: List<Book>,
     onNoteTapped: (String) -> Unit,
+    backButtonEnabled: Boolean,
     onBackButton: () -> Unit,
     onEnterButton: () -> Unit,
-    onCreateButton: () -> Unit
+    onCreateButton: () -> Unit,
+    onDeleteButton: () -> Unit
 ) {
     Column {
         Divider(color = SoftBlueTransparent, thickness = 3.dp)
 
-        val modifier = Modifier.weight(1f)
+        val modifier = Modifier
+            .weight(1f)
+            .fillMaxWidth()
         Box(modifier = modifier) {
             NoteWithParagraphs(
                 modifier = modifier,
                 title = title,
                 paragraphs = paragraphs,
                 onNoteTapped = onNoteTapped,
+                backButtonEnabled = backButtonEnabled,
                 onBackButton = onBackButton,
-                onEnterButton = onEnterButton
+                onEnterButton = onEnterButton,
+                onDeleteButton = onDeleteButton
             )
             CreateButton(
                 modifier = Modifier.align(Alignment.BottomCenter),
@@ -134,9 +140,21 @@ fun NoteWithParagraphs(
     title: String,
     paragraphs: List<Book>,
     onNoteTapped: (String) -> Unit,
+    backButtonEnabled: Boolean,
     onBackButton: () -> Unit,
-    onEnterButton: () -> Unit
+    onEnterButton: () -> Unit,
+    onDeleteButton: () -> Unit
 ) {
+    val openDeleteDialog = remember { mutableStateOf(false) }
+
+    if (openDeleteDialog.value)
+        DeleteDialog(
+            title = title,
+            onCloseDialog = { openDeleteDialog.value = false },
+            onDeleteButton = onDeleteButton
+        )
+
+
     LazyVerticalGrid(
         columns = GridCells.Adaptive(120.dp),
         contentPadding = PaddingValues(
@@ -151,13 +169,34 @@ fun NoteWithParagraphs(
         item(
             span = { GridItemSpan(maxLineSpan) }
         ) {
-            Text(
-                text = title,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth(),
-                color = Color.Black,
-                style = MaterialTheme.typography.h3
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
             )
+            {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+/*                    IconButton(
+                        modifier = modifier.wrapContentSize(Alignment.CenterStart),
+                        imageVector = FeatherIcons.ArrowLeft,
+                        description = "Back",
+                        buttonEnabled = backButtonEnabled,
+                        onClick = onBackButton
+                    )
+                    IconButton(
+                        modifier = modifier.wrapContentSize(Alignment.CenterEnd),
+                        imageVector = FeatherIcons.Trash2,
+                        description = "Delete",
+                        onClick = { openDeleteDialog.value = true }
+                    )*/
+                }
+                Text(
+                    text = title,
+                    textAlign = TextAlign.Center,
+                    color = Color.Black,
+                    style = MaterialTheme.typography.h3
+                )
+            }
         }
 
         // Navigation buttons
@@ -167,8 +206,10 @@ fun NoteWithParagraphs(
             Column {
                 Divider(color = SoftBlueTransparent, thickness = 2.dp)
                 NavigationButtons(
+                    onDeleteButton = { openDeleteDialog.value = true },
                     onBackButton = onBackButton,
-                    onEnterButton = onEnterButton
+                    backButtonEnabled = backButtonEnabled,
+                    onEnterButton = onEnterButton,
                 )
                 Divider(
                     color = SoftBlueTransparent, thickness = 2.dp,
@@ -191,30 +232,86 @@ fun NoteWithParagraphs(
 }
 
 @Composable
+fun DeleteDialog(
+    title: String,
+    onCloseDialog: () -> Unit,
+    onDeleteButton: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = { onCloseDialog() },
+        title = {
+            Text(
+                text = "Delete note?",
+                style = MaterialTheme.typography.h5
+            )
+        },
+        text = {
+            Text(
+                text = "Are you sure you want to delete note \"$title\"?",
+                style = MaterialTheme.typography.subtitle1
+            )
+        },
+        confirmButton = {
+            DialogButton(
+                text = "Delete",
+                onClick = {
+                    onDeleteButton()
+                    onCloseDialog()
+                }
+            )
+        },
+        dismissButton = {
+            DialogButton(
+                text = "Cancel",
+                onClick = onCloseDialog
+            )
+        }
+    )
+}
+
+@Composable
 private fun NavigationButtons(
+    onDeleteButton: () -> Unit,
+    backButtonEnabled: Boolean,
     onBackButton: () -> Unit,
     onEnterButton: () -> Unit
 ) {
+
     Row(
         modifier = Modifier
-            .padding(20.dp)
-            .fillMaxSize(),
-        horizontalArrangement = Arrangement.SpaceAround
+            .padding(
+                vertical = 20.dp,
+                horizontal = 16.dp
+            ),
+        horizontalArrangement = Arrangement.spacedBy(40.dp)
     ) {
         // Back button
-        NavigationButton(
-            label = "Back",
-            modifier = Modifier.weight(1f),
-            onButtonClicked = onBackButton
+        IconButton(
+            imageVector = FeatherIcons.ArrowLeft,
+            description = "Back",
+            buttonEnabled = backButtonEnabled,
+            onClick = onBackButton
         )
 
-        Spacer(modifier = Modifier.weight(0.4f))
 
         // Enter button
         NavigationButton(
             label = "Enter",
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(0.9f),
+//                .padding(
+//                    vertical = 5.dp,
+//                    horizontal = 50.dp
+//                ),
             onButtonClicked = onEnterButton
+        )
+
+        //Delete button
+        IconButton(
+            modifier = Modifier,
+            imageVector = FeatherIcons.Trash2,
+            description = "Delete",
+            onClick = onDeleteButton
         )
     }
 }
