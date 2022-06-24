@@ -1,7 +1,7 @@
 package com.dak.wrote.backend.implementations.file_system_impl.dao
 
 import com.dak.wrote.backend.contracts.dao.WroteDao
-import com.dak.wrote.backend.contracts.database.UniqueEntityKeyGenerator
+import com.dak.wrote.backend.contracts.database.EntryType
 import com.dak.wrote.backend.contracts.entities.Attribute
 import com.dak.wrote.backend.contracts.entities.BaseNote
 import com.dak.wrote.backend.contracts.entities.Book
@@ -9,7 +9,6 @@ import com.dak.wrote.backend.contracts.entities.UniqueEntity
 import com.dak.wrote.backend.contracts.entities.constants.NoteType
 import com.dak.wrote.backend.implementations.file_system_impl.*
 import com.dak.wrote.backend.implementations.file_system_impl.dao.exceptions.UnknownKeyException
-import com.dak.wrote.backend.implementations.file_system_impl.database.UniqueKeyGeneratorFileSystemImpl
 import java.io.File
 
 class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : WroteDao {
@@ -35,6 +34,8 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         if (!file.exists())
             return false
         val auxiliaryFile = File(file, DATA_AUXILIARY_FILE_NAME)
+        val markerFile = File(file, MARKER_OF_USE)
+        markerFile.printWriter().use { println(EntryType.BOOK.stringRepresentation) }
         auxiliaryFile.printWriter().use { println(book.title) }
         return true
     }
@@ -46,6 +47,29 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         val auxiliaryFile = File(file, DATA_AUXILIARY_FILE_NAME)
         val dataFile = File(file, DATA_MAIN_FILE_NAME)
         val attributes = File(file, DATA_NOTE_ATTRIBUTES)
+        val markerFile = File(file, MARKER_OF_USE)
+        markerFile.printWriter().use { println(EntryType.NOTE.stringRepresentation) }
+        auxiliaryFile.printWriter().use { pw ->
+            println(note.type.type)
+            println(note.title)
+            note.alternateTitles.forEach { pw.println(it) }
+        }
+        attributes.printWriter().use {
+            note.attributes.forEach { println(it.uniqueKey) }
+        }
+        dataFile.writeBytes(note.generateSaveData())
+        return true
+    }
+
+    override suspend fun insetPreset(note: BaseNote): Boolean {
+        val file = File(note.uniqueKey)
+        if (!file.exists())
+            return false
+        val auxiliaryFile = File(file, DATA_AUXILIARY_FILE_NAME)
+        val dataFile = File(file, DATA_MAIN_FILE_NAME)
+        val attributes = File(file, DATA_NOTE_ATTRIBUTES)
+        val markerFile = File(file, MARKER_OF_USE)
+        markerFile.printWriter().use { println(EntryType.PRESET.stringRepresentation) }
         auxiliaryFile.printWriter().use { pw ->
             println(note.type.type)
             println(note.title)
@@ -63,6 +87,8 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         if (!file.exists())
             return false
         val auxiliaryFile = File(file, DATA_AUXILIARY_FILE_NAME)
+        val markerFile = File(file, MARKER_OF_USE)
+        markerFile.printWriter().use { println(EntryType.ATTRIBUTE.stringRepresentation) }
         auxiliaryFile.printWriter().use {
             println(attribute.name)
             attribute.associatedEntities.forEach { println(it) }
@@ -207,6 +233,14 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
             getAttribute(it).let { it1 -> attrSet.add(it1) }
         }
         return attrSet
+    }
+
+    override suspend fun getPresets(): List<String> {
+        val file = File(baseDir, DIR_PRESETS)
+        val list = file.listFiles() ?: return listOf()
+        return list.asSequence().filter { it.isDirectory }.filter {
+            File(it, MARKER_OF_USE).exists()
+        }.map { it.absolutePath }.toList()
     }
 
     override suspend fun getBooks(): List<Book> {
