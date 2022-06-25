@@ -12,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.dak.wrote.frontend.NavigationScreens
+import com.dak.wrote.frontend.noteNavigation.PreviewNavigation
 import com.dak.wrote.frontend.bookNavigation.BookNavigationScreen
 import com.dak.wrote.ui.theme.WroteTheme
 
@@ -22,7 +23,7 @@ class MainActivity : ComponentActivity() {
             WroteTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
-                    Greeting("Android")
+                    PreviewNavigation()
                 }
             }
         }

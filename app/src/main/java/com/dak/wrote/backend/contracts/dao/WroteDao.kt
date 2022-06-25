@@ -22,6 +22,13 @@ interface WroteDao {
     suspend fun insetNote(parent: UniqueEntity, note: BaseNote): Boolean
 
     /**
+     * Creates a Preset entry in the database
+     *
+     * @return true if the insert was successful, false otherwise
+     */
+    suspend fun insetPreset(note: BaseNote): Boolean
+
+    /**
      * Creates an Attribute entry in the database
      *
      * @return true if the insert was successful, false otherwise
@@ -96,6 +103,11 @@ interface WroteDao {
      * @return A list of all attributes created within a book
      */
     suspend fun getAttributes(book: Book): List<Attribute>
+
+    /**
+     * @return A list of all preset keys created within the app
+     */
+    suspend fun getPresets(): List<String>
 
     /**
      * @return A list of all books created within the app
