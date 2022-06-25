@@ -1,6 +1,7 @@
 package com.dak.wrote.frontend.editor
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
@@ -21,7 +22,8 @@ class TextDataLayout(text: String) : DataLayout() {
             BasicTextField(
                 value = text.value,
                 onValueChange = { text.value = it },
-                textStyle = textStyle()
+                textStyle = textStyle(),
+                modifier = Modifier.fillMaxWidth()
             )
         }
     }

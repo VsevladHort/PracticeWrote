@@ -1,5 +1,6 @@
 package com.dak.wrote.backend.implementations.file_system_impl.dao
 
+import android.content.Context
 import com.dak.wrote.backend.contracts.dao.WroteDao
 import com.dak.wrote.backend.contracts.database.UniqueEntityKeyGenerator
 import com.dak.wrote.backend.contracts.entities.Attribute
@@ -337,3 +338,6 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         return File(entity.uniqueKey).deleteRecursively()
     }
 }
+
+
+fun getDAO(context : Context) = WroteDaoFileSystemImpl.getInstance(context.filesDir)

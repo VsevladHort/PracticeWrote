@@ -63,6 +63,14 @@ private fun ListEdit(keyId: EasyKeyId, list: SnapshotStateList<Pair<Int, Mutable
         list.forEachIndexed { index, item ->
             val text = item.second
             Column {
+                ItemNavigation(
+                    if (index != 0) ({
+                        list.moveUp(index)
+                    }) else null,
+                    if (index != list.lastIndex) ({
+                        list.moveDown(index)
+                    }) else null,
+                    { list.removeAt(index) }, 40.dp, 35.dp, 1.dp)
                 EditTextField(text = text)
                 Divider()
             }
@@ -182,31 +190,31 @@ fun ListViewPreview() {
     }
 }
 
-@Preview
-@Composable
-fun ListPreview() {
-    val pageVM = viewModel<EditorViewModel>()
-    LaunchedEffect(key1 = Unit, block = {
-        val page =
-            SerializablePageLayout(
-                listOf(
-                    SerializableParagraphLayout(
-                        "Hello",
-                        listOf(
-                            SerializableItemListLayout(
-                                listOf(
-                                    "Яа",
-                                    "Не", "Знаю"
-                                )
-                            )
-                        )
-                    )
-                )
-            )
-        pageVM.page.field = page
-        pageVM.displayPage.value = page.toDisplayable()
-    })
-    pageVM.displayPage.value.let {
-        it.DrawEdit(pageVM)
-    }
-}
+//@Preview
+//@Composable
+//fun ListPreview() {
+//    val pageVM = viewModel<EditorViewModel>()
+//    LaunchedEffect(key1 = Unit, block = {
+//        val page =
+//            SerializablePageLayout(
+//                listOf(
+//                    SerializableParagraphLayout(
+//                        "Hello",
+//                        listOf(
+//                            SerializableItemListLayout(
+//                                listOf(
+//                                    "Яа",
+//                                    "Не", "Знаю"
+//                                )
+//                            )
+//                        )
+//                    )
+//                )
+//            )
+//        pageVM.page.field = page
+//        pageVM.displayPage.value = page.toDisplayable()
+//    })
+//    pageVM.displayPage.value.let {
+//        it.DrawEdit(pageVM)
+//    }
+//}

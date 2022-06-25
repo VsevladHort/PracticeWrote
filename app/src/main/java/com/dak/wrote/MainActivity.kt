@@ -9,8 +9,10 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.dak.wrote.frontend.NavigationScreens
+import com.dak.wrote.frontend.bookNavigation.BookNavigationScreen
 import com.dak.wrote.ui.theme.WroteTheme
 
 class MainActivity : ComponentActivity() {
@@ -46,6 +48,8 @@ fun DefaultPreview() {
 fun ApplicationStart() {
     val controller = rememberNavController()
     NavHost(navController = controller, startDestination = NavigationScreens.BookNavigation.path) {
-
+        composable(NavigationScreens.BookNavigation.path) {
+            BookNavigationScreen()
+        }
     }
 }
