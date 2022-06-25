@@ -93,6 +93,13 @@ interface WroteDao {
     suspend fun getNoteSaveData(uniqueKey: String): ByteArray?
 
     /**
+     * @param uniqueKey - unique key identifying the note
+     *
+     * @return unique key identifying the book the note belongs
+     */
+    suspend fun getBookOfNote(uniqueKey: String): String
+
+    /**
      * @param uniqueKey - unique key identifying the entry
      *
      * @return EntryType of the entry
@@ -115,7 +122,7 @@ interface WroteDao {
     /**
      * @return A list of keys of notes created within the given book
      */
-    suspend fun getNoteKeys(book: Book): List<String>
+    suspend fun getNoteKeys(book: Book): Set<String>
 
     /**
      * @return A list of all preset keys created within the app

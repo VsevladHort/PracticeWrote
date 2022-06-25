@@ -11,6 +11,7 @@ import com.dak.wrote.backend.implementations.file_system_impl.*
 import com.dak.wrote.backend.implementations.file_system_impl.dao.exceptions.KeyException
 import com.dak.wrote.backend.implementations.file_system_impl.dao.exceptions.UnknownKeyException
 import java.io.File
+import java.lang.IllegalStateException
 
 class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : WroteDao {
 
@@ -54,7 +55,10 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         val dataFile = File(file, DATA_MAIN_FILE_NAME)
         val attributes = File(file, DATA_NOTE_ATTRIBUTES)
         val markerFile = File(file, MARKER_OF_USE)
-        markerFile.printWriter().use { println(EntryType.NOTE.stringRepresentation) }
+        markerFile.printWriter().use {
+            println(EntryType.NOTE.stringRepresentation)
+            println(book)
+        }
         auxiliaryFile.printWriter().use { pw ->
             println(note.type.type)
             println(note.title)
@@ -220,6 +224,16 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
             null
     }
 
+    override suspend fun getBookOfNote(uniqueKey: String): String {
+        val file = File(uniqueKey)
+        checkEntryValidity(file)
+        val markerFile = File(file, MARKER_OF_USE)
+        val lines = markerFile.readLines()
+        if (lines.size < 2)
+            throw IllegalStateException("Malformed note entry")
+        return markerFile.readLines()[1]
+    }
+
     override suspend fun getAttribute(uniqueKey: String): Attribute {
         val file = File(uniqueKey)
         checkEntryValidity(file)
@@ -249,10 +263,10 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         return attrSet
     }
 
-    override suspend fun getNoteKeys(book: Book): List<String> {
+    override suspend fun getNoteKeys(book: Book): Set<String> {
         val file = File(book.uniqueKey)
         checkEntryValidity(file)
-        val result = mutableListOf<String>()
+        val result = mutableSetOf<String>()
         File(file, FILE_NOTES_OF_BOOK).readLines().forEach {
             result.add(it)
         }
