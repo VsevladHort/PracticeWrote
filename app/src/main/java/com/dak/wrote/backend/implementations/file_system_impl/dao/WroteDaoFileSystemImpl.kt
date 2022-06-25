@@ -9,8 +9,10 @@ import com.dak.wrote.backend.contracts.entities.Book
 import com.dak.wrote.backend.contracts.entities.UniqueEntity
 import com.dak.wrote.backend.contracts.entities.constants.NoteType
 import com.dak.wrote.backend.implementations.file_system_impl.*
+import com.dak.wrote.backend.implementations.file_system_impl.dao.exceptions.KeyException
 import com.dak.wrote.backend.implementations.file_system_impl.dao.exceptions.UnknownKeyException
 import java.io.File
+import java.lang.IllegalStateException
 
 class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : WroteDao {
 
@@ -45,11 +47,19 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         val file = File(note.uniqueKey)
         if (!file.exists())
             return false
+        var book = parent.uniqueKey
+        while (getEntryType(book) != EntryType.BOOK)
+            book = getFileParent(book)
+        val fileNotesOfBook = File(book, FILE_NOTES_OF_BOOK)
+        fileNotesOfBook.appendText(note.uniqueKey + System.lineSeparator())
         val auxiliaryFile = File(file, DATA_AUXILIARY_FILE_NAME)
         val dataFile = File(file, DATA_MAIN_FILE_NAME)
         val attributes = File(file, DATA_NOTE_ATTRIBUTES)
         val markerFile = File(file, MARKER_OF_USE)
-        markerFile.printWriter().use { println(EntryType.NOTE.stringRepresentation) }
+        markerFile.printWriter().use {
+            println(EntryType.NOTE.stringRepresentation)
+            println(book)
+        }
         auxiliaryFile.printWriter().use { pw ->
             println(note.type.type)
             println(note.title)
@@ -103,7 +113,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
 
     override suspend fun updateAttributeObject(value: Attribute): Boolean {
         val file = File(value.uniqueKey)
-        if (!file.exists())
+        if (!file.exists() || !checkIfInserted(file))
             return false
         val auxiliaryFile = File(file, DATA_AUXILIARY_FILE_NAME)
         val mutableSet = mutableSetOf<String>()
@@ -119,7 +129,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
 
     override suspend fun updateNoteEntry(note: BaseNote): Boolean {
         val file = File(note.uniqueKey)
-        if (!file.exists())
+        if (!file.exists() || !checkIfInserted(file))
             return false
         val auxiliaryFile = File(file, DATA_AUXILIARY_FILE_NAME)
         val dataFile = File(file, DATA_MAIN_FILE_NAME)
@@ -138,7 +148,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
 
     override suspend fun updateNoteObject(note: BaseNote): Boolean {
         val file = File(note.uniqueKey)
-        if (!file.exists())
+        if (!file.exists() || !checkIfInserted(file))
             return false
         val auxiliaryFile = File(file, DATA_AUXILIARY_FILE_NAME)
         val dataFile = File(file, DATA_MAIN_FILE_NAME)
@@ -172,9 +182,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
 
     override suspend fun updateBookObject(book: Book): Boolean {
         val file = File(book.uniqueKey)
-        if (!file.exists())
-            return false
-        if (!file.exists())
+        if (!file.exists() || !checkIfInserted(file))
             return false
         val auxiliaryFile = File(file, DATA_AUXILIARY_FILE_NAME)
         book.title = auxiliaryFile.readLines()[0]
@@ -183,8 +191,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
 
     override suspend fun getNoteType(uniqueKey: String): NoteType? {
         val file = File(uniqueKey)
-        if (!file.exists())
-            throw UnknownKeyException("Provided key leads nowhere")
+        checkEntryValidity(file)
         val auxiliaryFile = File(file, DATA_AUXILIARY_FILE_NAME)
         File(file, DATA_MAIN_FILE_NAME)
         File(file, DATA_NOTE_ATTRIBUTES)
@@ -195,10 +202,22 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         return null
     }
 
+    override suspend fun getEntryType(uniqueKey: String): EntryType {
+        val file = File(uniqueKey)
+        checkEntryValidity(file)
+        val markerFile = File(file, MARKER_OF_USE)
+        return when (markerFile.readLines()[0]) {
+            EntryType.PRESET.stringRepresentation -> EntryType.PRESET
+            EntryType.BOOK.stringRepresentation -> EntryType.BOOK
+            EntryType.NOTE.stringRepresentation -> EntryType.NOTE
+            EntryType.ATTRIBUTE.stringRepresentation -> EntryType.ATTRIBUTE
+            else -> throw KeyException("Unknown entry type exception")
+        }
+    }
+
     override suspend fun getNoteSaveData(uniqueKey: String): ByteArray? {
         val file = File(uniqueKey)
-        if (!file.exists())
-            throw UnknownKeyException("Provided key leads nowhere")
+        checkEntryValidity(file)
         val dataFile = File(file, DATA_MAIN_FILE_NAME)
         return if (dataFile.exists())
             dataFile.readBytes()
@@ -206,10 +225,19 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
             null
     }
 
+    override suspend fun getBookOfNote(uniqueKey: String): String {
+        val file = File(uniqueKey)
+        checkEntryValidity(file)
+        val markerFile = File(file, MARKER_OF_USE)
+        val lines = markerFile.readLines()
+        if (lines.size < 2)
+            throw IllegalStateException("Malformed note entry")
+        return markerFile.readLines()[1]
+    }
+
     override suspend fun getAttribute(uniqueKey: String): Attribute {
         val file = File(uniqueKey)
-        if (!file.exists())
-            throw UnknownKeyException("Provided key leads nowhere")
+        checkEntryValidity(file)
         val auxiliaryFile = File(file, DATA_AUXILIARY_FILE_NAME)
         return Attribute(uniqueKey, auxiliaryFile.readLines()[0])
     }
@@ -219,15 +247,15 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         val fileAttributes = File(fileBooks, DIR_ATTRIBUTES)
         val list = mutableListOf<Attribute>()
         fileAttributes.listFiles()?.let { stream ->
-            stream.forEach { list.add(getAttribute(it.absolutePath)) }
+            stream.asSequence().filter { checkIfInserted(it) }
+                .forEach { list.add(getAttribute(it.absolutePath)) }
         }
         return list
     }
 
     override suspend fun getAttributes(uniqueKey: String): Set<Attribute> {
         val file = File(uniqueKey)
-        if (!file.exists())
-            throw UnknownKeyException("Provided key leads nowhere")
+        checkEntryValidity(file)
         val attributes = File(file, DATA_NOTE_ATTRIBUTES)
         val attrSet = mutableSetOf<Attribute>()
         attributes.readLines().forEach {
@@ -236,10 +264,20 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         return attrSet
     }
 
+    override suspend fun getNoteKeys(book: Book): Set<String> {
+        val file = File(book.uniqueKey)
+        checkEntryValidity(file)
+        val result = mutableSetOf<String>()
+        File(file, FILE_NOTES_OF_BOOK).readLines().forEach {
+            result.add(it)
+        }
+        return result
+    }
+
     override suspend fun getPresets(): List<String> {
         val file = File(baseDir, DIR_PRESETS)
         val list = file.listFiles() ?: return listOf()
-        return list.asSequence().filter { it.isDirectory }.filter {
+        return list.asSequence().filter { it.isDirectory && checkIfInserted(it) }.filter {
             File(it, MARKER_OF_USE).exists()
         }.map { it.absolutePath }.toList()
     }
@@ -248,7 +286,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         val file = File(baseDir, DIR_BOOKS)
         val list = mutableListOf<Book>()
         file.listFiles()?.let { arrayOfFiles ->
-            arrayOfFiles.asSequence().filter { it.isDirectory }.forEach {
+            arrayOfFiles.asSequence().filter { it.isDirectory && checkIfInserted(it) }.forEach {
                 val book = Book(it.absolutePath, File(it, DATA_AUXILIARY_FILE_NAME).readLines()[0])
                 list.add(book)
             }
@@ -258,9 +296,10 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
 
     override suspend fun getChildrenKeys(uniqueKey: String): List<String> {
         val file = File(uniqueKey)
+        checkEntryValidity(file)
         val list = mutableListOf<String>()
         file.listFiles()?.let { arrayOfFiles ->
-            arrayOfFiles.asSequence().filter { it.isDirectory }.forEach {
+            arrayOfFiles.asSequence().filter { it.isDirectory && checkIfInserted(it) }.forEach {
                 list.add(it.absolutePath)
             }
         }
@@ -269,6 +308,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
 
     override suspend fun getChildrenKeys(entry: Book): List<String> {
         val file = File(entry.uniqueKey)
+        checkEntryValidity(file)
         val list = mutableListOf<String>()
         file.listFiles()?.let { arrayOfFiles ->
             arrayOfFiles.asSequence().filter { it.isDirectory }.forEach {
@@ -280,8 +320,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
 
     override suspend fun getAlternateTitles(uniqueKey: String): List<String> {
         val file = File(uniqueKey)
-        if (!file.exists())
-            throw UnknownKeyException("Provided key leads nowhere")
+        checkEntryValidity(file)
         val auxiliaryFile = File(file, DATA_AUXILIARY_FILE_NAME)
         File(file, DATA_MAIN_FILE_NAME)
         File(file, DATA_NOTE_ATTRIBUTES)
@@ -293,8 +332,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
 
     override suspend fun insertAlternateTitles(uniqueKey: String, titles: List<String>): Boolean {
         val file = File(uniqueKey)
-        if (!file.exists())
-            throw UnknownKeyException("Provided key leads nowhere")
+        checkEntryValidity(file)
         val auxiliaryFile = File(file, DATA_AUXILIARY_FILE_NAME)
         val listLines = auxiliaryFile.readLines()
         auxiliaryFile.printWriter().use { _ ->
@@ -307,8 +345,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
 
     override suspend fun insertAttributes(uniqueKey: String, titles: List<Attribute>): Boolean {
         val file = File(uniqueKey)
-        if (!file.exists())
-            throw UnknownKeyException("Provided key leads nowhere")
+        checkEntryValidity(file)
         val attributes = File(file, DATA_NOTE_ATTRIBUTES)
         attributes.printWriter().use { _ ->
             titles.forEach { println(it) }
@@ -317,16 +354,18 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
     }
 
     override suspend fun getParentKey(entry: BaseNote): String {
-        val file = File(entry.uniqueKey)
-        if (!file.exists())
-            throw UnknownKeyException("Provided key leads nowhere")
+        return getFileParent(entry.uniqueKey)
+    }
+
+    private fun getFileParent(fileName: String): String {
+        val file = File(fileName)
+        checkEntryValidity(file)
         return File(file.parent!!).absolutePath
     }
 
     override suspend fun getName(uniqueKey: String): String {
         val file = File(uniqueKey)
-        if (!file.exists())
-            throw UnknownKeyException("Provided key leads nowhere")
+        checkEntryValidity(file)
         val auxiliaryFile = File(file, DATA_AUXILIARY_FILE_NAME)
         return auxiliaryFile.readLines()[1]
     }
@@ -337,16 +376,31 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
     }
 
     override suspend fun deleteEntity(entity: BaseNote): Boolean {
-        return recursiveDelete(entity.uniqueKey)
+        val listOfKeysDeleted = mutableSetOf<String>()
+        val result = recursiveDelete(entity.uniqueKey, listOfKeysDeleted)
+        var book = entity.uniqueKey
+        while (getEntryType(book) != EntryType.BOOK)
+            book = getFileParent(book)
+        val fileListOfNotes = File(book, FILE_NOTES_OF_BOOK)
+        val newSetOfNotes =
+            fileListOfNotes.readLines().asSequence().filter { !listOfKeysDeleted.contains(it) }
+                .toList()
+        fileListOfNotes.printWriter().use { pw -> newSetOfNotes.forEach { pw.println(it) } }
+        return result
     }
 
-    private suspend fun recursiveDelete(uniqueKey: String): Boolean {
+    private suspend fun recursiveDelete(
+        uniqueKey: String,
+        listOfKeysDeleted: MutableSet<String>
+    ): Boolean {
         val file = File(uniqueKey)
+        if (checkIfInserted(file))
+            listOfKeysDeleted.add(uniqueKey)
         deleteFromAttributes(uniqueKey)
         file.listFiles()?.let { stream ->
             stream.forEach {
                 if (it.isDirectory)
-                    recursiveDelete(it.absolutePath)
+                    recursiveDelete(it.absolutePath, listOfKeysDeleted)
                 else
                     it.delete()
             }
@@ -370,6 +424,17 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
             insertAttributes(it, fixedAttrs)
         }
         return File(entity.uniqueKey).deleteRecursively()
+    }
+
+    private fun checkEntryValidity(file: File) {
+        if (!file.exists())
+            throw UnknownKeyException("Provided key leads nowhere")
+        if (!checkIfInserted(file))
+            throw KeyException("Entry has not been properly inserted")
+    }
+
+    private fun checkIfInserted(file: File): Boolean {
+        return File(file, MARKER_OF_USE).exists()
     }
 }
 
