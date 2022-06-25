@@ -1,5 +1,6 @@
 package com.dak.wrote.backend.contracts.dao
 
+import com.dak.wrote.backend.contracts.database.EntryType
 import com.dak.wrote.backend.contracts.entities.Attribute
 import com.dak.wrote.backend.contracts.entities.constants.NoteType
 import com.dak.wrote.backend.contracts.entities.Book
@@ -92,6 +93,13 @@ interface WroteDao {
     suspend fun getNoteSaveData(uniqueKey: String): ByteArray?
 
     /**
+     * @param uniqueKey - unique key identifying the entry
+     *
+     * @return EntryType of the entry
+     */
+    suspend fun getEntryType(uniqueKey: String): EntryType
+
+    /**
      * @param uniqueKey - unique key identifying the attribute
      *
      * @return Attribute object representing an attribute
@@ -103,6 +111,11 @@ interface WroteDao {
      * @return A list of all attributes created within a book
      */
     suspend fun getAttributes(book: Book): List<Attribute>
+
+    /**
+     * @return A list of keys of notes created within the given book
+     */
+    suspend fun getNoteKeys(book: Book): List<String>
 
     /**
      * @return A list of all preset keys created within the app
