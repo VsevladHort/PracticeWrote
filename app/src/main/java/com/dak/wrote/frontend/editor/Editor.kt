@@ -6,8 +6,12 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.dak.wrote.frontend.noteNavigation.IconButton
+import com.dak.wrote.backend.contracts.entities.Attribute
+import com.dak.wrote.frontend.noteNavigation.ColoredIconButton
 import com.dak.wrote.frontend.viewmodel.EditorViewModel
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.*
@@ -20,7 +24,7 @@ private fun goUp(inEdit: MutableState<Boolean>): Boolean {
 }
 
 @Composable
-fun Screen(navigateUp: () -> Unit, editorViewModel: EditorViewModel = viewModel()) {
+fun EditorScreen(navigateUp: () -> Unit, editorViewModel: EditorViewModel = viewModel()) {
     val noteSTate = editorViewModel.note.collectAsState()
     noteSTate.value.let { note ->
         when (note) {
@@ -28,60 +32,113 @@ fun Screen(navigateUp: () -> Unit, editorViewModel: EditorViewModel = viewModel(
                 CircularProgressIndicator()
             }
             else -> {
-                BackHandler(note.inEdit.value) {
-                    note.inEdit.value = false
-                    editorViewModel.updatePage(note)
-                }
-                Column() {
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        IconButton(
-                            modifier = Modifier.wrapContentSize(Alignment.CenterStart),
-                            imageVector = FeatherIcons.ArrowLeft,
-                            description = "Back",
-                            onClick = {
-                                if (goUp(note.inEdit)) navigateUp()
-                            }
-                        )
-                        Row(Modifier.wrapContentSize(Alignment.CenterEnd)) {
-                            if (!note.inEdit.value) {
-                                IconButton(
-                                    imageVector = FeatherIcons.Save,
-                                    description = "Save",
-                                    onClick = { note.inEdit.value = false }
-                                )
-                                val expandedMenu = remember { mutableStateOf(false) }
-                                IconButton(onClick = {
-                                    expandedMenu.value = !expandedMenu.value
-                                }) {
-                                    Icon(
-                                        imageVector = FeatherIcons.MoreVertical,
-                                        contentDescription = "Open menu"
-                                    )
-                                }
-                                DropdownMenu(
-                                    expanded = expandedMenu.value,
-                                    onDismissRequest = { expandedMenu.value = false }) {
-                                    DropdownMenuItem(onClick = { editorViewModel.savePreset(note) }) {
-                                        Text(text = "Save as a preset")
-                                    }
-                                }
-                            } else {
-                                IconButton(
-                                    imageVector = FeatherIcons.Edit2,
-                                    description = "Edit",
-                                    onClick = { note.inEdit.value = true }
-                                )
-                            }
-                        }
-                    }
-                    if (note.inEdit.value)
-                        note.page.value.DrawNormal(editorViewModel = editorViewModel)
-                    else
-                        note.page.value.DrawEdit(editorViewModel = editorViewModel)
+                EditorScreenImpl(
+                    note = note,
+                    updatePage = { editorViewModel.updatePage(note) },
+                    navigateUp = navigateUp
+                ) {
+                    editorViewModel.savePreset(note)
                 }
             }
         }
+    }
+}
+
+
+@Composable
+fun EditorScreenImpl(
+    note: EditorViewModel.ObjectNote,
+    updatePage: () -> Unit,
+    navigateUp: () -> Unit,
+    savePreset: () -> Unit
+) {
+    BackHandler(note.inEdit.value) {
+        note.inEdit.value = false
+        updatePage()
+    }
+    Column() {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 20.dp, end = 20.dp, top = 15.dp)
+        ) {
+            ColoredIconButton(
+                modifier = Modifier.wrapContentSize(Alignment.CenterStart),
+                imageVector = FeatherIcons.ArrowLeft,
+                description = "Back",
+                onClick = {
+                    if (goUp(note.inEdit)) navigateUp()
+                }
+            )
+            Row(Modifier.wrapContentSize(Alignment.CenterEnd)) {
+                if (note.inEdit.value) {
+                    ColoredIconButton(
+                        imageVector = FeatherIcons.Save,
+                        description = "Save",
+                        onClick = { note.inEdit.value = false }
+                    )
+                    val expandedMenu = remember { mutableStateOf(false) }
+                    IconButton(onClick = {
+                        expandedMenu.value = !expandedMenu.value
+                    }) {
+                        Icon(
+                            imageVector = FeatherIcons.MoreVertical,
+                            contentDescription = "Open menu"
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = expandedMenu.value,
+                        onDismissRequest = { expandedMenu.value = false }) {
+                        DropdownMenuItem(onClick = { savePreset() }) {
+                            Text(text = "Save as a preset")
+                        }
+                    }
+                } else {
+                    ColoredIconButton(
+                        imageVector = FeatherIcons.Edit2,
+                        description = "Edit",
+                        onClick = { note.inEdit.value = true }
+                    )
+                }
+            }
+        }
+        if (note.inEdit.value)
+            PageEdit(note.name, note.dAlternateNames, note.dAttributes, note.page.value)
+        else
+            PageView(
+                note.name.value,
+                note.dAlternateNames.map { it.next.value!! },
+                note.dAttributes.map { it.next.value!! },
+                note.page.value
+            )
+    }
+}
+
+@Preview(showSystemUi = true, device = Devices.PIXEL_3)
+@Composable
+fun EditorScreenPreview() {
+    EditorScreenImpl(
+        note = remember {
+            EditorViewModel.ObjectNote(
+                "",
+                mutableStateOf(""),
+                alternateTitles = setOf("King of the florals", "Horn of the tribe"),
+                attributes = setOf("character", "king", "floral").map { Attribute("", it) }.toSet(),
+                sPage = SerializablePageLayout(
+                    listOf(
+                        SerializableParagraphLayout(
+                            "History",
+                            testDataLayout.map { it.toSerializable() }),
+                        SerializableParagraphLayout(
+                            "History",
+                            testDataLayout.map { it.toSerializable() })
+                    )
+                )
+            )
+        },
+        updatePage = {  },
+        navigateUp = {  }) {
+
     }
 }

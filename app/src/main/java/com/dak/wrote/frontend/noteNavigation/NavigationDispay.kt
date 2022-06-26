@@ -287,7 +287,7 @@ private fun NavigationButtons(
         horizontalArrangement = Arrangement.spacedBy(40.dp)
     ) {
         // Back button
-        IconButton(
+        ColoredIconButton(
             imageVector = FeatherIcons.ArrowLeft,
             description = "Back",
             buttonEnabled = backButtonEnabled,
@@ -308,7 +308,7 @@ private fun NavigationButtons(
         )
 
         //Delete button
-        IconButton(
+        ColoredIconButton(
             modifier = Modifier,
             imageVector = FeatherIcons.Trash2,
             description = "Delete",

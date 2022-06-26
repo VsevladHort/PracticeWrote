@@ -10,14 +10,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dak.wrote.backend.contracts.entities.BaseNote
-import com.dak.wrote.frontend.viewmodel.EditorViewModel
 import kotlinx.serialization.Serializable
 
 class TextDataLayout(text: String) : DataLayout() {
     private val text = mutableStateOf(text)
 
     @Composable
-    override fun DrawEdit(editorViewModel: EditorViewModel) {
+    override fun DrawEdit() {
         Box(modifier = Modifier.padding(horizontal = 10.dp)) {
             BasicTextField(
                 value = text.value,
@@ -29,13 +28,10 @@ class TextDataLayout(text: String) : DataLayout() {
     }
 
     @Composable
-    override fun DrawNormal(editorViewModel: EditorViewModel) {
+    override fun DrawNormal() {
         Box(Modifier.padding(horizontal = 10.dp)) {
             Text(text = text.value, style = textStyle())
         }
-    }
-
-    override fun onSubmit(node: BaseNote) {
     }
 
     override fun toSerializable(): SerializableDataLayout {

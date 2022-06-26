@@ -87,7 +87,7 @@ fun NavigationButton(
 }
 
 @Composable
-fun IconButton(
+fun ColoredIconButton(
     modifier: Modifier = Modifier,
     imageVector: ImageVector,
     description: String,

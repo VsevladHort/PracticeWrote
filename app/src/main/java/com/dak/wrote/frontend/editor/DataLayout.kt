@@ -39,12 +39,10 @@ import kotlinx.serialization.Serializable
 
 abstract class DataLayout {
     @Composable
-    abstract fun DrawEdit(editorViewModel: EditorViewModel)
+    abstract fun DrawEdit()
 
     @Composable
-    abstract fun DrawNormal(editorViewModel: EditorViewModel)
-
-    abstract fun onSubmit(node: BaseNote)
+    abstract fun DrawNormal()
 
     abstract fun toSerializable(): SerializableDataLayout
 }
@@ -63,18 +61,49 @@ class PageLayout(paragraphs: List<SerializableParagraphLayout>) {
     }
 
     @Composable
-    fun DrawEdit(editorViewModel: EditorViewModel) {
-        Column(Modifier.fillMaxSize()) {
-            for (i in paragraphs)
-                i.DrawEdit(editorViewModel)
+    fun DrawEdit() {
+        paragraphs.forEachIndexed { index, paragraphLayout ->
+            ParagraphAdditionBox {
+                paragraphs.add(index, ParagraphLayout("", listOf()))
+            }
+            Surface(
+                elevation = 3.dp,
+                shape = RoundedCornerShape(10.dp),
+                modifier = Modifier.padding(vertical = 10.dp)
+            ) {
+                Column() {
+                    ItemNavigation(
+                        if (index != 0) ({
+                            paragraphs.moveUp(index)
+                        }) else null,
+                        if (index != paragraphs.lastIndex) ({
+                            paragraphs.moveDown(index)
+                        }) else null,
+                        { paragraphs.removeAt(index) },
+                        50.dp,
+                        40.dp
+                    )
+                    paragraphLayout.DrawEdit()
+                }
+            }
+        }
+        ParagraphAdditionBox {
+            paragraphs.add(ParagraphLayout("", listOf()))
         }
     }
 
     @Composable
-    fun DrawNormal(editorViewModel: EditorViewModel) {
-        Column(Modifier.fillMaxSize()) {
-            for (i in paragraphs)
-                i.DrawNormal(editorViewModel)
+    fun DrawNormal() {
+        paragraphs.forEach { paragraphLayout ->
+            Surface(
+                elevation = 3.dp,
+                shape = RoundedCornerShape(10.dp),
+                modifier = Modifier.padding(vertical = 10.dp)
+            ) {
+                Column() {
+                    paragraphLayout.DrawNormal()
+                }
+            }
         }
     }
 
@@ -94,12 +123,11 @@ class SerializablePageLayout(val paragraphs: List<SerializableParagraphLayout>) 
 }
 
 @Composable
-private fun PageView(
-    editorViewModel: EditorViewModel,
+fun PageView(
     name: String,
     alternateNames: List<String>,
     attributes: List<String>,
-    parapraphs: List<ParagraphLayout>
+    page: PageLayout
 ) {
     Column(
         Modifier
@@ -116,17 +144,7 @@ private fun PageView(
         Divider(thickness = 6.dp, color = MaterialTheme.colors.primaryVariant)
         Spacer(modifier = Modifier.height(20.dp))
 
-        parapraphs.forEachIndexed { index, paragraphLayout ->
-            Surface(
-                elevation = 3.dp,
-                shape = RoundedCornerShape(10.dp),
-                modifier = Modifier.padding(vertical = 10.dp)
-            ) {
-                Column() {
-                    paragraphLayout.DrawNormal(editorViewModel = editorViewModel)
-                }
-            }
-        }
+        page.DrawNormal()
     }
 }
 
@@ -135,7 +153,7 @@ private fun PageView(
 fun AdditionalValuesView(
     alternateNames: List<String>,
     attributes: List<String>,
-    expandedState : MutableState<Boolean> = mutableStateOf(false)
+    expandedState: MutableState<Boolean> = mutableStateOf(false)
 ) {
     var expanded by expandedState
     Surface(
@@ -180,12 +198,11 @@ fun AdditionalValuesView(
 
 
 @Composable
-private fun PageEdit(
-    editorViewModel: EditorViewModel,
+fun PageEdit(
     name: MutableState<String>,
     alternateNames: SnapshotStateList<UpdateHolder<String?>>,
     attributes: SnapshotStateList<UpdateHolder<String?>>,
-    paragraphs: SnapshotStateList<ParagraphLayout>
+    page: PageLayout
 ) {
     Column(
         Modifier
@@ -203,34 +220,7 @@ private fun PageEdit(
         Divider(thickness = 6.dp, color = MaterialTheme.colors.primaryVariant)
         Spacer(modifier = Modifier.height(20.dp))
 
-        paragraphs.forEachIndexed { index, paragraphLayout ->
-            ParagraphAdditionBox {
-                paragraphs.add(index, ParagraphLayout("", listOf()))
-            }
-            Surface(
-                elevation = 3.dp,
-                shape = RoundedCornerShape(10.dp),
-                modifier = Modifier.padding(vertical = 10.dp)
-            ) {
-                Column() {
-                    ItemNavigation(
-                        if (index != 0) ({
-                            paragraphs.moveUp(index)
-                        }) else null,
-                        if (index != paragraphs.lastIndex) ({
-                            paragraphs.moveDown(index)
-                        }) else null,
-                        { paragraphs.removeAt(index) },
-                        50.dp,
-                        40.dp
-                    )
-                    paragraphLayout.DrawEdit(editorViewModel = editorViewModel)
-                }
-            }
-        }
-        ParagraphAdditionBox {
-            paragraphs.add(ParagraphLayout("", listOf()))
-        }
+        page.DrawEdit()
     }
 }
 
@@ -436,14 +426,17 @@ fun PageViewPreview() {
     WroteTheme() {
 
         PageView(
-            viewModel(),
             name = "Augustus Floral of the night",
             alternateNames = listOf("King of the florals", "Horn of the tribe"),
             attributes = listOf("character", "king", "floral"),
-            parapraphs = listOf(
-                ParagraphLayout("History", testDataLayout),
-                ParagraphLayout("History", testDataLayout)
-            )
+            page = remember {
+                PageLayout(
+                    listOf(
+                        SerializableParagraphLayout("History", testSDataLayout),
+                        SerializableParagraphLayout("History", testSDataLayout)
+                    )
+                )
+            }
         )
     }
 }
@@ -459,7 +452,6 @@ inline fun <reified T> mutStateListOf(items: List<T>) =
 fun PageEditPreview() {
     WroteTheme() {
         PageEdit(
-            viewModel(),
             name = remember { mutableStateOf("Augustus Floral of the night") },
             alternateNames = remember {
                 mutStateListOf(
@@ -476,13 +468,13 @@ fun PageEditPreview() {
                     "floral"
                 ), { UpdateHolder(it) })
             },
-            paragraphs = remember {
-                mutStateListOf(
+            page = remember {
+                PageLayout(
                     listOf(
-                        ParagraphLayout("History", testDataLayout),
-                        ParagraphLayout("History", testDataLayout)
+                        SerializableParagraphLayout("History", testSDataLayout),
+                        SerializableParagraphLayout("History", testSDataLayout)
                     )
-                ) { it }
+                )
             }
         )
     }

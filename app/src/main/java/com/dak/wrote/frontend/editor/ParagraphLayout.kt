@@ -2,12 +2,10 @@ package com.dak.wrote.frontend.editor
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
@@ -15,7 +13,6 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,22 +35,15 @@ class ParagraphLayout(title: String, column: List<DataLayout>) {
     }
 
     @Composable
-    fun DrawEdit(editorViewModel: EditorViewModel) {
-        ParagraphEdit(editorViewModel = editorViewModel, title = title, columns = columns)
+    fun DrawEdit() {
+        ParagraphEdit(title = title, columns = columns)
     }
 
     @Composable
-    fun DrawNormal(editorViewModel: EditorViewModel) {
-//        ParagraphView()
-//        Column(Modifier.wrapContentSize()) {
-//            for (i in columns)
-//                i.DrawNormal()
-//        }
-        ParagraphView(editorViewModel = editorViewModel, title = title.value, columns = columns)
+    fun DrawNormal() {
+        ParagraphView(title = title.value, columns = columns)
     }
 
-    fun onSubmit(node: BaseNote) {
-    }
 
     fun toSerializable(): SerializableParagraphLayout {
         return SerializableParagraphLayout(title.value, columns.map { it.toSerializable() })
@@ -71,7 +61,6 @@ class SerializableParagraphLayout(val title: String, val column: List<Serializab
 
 @Composable
 fun ParagraphEdit(
-    editorViewModel: EditorViewModel,
     title: MutableState<String>,
     columns: SnapshotStateList<DataLayout>
 ) {
@@ -117,7 +106,7 @@ fun ParagraphEdit(
                         45.dp,
                         30.dp
                     )
-                    layout.DrawEdit(editorViewModel = editorViewModel)
+                    layout.DrawEdit()
                 }
             }
 
@@ -184,7 +173,7 @@ fun DataLayoutAdditionBox(addLayout: (DataLayout) -> Unit) {
 }
 
 @Composable
-fun ParagraphView(editorViewModel: EditorViewModel, title: String, columns: List<DataLayout>) {
+fun ParagraphView(title: String, columns: List<DataLayout>) {
     Column(
         Modifier
             .fillMaxWidth()
@@ -211,7 +200,7 @@ fun ParagraphView(editorViewModel: EditorViewModel, title: String, columns: List
         ) {
             columns.forEach {
                 Box(Modifier.padding(10.dp)) {
-                    it.DrawNormal(editorViewModel = editorViewModel)
+                    it.DrawNormal()
                 }
             }
         }
@@ -222,7 +211,6 @@ fun ParagraphView(editorViewModel: EditorViewModel, title: String, columns: List
 @Composable
 fun ParagraphViewPreview() {
     ParagraphView(
-        viewModel(),
         title = remember { mutableStateOf("Hehe") }.value,
         columns = listOf(
             TextDataLayout("Hello"),
@@ -235,7 +223,6 @@ fun ParagraphViewPreview() {
 @Composable
 fun ParagraphEditPreview() {
     ParagraphEdit(
-        viewModel(),
         title = remember { mutableStateOf("Hehe") },
         columns = remember {
             mutableStateListOf(
@@ -251,4 +238,8 @@ val testDataLayout
         TextDataLayout("Hello"),
         ItemListLayout(listOf("Я", "Не", "Знаю"))
     )
-
+val testSDataLayout
+    get() = listOf(
+        SerializableTextDataLayout("Hello"),
+        SerializableItemListLayout(listOf("Я", "Не", "Знаю"))
+    )
