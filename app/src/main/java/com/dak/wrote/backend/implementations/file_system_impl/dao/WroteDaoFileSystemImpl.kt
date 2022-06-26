@@ -38,8 +38,8 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
             return false
         val auxiliaryFile = File(file, DATA_AUXILIARY_FILE_NAME)
         val markerFile = File(file, MARKER_OF_USE)
-        markerFile.printWriter().use { println(EntryType.BOOK.stringRepresentation) }
-        auxiliaryFile.printWriter().use { println(book.title) }
+        markerFile.printWriter().use { pw -> pw.println(EntryType.BOOK.stringRepresentation) }
+        auxiliaryFile.printWriter().use { pw -> pw.println(book.title) }
         return true
     }
 
@@ -56,17 +56,17 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         val dataFile = File(file, DATA_MAIN_FILE_NAME)
         val attributes = File(file, DATA_NOTE_ATTRIBUTES)
         val markerFile = File(file, MARKER_OF_USE)
-        markerFile.printWriter().use {
-            it.println(EntryType.NOTE.stringRepresentation)
-            println(book)
+        markerFile.printWriter().use { pw ->
+            pw.println(EntryType.NOTE.stringRepresentation)
+            pw.println(book)
         }
         auxiliaryFile.printWriter().use { pw ->
-            println(note.type.type)
-            println(note.title)
+            pw.println(note.type.type)
+            pw.println(note.title)
             note.alternateTitles.forEach { pw.println(it) }
         }
-        attributes.printWriter().use {
-            note.attributes.forEach { println(it.uniqueKey) }
+        attributes.printWriter().use { pw ->
+            note.attributes.forEach { pw.println(it.uniqueKey) }
         }
         dataFile.writeBytes(note.generateSaveData())
         return true
@@ -82,12 +82,12 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         val markerFile = File(file, MARKER_OF_USE)
         markerFile.printWriter().use { println(EntryType.PRESET.stringRepresentation) }
         auxiliaryFile.printWriter().use { pw ->
-            println(note.type.type)
-            println(note.title)
+            pw.println(note.type.type)
+            pw.println(note.title)
             note.alternateTitles.forEach { pw.println(it) }
         }
-        attributes.printWriter().use {
-            note.attributes.forEach { println(it.uniqueKey) }
+        attributes.printWriter().use { pw ->
+            note.attributes.forEach { pw.println(it.uniqueKey) }
         }
         dataFile.writeBytes(note.generateSaveData())
         return true
@@ -100,9 +100,9 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         val auxiliaryFile = File(file, DATA_AUXILIARY_FILE_NAME)
         val markerFile = File(file, MARKER_OF_USE)
         markerFile.printWriter().use { println(EntryType.ATTRIBUTE.stringRepresentation) }
-        auxiliaryFile.printWriter().use {
-            println(attribute.name)
-            attribute.associatedEntities.forEach { println(it) }
+        auxiliaryFile.printWriter().use { pw ->
+            pw.println(attribute.name)
+            attribute.associatedEntities.forEach { pw.println(it) }
         }
         return true
     }
@@ -135,12 +135,12 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         val dataFile = File(file, DATA_MAIN_FILE_NAME)
         val attributes = File(file, DATA_NOTE_ATTRIBUTES)
         auxiliaryFile.printWriter().use { pw ->
-            println(note.type.type)
-            println(note.title)
+            pw.println(note.type.type)
+            pw.println(note.title)
             note.alternateTitles.forEach { pw.println(it) }
         }
-        attributes.printWriter().use {
-            note.attributes.forEach { println(it.uniqueKey) }
+        attributes.printWriter().use { pw ->
+            note.attributes.forEach { pw.println(it.uniqueKey) }
         }
         dataFile.writeBytes(note.generateSaveData())
         return true
@@ -335,10 +335,10 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         checkEntryValidity(file)
         val auxiliaryFile = File(file, DATA_AUXILIARY_FILE_NAME)
         val listLines = auxiliaryFile.readLines()
-        auxiliaryFile.printWriter().use { _ ->
-            println(listLines[0])
-            println(listLines[1])
-            titles.forEach { println(it) }
+        auxiliaryFile.printWriter().use { pw ->
+            pw.println(listLines[0])
+            pw.println(listLines[1])
+            titles.forEach { pw.println(it) }
         }
         return true
     }
@@ -347,8 +347,8 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         val file = File(uniqueKey)
         checkEntryValidity(file)
         val attributes = File(file, DATA_NOTE_ATTRIBUTES)
-        attributes.printWriter().use { _ ->
-            titles.forEach { println(it) }
+        attributes.printWriter().use { pw ->
+            titles.forEach { pw.println(it) }
         }
         return true
     }
