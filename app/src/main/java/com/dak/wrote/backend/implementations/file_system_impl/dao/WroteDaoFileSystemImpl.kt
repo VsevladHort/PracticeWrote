@@ -3,10 +3,7 @@ package com.dak.wrote.backend.implementations.file_system_impl.dao
 import android.content.Context
 import com.dak.wrote.backend.contracts.dao.WroteDao
 import com.dak.wrote.backend.contracts.database.EntryType
-import com.dak.wrote.backend.contracts.entities.Attribute
-import com.dak.wrote.backend.contracts.entities.BaseNote
-import com.dak.wrote.backend.contracts.entities.Book
-import com.dak.wrote.backend.contracts.entities.UniqueEntity
+import com.dak.wrote.backend.contracts.entities.*
 import com.dak.wrote.backend.contracts.entities.constants.NoteType
 import com.dak.wrote.backend.implementations.file_system_impl.*
 import com.dak.wrote.backend.implementations.file_system_impl.dao.exceptions.KeyException
@@ -72,25 +69,45 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         return true
     }
 
-    override suspend fun insetPreset(note: BaseNote): Boolean {
-        val file = File(note.uniqueKey)
-        if (!file.exists())
+    override suspend fun <Display : UniqueEntity, Full : UniqueEntity> insetPreset(
+        presetManager: PresetManager<Display, Full>,
+        display: Display,
+        full: Full
+    ): Boolean {
+        val file = File(display.uniqueKey)
+        if (!file.exists() || display.uniqueKey != full.uniqueKey)
             return false
         val auxiliaryFile = File(file, DATA_AUXILIARY_FILE_NAME)
         val dataFile = File(file, DATA_MAIN_FILE_NAME)
-        val attributes = File(file, DATA_NOTE_ATTRIBUTES)
         val markerFile = File(file, MARKER_OF_USE)
         markerFile.printWriter().use { println(EntryType.PRESET.stringRepresentation) }
-        auxiliaryFile.printWriter().use { pw ->
-            pw.println(note.type.type)
-            pw.println(note.title)
-            note.alternateTitles.forEach { pw.println(it) }
-        }
-        attributes.printWriter().use { pw ->
-            note.attributes.forEach { pw.println(it.uniqueKey) }
-        }
-        dataFile.writeBytes(note.generateSaveData())
+        auxiliaryFile.writeBytes(presetManager.saveDisplay(display))
+        dataFile.writeBytes(presetManager.saveFull(full))
         return true
+    }
+
+    override suspend fun deletePreset(uniqueKey: String): Boolean {
+        val file = File(uniqueKey)
+        checkEntryValidity(file)
+        return file.deleteRecursively()
+    }
+
+    override suspend fun <Display : UniqueEntity, Full : UniqueEntity> getPresetDisplay(
+        presetManager: PresetManager<Display, Full>,
+        uniqueKey: String
+    ): Display {
+        val file = File(uniqueKey)
+        checkEntryValidity(file)
+        return presetManager.loadDisplay(File(file, DATA_MAIN_FILE_NAME).readBytes())
+    }
+
+    override suspend fun <Display : UniqueEntity, Full : UniqueEntity> getPresetFull(
+        presetManager: PresetManager<Display, Full>,
+        uniqueKey: String
+    ): Full {
+        val file = File(uniqueKey)
+        checkEntryValidity(file)
+        return presetManager.loadFull(File(file, DATA_MAIN_FILE_NAME).readBytes())
     }
 
     override suspend fun insetAttribute(attribute: Attribute): Boolean {
@@ -277,9 +294,8 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
     override suspend fun getPresets(): List<String> {
         val file = File(baseDir, DIR_PRESETS)
         val list = file.listFiles() ?: return listOf()
-        return list.asSequence().filter { it.isDirectory && checkIfInserted(it) }.filter {
-            File(it, MARKER_OF_USE).exists()
-        }.map { it.absolutePath }.toList()
+        return list.asSequence().filter { it.isDirectory && checkIfInserted(it) }
+            .map { it.absolutePath }.toList()
     }
 
     override suspend fun getBooks(): List<Book> {
@@ -439,4 +455,4 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
 }
 
 
-fun getDAO(context : Context) = WroteDaoFileSystemImpl.getInstance(context.filesDir)
+fun getDAO(context: Context) = WroteDaoFileSystemImpl.getInstance(context.filesDir)

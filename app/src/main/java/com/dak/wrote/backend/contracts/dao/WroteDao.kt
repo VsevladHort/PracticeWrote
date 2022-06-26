@@ -1,11 +1,8 @@
 package com.dak.wrote.backend.contracts.dao
 
 import com.dak.wrote.backend.contracts.database.EntryType
-import com.dak.wrote.backend.contracts.entities.Attribute
+import com.dak.wrote.backend.contracts.entities.*
 import com.dak.wrote.backend.contracts.entities.constants.NoteType
-import com.dak.wrote.backend.contracts.entities.Book
-import com.dak.wrote.backend.contracts.entities.BaseNote
-import com.dak.wrote.backend.contracts.entities.UniqueEntity
 
 interface WroteDao {
     /**
@@ -27,7 +24,37 @@ interface WroteDao {
      *
      * @return true if the insert was successful, false otherwise
      */
-    suspend fun insetPreset(note: BaseNote): Boolean
+    suspend fun <Display : UniqueEntity, Full : UniqueEntity> insetPreset(
+        presetManager: PresetManager<Display, Full>, display: Display,
+        full: Full
+    ): Boolean
+
+    /**
+     * Deletes the Preset identified by the given key
+     *
+     * @return true if the delete was successful, false otherwise
+     */
+    suspend fun deletePreset(uniqueKey: String): Boolean
+
+    /**
+     * Returns display of the preset identified be the given uniqueKey,
+     * constructed by the provided PresetManager
+     *
+     * @return display representation of the preset
+     */
+    suspend fun <Display : UniqueEntity, Full : UniqueEntity> getPresetDisplay(
+        presetManager: PresetManager<Display, Full>, uniqueKey: String
+    ): Display
+
+    /**
+     * Returns full of the preset identified be the given uniqueKey,
+     * constructed by the provided PresetManager
+     *
+     * @return full representation of the preset
+     */
+    suspend fun <Display : UniqueEntity, Full : UniqueEntity> getPresetFull(
+        presetManager: PresetManager<Display, Full>, uniqueKey: String
+    ): Full
 
     /**
      * Creates an Attribute entry in the database
