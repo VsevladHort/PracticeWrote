@@ -4,15 +4,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.Button
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.material.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.ComposeView
@@ -28,6 +27,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import compose.icons.FeatherIcons
+import compose.icons.feathericons.Edit2
 
 @Preview
 @Composable
@@ -55,10 +56,11 @@ class TstVM : ViewModel() {
 }
 
 
-class TstVM2(he : Int) : ViewModel() {
+class TstVM2(he: Int) : ViewModel() {
     val ms = mutableStateOf(he)
 }
-class TstVM2CTOR(val i : Int) : ViewModelProvider.Factory {
+
+class TstVM2CTOR(val i: Int) : ViewModelProvider.Factory {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
         return TstVM2(i) as T
     }
@@ -105,7 +107,9 @@ fun NavigationTst() {
 //                controller.navigate("1") {
 //                    popUpTo("1")
 //                }
-                controller.popBackStack()
+//                controller.popBackStack() {
+//
+//                }
             }
         }
     }
@@ -128,4 +132,28 @@ class HeheView : Fragment() {
             }
         }
 
+}
+
+@Preview
+@Composable
+fun BottomNavTest() {
+    var item by remember { mutableStateOf(0) }
+    Scaffold(bottomBar = {
+        BottomNavigation() {
+            repeat(3) {
+                BottomNavigationItem(selected = item == it, onClick = { item = it }, icon = {
+                    Icon(
+                        imageVector = FeatherIcons.Edit2,
+                        contentDescription = "Edit $it"
+                    )
+                }, label = { Text(text = "Edit $it")})
+
+            }
+        }
+    }) {
+        Box(modifier = Modifier.padding(it))
+        ViewModelTest {
+
+        }
+    }
 }

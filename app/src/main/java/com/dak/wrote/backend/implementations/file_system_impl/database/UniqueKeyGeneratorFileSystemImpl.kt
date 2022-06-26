@@ -1,5 +1,6 @@
 package com.dak.wrote.backend.implementations.file_system_impl.database
 
+import android.content.Context
 import com.dak.wrote.backend.contracts.database.EntryType
 import com.dak.wrote.backend.contracts.database.UniqueEntityKeyGenerator
 import com.dak.wrote.backend.contracts.entities.Book
@@ -83,3 +84,5 @@ class UniqueKeyGeneratorFileSystemImpl private constructor(private val baseDir: 
         }
     }
 }
+
+fun getKeyGen(context: Context) = UniqueKeyGeneratorFileSystemImpl.getInstance(context.filesDir)

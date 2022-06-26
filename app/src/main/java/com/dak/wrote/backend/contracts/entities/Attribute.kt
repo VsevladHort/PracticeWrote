@@ -1,6 +1,6 @@
 package com.dak.wrote.backend.contracts.entities
 
-data class Attribute(override val uniqueKey: String, var name: String) : UniqueEntity {
+data class Attribute(override val uniqueKey: String, var name: String) : UniqueEntity, Comparable<Attribute> {
     private var _associatedEntities = mutableSetOf<String>()
     var associatedEntities: Set<String>
         get() {
@@ -20,5 +20,9 @@ data class Attribute(override val uniqueKey: String, var name: String) : UniqueE
 
     fun removeEntity(uniqueKey: String) {
         _associatedEntities.remove(uniqueKey)
+    }
+
+    override fun compareTo(other: Attribute): Int {
+        return uniqueKey.compareTo(other.uniqueKey)
     }
 }

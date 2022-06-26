@@ -97,21 +97,20 @@ fun IconButton(
     Button(
         onClick = { onClick() },
         shape = CircleShape,
-//        border = BorderStroke(1.dp, Color.Transparent),
         modifier = modifier
             .size(45.dp),
-        colors = ButtonDefaults.outlinedButtonColors(
-            backgroundColor = if (buttonEnabled) SoftBlue else Color.LightGray,
-            contentColor = Color.White
-        )
+        colors = ButtonDefaults.buttonColors(
+            backgroundColor = if (buttonEnabled) MaterialTheme.colors.primary else MaterialTheme.colors.surface,
+            contentColor = MaterialTheme. colors.onPrimary,
+            disabledContentColor = MaterialTheme.colors.onSurface
+        ),
+        enabled = buttonEnabled
     ) {
         Icon(
             imageVector = imageVector,
             contentDescription = description,
             modifier = Modifier
                 .scale(2.0f),
-            //.padding(top = 3.dp, end = 8.dp),
-            tint = Color.White
         )
     }
 }

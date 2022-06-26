@@ -21,6 +21,7 @@ import com.dak.wrote.ui.theme.SoftBlueTransparent
 import com.dak.wrote.ui.theme.WroteTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.tooling.preview.Devices
 import com.dak.wrote.frontend.viewmodel.NavigationState
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeft
@@ -44,7 +45,7 @@ fun parent(child: String): String? {
     return null
 }
 
-@Preview(showSystemUi = true)
+@Preview(showSystemUi = true, device = Devices.PIXEL_3)
 @Composable
 fun PreviewNavigation() {
     WroteTheme {
@@ -69,7 +70,7 @@ fun PreviewNavigation() {
 fun NavigationDisplay(
     uniqueKey: String,
     factory: NoteNavigationViewModelFactory,
-    thisViewModel: NoteNavigationViewModel
+    thisViewModel: NoteNavigationViewModel = viewModel()
 
 ) {
     //TODO nice logic that works with dao and stores everything in viewModel
@@ -176,19 +177,19 @@ fun NoteWithParagraphs(
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-/*                    IconButton(
-                        modifier = modifier.wrapContentSize(Alignment.CenterStart),
-                        imageVector = FeatherIcons.ArrowLeft,
-                        description = "Back",
-                        buttonEnabled = backButtonEnabled,
-                        onClick = onBackButton
-                    )
-                    IconButton(
-                        modifier = modifier.wrapContentSize(Alignment.CenterEnd),
-                        imageVector = FeatherIcons.Trash2,
-                        description = "Delete",
-                        onClick = { openDeleteDialog.value = true }
-                    )*/
+//                    IconButton(
+//                        modifier = modifier.wrapContentSize(Alignment.CenterStart),
+//                        imageVector = FeatherIcons.ArrowLeft,
+//                        description = "Back",
+//                        buttonEnabled = backButtonEnabled,
+//                        onClick = onBackButton
+//                    )
+//                    IconButton(
+//                        modifier = modifier.wrapContentSize(Alignment.CenterEnd),
+//                        imageVector = FeatherIcons.Trash2,
+//                        description = "Delete",
+//                        onClick = { openDeleteDialog.value = true }
+//                    )
                 }
                 Text(
                     text = title,

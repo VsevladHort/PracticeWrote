@@ -57,7 +57,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         val attributes = File(file, DATA_NOTE_ATTRIBUTES)
         val markerFile = File(file, MARKER_OF_USE)
         markerFile.printWriter().use {
-            println(EntryType.NOTE.stringRepresentation)
+            it.println(EntryType.NOTE.stringRepresentation)
             println(book)
         }
         auxiliaryFile.printWriter().use { pw ->

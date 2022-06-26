@@ -29,6 +29,7 @@ import com.dak.wrote.frontend.AligningBasicTextField
 import com.dak.wrote.frontend.viewmodel.EditorViewModel
 import com.dak.wrote.frontend.viewmodel.UpdateHolder
 import com.dak.wrote.ui.theme.Shapes
+import com.dak.wrote.ui.theme.WroteTheme
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.*
 import kotlinx.coroutines.delay
@@ -133,9 +134,10 @@ private fun PageView(
 @Composable
 fun AdditionalValuesView(
     alternateNames: List<String>,
-    attributes: List<String>
+    attributes: List<String>,
+    expandedState : MutableState<Boolean> = mutableStateOf(false)
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by expandedState
     Surface(
         elevation = 2.dp,
         shape = RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp),
@@ -431,16 +433,19 @@ fun RippleIcon(
 @Preview(showSystemUi = true, device = Devices.PIXEL_3, heightDp = 1000)
 @Composable
 fun PageViewPreview() {
-    PageView(
-        viewModel(),
-        name = "Augustus Floral of the night",
-        alternateNames = listOf("King of the florals", "Horn of the tribe"),
-        attributes = listOf("character", "king", "floral"),
-        parapraphs = listOf(
-            ParagraphLayout("History", testDataLayout),
-            ParagraphLayout("History", testDataLayout)
+    WroteTheme() {
+
+        PageView(
+            viewModel(),
+            name = "Augustus Floral of the night",
+            alternateNames = listOf("King of the florals", "Horn of the tribe"),
+            attributes = listOf("character", "king", "floral"),
+            parapraphs = listOf(
+                ParagraphLayout("History", testDataLayout),
+                ParagraphLayout("History", testDataLayout)
+            )
         )
-    )
+    }
 }
 
 inline fun <T, reified G> mutStateListOf(items: List<T>, map: (T) -> G) =
@@ -452,31 +457,33 @@ inline fun <reified T> mutStateListOf(items: List<T>) =
 @Preview(showSystemUi = true, heightDp = 1000)
 @Composable
 fun PageEditPreview() {
-    PageEdit(
-        viewModel(),
-        name = remember { mutableStateOf("Augustus Floral of the night") },
-        alternateNames = remember {
-            mutStateListOf(
-                listOf(
-                    "King of the florals",
-                    "Horn of the tribe"
-                )
-            ) { UpdateHolder(it) }
-        },
-        attributes = remember {
-            mutStateListOf(listOf(
-                "character",
-                "king",
-                "floral"
-            ), { UpdateHolder(it) })
-        },
-        paragraphs = remember {
-            mutStateListOf(
-                listOf(
-                    ParagraphLayout("History", testDataLayout),
-                    ParagraphLayout("History", testDataLayout)
-                )
-            ) { it }
-        }
-    )
+    WroteTheme() {
+        PageEdit(
+            viewModel(),
+            name = remember { mutableStateOf("Augustus Floral of the night") },
+            alternateNames = remember {
+                mutStateListOf(
+                    listOf(
+                        "King of the florals",
+                        "Horn of the tribe"
+                    )
+                ) { UpdateHolder(it) }
+            },
+            attributes = remember {
+                mutStateListOf(listOf(
+                    "character",
+                    "king",
+                    "floral"
+                ), { UpdateHolder(it) })
+            },
+            paragraphs = remember {
+                mutStateListOf(
+                    listOf(
+                        ParagraphLayout("History", testDataLayout),
+                        ParagraphLayout("History", testDataLayout)
+                    )
+                ) { it }
+            }
+        )
+    }
 }
