@@ -92,8 +92,8 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         return file.deleteRecursively()
     }
 
-    override suspend fun <Display : UniqueEntity, Full : UniqueEntity> getPresetDisplay(
-        presetManager: PresetManager<Display, Full>,
+    override suspend fun <Display : UniqueEntity> getPresetDisplay(
+        presetManager: PresetManager<Display, *>,
         uniqueKey: String
     ): Display {
         val file = File(uniqueKey)
@@ -101,8 +101,8 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         return presetManager.loadDisplay(File(file, DATA_MAIN_FILE_NAME).readBytes())
     }
 
-    override suspend fun <Display : UniqueEntity, Full : UniqueEntity> getPresetFull(
-        presetManager: PresetManager<Display, Full>,
+    override suspend fun <Full : UniqueEntity> getPresetFull(
+        presetManager: PresetManager<*, Full>,
         uniqueKey: String
     ): Full {
         val file = File(uniqueKey)

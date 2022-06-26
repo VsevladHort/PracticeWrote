@@ -42,8 +42,8 @@ interface WroteDao {
      *
      * @return display representation of the preset
      */
-    suspend fun <Display : UniqueEntity, Full : UniqueEntity> getPresetDisplay(
-        presetManager: PresetManager<Display, Full>, uniqueKey: String
+    suspend fun <Display : UniqueEntity> getPresetDisplay(
+        presetManager: PresetManager<Display, *>, uniqueKey: String
     ): Display
 
     /**
@@ -52,8 +52,8 @@ interface WroteDao {
      *
      * @return full representation of the preset
      */
-    suspend fun <Display : UniqueEntity, Full : UniqueEntity> getPresetFull(
-        presetManager: PresetManager<Display, Full>, uniqueKey: String
+    suspend fun <Full : UniqueEntity> getPresetFull(
+        presetManager: PresetManager<*, Full>, uniqueKey: String
     ): Full
 
     /**
