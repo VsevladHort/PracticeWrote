@@ -1,7 +1,5 @@
 package com.dak.wrote.frontend.noteNavigation
 
-import android.view.MotionEvent
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,21 +11,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dak.wrote.ui.theme.SoftBlue
 import com.dak.wrote.ui.theme.SoftBlueTransparent
-import compose.icons.FeatherIcons
-import compose.icons.feathericons.Trash2
+import com.dak.wrote.ui.theme.customColors
 
 @Composable
 fun CreateButton(
@@ -37,8 +31,8 @@ fun CreateButton(
     Button(
         onClick = { onCreateButton() },
         colors = ButtonDefaults.buttonColors(
-            backgroundColor = SoftBlue,
-            contentColor = Color.White
+            backgroundColor = MaterialTheme.customColors.primaryVariant,
+            contentColor = MaterialTheme.customColors.onPrimary
         ),
         modifier = modifier
             .fillMaxWidth()
@@ -52,7 +46,7 @@ fun CreateButton(
         Text(
             text = "Create",
             textAlign = TextAlign.Center,
-            color = Color.White,
+            color = MaterialTheme.customColors.onPrimary,
             fontSize = 26.sp,
             style = MaterialTheme.typography.button
         )
@@ -72,14 +66,14 @@ fun NavigationButton(
         enabled = buttonEnabled,
         modifier = modifier,
         colors = ButtonDefaults.buttonColors(
-            backgroundColor = SoftBlueTransparent,
-            disabledBackgroundColor = Color.LightGray,
-            contentColor = Color.White
+            backgroundColor = MaterialTheme.customColors.primary,
+            disabledBackgroundColor = MaterialTheme.customColors.secondary,
+            contentColor = MaterialTheme.customColors.background
         )
     ) {
         Text(
             text = label,
-            color = Color.White,
+            color = MaterialTheme.customColors.onPrimary,
             fontSize = 24.sp,
             style = MaterialTheme.typography.button
         )
@@ -96,21 +90,24 @@ fun ColoredIconButton(
 ) {
     Button(
         onClick = { onClick() },
+        enabled = buttonEnabled,
         shape = CircleShape,
+//        border = BorderStroke(1.dp, Color.Transparent),
         modifier = modifier
             .size(45.dp),
         colors = ButtonDefaults.buttonColors(
-            backgroundColor = if (buttonEnabled) MaterialTheme.colors.primary else MaterialTheme.colors.surface,
-            contentColor = MaterialTheme. colors.onPrimary,
-            disabledContentColor = MaterialTheme.colors.onSurface
-        ),
-        enabled = buttonEnabled
+            backgroundColor = MaterialTheme.customColors.primaryVariant,
+            disabledBackgroundColor = MaterialTheme.customColors.secondary,
+            contentColor = MaterialTheme.customColors.onPrimary
+        )
     ) {
         Icon(
             imageVector = imageVector,
             contentDescription = description,
             modifier = Modifier
                 .scale(2.0f),
+            //.padding(top = 3.dp, end = 8.dp),
+            tint = MaterialTheme.customColors.onPrimary
         )
     }
 }
@@ -126,14 +123,14 @@ fun DialogButton(
         },
         shape = RoundedCornerShape(50.dp),
 
-        colors = ButtonDefaults.outlinedButtonColors(
-            backgroundColor = SoftBlueTransparent,
-            contentColor = Color.White
+        colors = ButtonDefaults.buttonColors(
+            backgroundColor = MaterialTheme.customColors.primary,
+            contentColor = MaterialTheme.customColors.onPrimary
         )
     ) {
         Text(
             text = text,
-            color = Color.White,
+            color = MaterialTheme.customColors.onPrimary,
             style = MaterialTheme.typography.button
         )
     }
@@ -141,15 +138,16 @@ fun DialogButton(
 
 @Composable
 fun GridButton(
-    title: String,
-    onNoteTapped: (String) -> Unit = {}
+    note: NavigationNote,
+    onNoteTapped: (NavigationNote) -> Unit = {}
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-    val color = if (isPressed) SoftBlueTransparent else Color.White
+    val color =
+        if (isPressed) MaterialTheme.customColors.primary else MaterialTheme.customColors.background
 
     Button(
-        onClick = { onNoteTapped(title) },
+        onClick = { onNoteTapped(note) },
         colors = ButtonDefaults.buttonColors(
             backgroundColor = color,
             contentColor = color,
@@ -165,9 +163,9 @@ fun GridButton(
 
     ) {
         Text(
-            text = title,
+            text = note.title,
             textAlign = TextAlign.Center,
-            color = Color.Black,
+            color = MaterialTheme.customColors.onBackground,
             style = MaterialTheme.typography.subtitle1
         )
     }

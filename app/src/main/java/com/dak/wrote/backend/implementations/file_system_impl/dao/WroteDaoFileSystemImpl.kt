@@ -393,8 +393,8 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
 
     override suspend fun deleteEntity(entity: BaseNote): Boolean {
         val listOfKeysDeleted = mutableSetOf<String>()
+        var book = getFileParent(entity.uniqueKey)
         val result = recursiveDelete(entity.uniqueKey, listOfKeysDeleted)
-        var book = entity.uniqueKey
         while (getEntryType(book) != EntryType.BOOK)
             book = getFileParent(book)
         val fileListOfNotes = File(book, FILE_NOTES_OF_BOOK)

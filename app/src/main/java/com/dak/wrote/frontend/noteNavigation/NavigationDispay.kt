@@ -9,101 +9,137 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.dak.wrote.backend.contracts.entities.Book
 import com.dak.wrote.frontend.viewmodel.NoteNavigationViewModel
 import com.dak.wrote.frontend.viewmodel.NoteNavigationViewModelFactory
 import com.dak.wrote.ui.theme.SoftBlueTransparent
 import com.dak.wrote.ui.theme.WroteTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.tooling.preview.Devices
+import com.dak.wrote.backend.contracts.database.EntryType
+import com.dak.wrote.backend.contracts.database.UniqueEntityKeyGenerator
+import com.dak.wrote.backend.contracts.entities.*
+import com.dak.wrote.backend.contracts.entities.constants.NoteType
+import com.dak.wrote.backend.implementations.file_system_impl.database.UniqueKeyGeneratorFileSystemImpl
 import com.dak.wrote.frontend.viewmodel.NavigationState
+import com.dak.wrote.ui.theme.customColors
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeft
 import compose.icons.feathericons.Trash2
+import kotlinx.coroutines.*
+import java.io.File
 
-val map = mapOf(
-    "Characters" to List(30) { Book("Character №$it", "Character №$it") },
-    "Places" to List(30) { Book("Place №$it", "Place №$it") },
-    "All" to listOf(
-        Book("Characters", "Characters"),
-        Book("Places", "Places")
-    )
-)
-
-fun parent(child: String): String? {
-    map.forEach { entry ->
-        if (entry.value.map { note -> note.uniqueKey }.contains(child))
-            return entry.key
-    }
-
-    return null
-}
-
-@Preview(showSystemUi = true, device = Devices.PIXEL_3)
+//@Preview(showSystemUi = true)
+//@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun PreviewNavigation() {
+fun NoteNavigation(dir: File, initialNote: NavigationNote) {
     WroteTheme {
-        Surface(color = Color.White) {
-            val uniqueKey = "All"
-            val factory: NoteNavigationViewModelFactory = NoteNavigationViewModelFactory(
-                initialNote = uniqueKey,
-                paragraphs = map[uniqueKey] ?: emptyList(),
-                hasParent = parent(uniqueKey) != null
-            )
-            val thisViewModel: NoteNavigationViewModel =
+        Surface(color = MaterialTheme.customColors.background) {
+            val factory = NoteNavigationViewModelFactory(dir = dir)
+
+            val navigationViewModel: NoteNavigationViewModel =
                 viewModel(key = null, factory = factory)
 
+            LaunchedEffect(rememberCoroutineScope()) {
+                navigationViewModel.changeNote(initialNote)
+            }
 
-            NavigationDisplay(uniqueKey, factory, thisViewModel)
-
+            NavigationDisplay(dir, initialNote, navigationViewModel)
         }
     }
 }
 
+var key = 0
+
 @Composable
 fun NavigationDisplay(
-    uniqueKey: String,
-    factory: NoteNavigationViewModelFactory,
-    thisViewModel: NoteNavigationViewModel = viewModel()
+    dir: File,
+    initialNote: NavigationNote,
+//    factory: NoteNavigationViewModelFactory,
+    navigationViewModel: NoteNavigationViewModel
 
 ) {
     //TODO nice logic that works with dao and stores everything in viewModel
-//    var note by remember { mutableStateOf(uniqueKey) }
-    //val children by remember { mutableStateOf() }
+    val coroutine = rememberCoroutineScope()
 
-/*
-    val factory = NoteNavigationViewModelFactory(
-        initialNote = uniqueKey,
-        paragraphs = map[uniqueKey] ?: emptyList(),
-        hasParent = true
-    )
+    val navigationState by navigationViewModel.navigationState.observeAsState()
+    val state = // Does it really can be null?
+        navigationState ?: NavigationState(
+            NavigationNote("", ""),
+            emptyList(),
+            ArrayDeque()
+        )
 
-    val thisViewModel: NoteNavigationViewModel = viewModel(key = null, factory = factory)
-*/
-
-    val navigationState by thisViewModel.navigationState.observeAsState()
-    val state = navigationState ?: NavigationState("", emptyList(), false)
-    MainNavigation(state.currentNote, state.paragraphs,
-        onNoteTapped = { newNoteForNavigation -> thisViewModel.changeNote(newNoteForNavigation) },
-        backButtonEnabled = state.hasParent,
-        onBackButton = { parent(state.currentNote)?.let { thisViewModel.changeNote(it) } },
+    MainNavigation(state.currentNote.title, state.paragraphs,
+        onNoteTapped = { newNoteForNavigation -> navigationViewModel.changeNote(newNoteForNavigation) },
+        backButtonEnabled = !state.parents.isEmpty(),
+        onBackButton = { navigationViewModel.goBack() },
         onEnterButton = { /*TODO*/ },
-        onCreateButton = { /*TODO*/ },
-        onDeleteButton = { /*TODO*/ }
+        onCreateButton = {
+            coroutine.launch {
+
+                // Create empty note for testing
+                val generator: UniqueEntityKeyGenerator =
+                    UniqueKeyGeneratorFileSystemImpl.getInstance(dir)
+
+                val child = generator.getKey(state.currentNote, EntryType.NOTE)
+
+                val dummyNote: BaseNote = object : BaseNote {
+                    override var title: String = "Note №${key++}"
+                    override var alternateTitles: Set<String> = emptySet()
+                    override var attributes: Set<Attribute> = emptySet()
+                    override val type: NoteType = NoteType.PLAIN_TEXT
+                    override fun generateSaveData(): ByteArray = byteArrayOf()
+                    override fun loadSaveData(value: ByteArray) {}
+                    override fun getIndexingData(): String = ""
+                    override val uniqueKey: String = child
+                }
+
+                navigationViewModel.DAO.insetNote(
+                    object : UniqueEntity {
+                        override val uniqueKey: String = state.currentNote.uniqueKey
+                    },
+                    dummyNote
+                )
+
+                navigationViewModel.changeNote(state.currentNote, ignoreCurrent = true)
+            }
+        },
+        onDeleteButton = {
+            if (state.parents.isEmpty()) {
+                //TODO delete entire Book
+            } else {
+                coroutine.launch {
+                    val dummyNote: BaseNote = object : BaseNote {
+                        override var title: String = ""
+                        override var alternateTitles: Set<String> = emptySet()
+                        override var attributes: Set<Attribute> = emptySet()
+                        override val type: NoteType = NoteType.PLAIN_TEXT
+                        override fun generateSaveData(): ByteArray = byteArrayOf()
+                        override fun loadSaveData(value: ByteArray) {}
+                        override fun getIndexingData(): String = ""
+                        override val uniqueKey: String = state.currentNote.uniqueKey
+                    }
+
+                    navigationViewModel.DAO.deleteEntity(
+                        entity = dummyNote
+                    )
+
+
+                    navigationViewModel.goBack()
+                }
+            }
+        }
     )
 }
 
 @Composable
 fun MainNavigation(
     title: String,
-    paragraphs: List<Book>,
-    onNoteTapped: (String) -> Unit,
+    paragraphs: List<NavigationNote>,
+    onNoteTapped: (NavigationNote) -> Unit,
     backButtonEnabled: Boolean,
     onBackButton: () -> Unit,
     onEnterButton: () -> Unit,
@@ -139,8 +175,8 @@ fun MainNavigation(
 fun NoteWithParagraphs(
     modifier: Modifier,
     title: String,
-    paragraphs: List<Book>,
-    onNoteTapped: (String) -> Unit,
+    paragraphs: List<NavigationNote>,
+    onNoteTapped: (NavigationNote) -> Unit,
     backButtonEnabled: Boolean,
     onBackButton: () -> Unit,
     onEnterButton: () -> Unit,
@@ -177,24 +213,24 @@ fun NoteWithParagraphs(
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-//                    IconButton(
-//                        modifier = modifier.wrapContentSize(Alignment.CenterStart),
-//                        imageVector = FeatherIcons.ArrowLeft,
-//                        description = "Back",
-//                        buttonEnabled = backButtonEnabled,
-//                        onClick = onBackButton
-//                    )
-//                    IconButton(
-//                        modifier = modifier.wrapContentSize(Alignment.CenterEnd),
-//                        imageVector = FeatherIcons.Trash2,
-//                        description = "Delete",
-//                        onClick = { openDeleteDialog.value = true }
-//                    )
+/*                    IconButton(
+                        modifier = modifier.wrapContentSize(Alignment.CenterStart),
+                        imageVector = FeatherIcons.ArrowLeft,
+                        description = "Back",
+                        buttonEnabled = backButtonEnabled,
+                        onClick = onBackButton
+                    )
+                    IconButton(
+                        modifier = modifier.wrapContentSize(Alignment.CenterEnd),
+                        imageVector = FeatherIcons.Trash2,
+                        description = "Delete",
+                        onClick = { openDeleteDialog.value = true }
+                    )*/
                 }
                 Text(
                     text = title,
                     textAlign = TextAlign.Center,
-                    color = Color.Black,
+                    color = MaterialTheme.customColors.onBackground,
                     style = MaterialTheme.typography.h3
                 )
             }
@@ -219,14 +255,14 @@ fun NoteWithParagraphs(
             }
         }
 
-        items(paragraphs) { book ->
+        items(paragraphs) { note ->
             GridButton(
-                title = book.title,
+                note = note,
                 onNoteTapped = onNoteTapped
             )
         }
         item {
-            Spacer(modifier = Modifier.height(50.dp))
+            Spacer(modifier = Modifier.height(100.dp))
         }
 
     }
@@ -283,12 +319,15 @@ private fun NavigationButtons(
             .padding(
                 vertical = 20.dp,
                 horizontal = 16.dp
-            ),
-        horizontalArrangement = Arrangement.spacedBy(40.dp)
+            )
+            .fillMaxWidth(),
+//        horizontalArrangement = Arrangement.spacedBy(30.dp)
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         // Back button
         ColoredIconButton(
             imageVector = FeatherIcons.ArrowLeft,
+            modifier = Modifier,
             description = "Back",
             buttonEnabled = backButtonEnabled,
             onClick = onBackButton
@@ -298,8 +337,8 @@ private fun NavigationButtons(
         // Enter button
         NavigationButton(
             label = "Enter",
-            modifier = Modifier
-                .weight(0.9f),
+            modifier = Modifier,
+//                .weight(0.9f),
 //                .padding(
 //                    vertical = 5.dp,
 //                    horizontal = 50.dp
@@ -309,8 +348,8 @@ private fun NavigationButtons(
 
         //Delete button
         ColoredIconButton(
-            modifier = Modifier,
             imageVector = FeatherIcons.Trash2,
+//            modifier = Modifier.weight(0.35f),
             description = "Delete",
             onClick = onDeleteButton
         )
