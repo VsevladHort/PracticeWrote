@@ -28,17 +28,13 @@ class ItemListLayout(items: List<String>) : DataLayout() {
         mutableStateListOf(*easyKeyId.map(items.map { mutableStateOf(it) }).toTypedArray());
 
     @Composable
-    override fun DrawEdit(editorViewModel: EditorViewModel) {
+    override fun DrawEdit() {
         ListEdit(list = list, keyId = easyKeyId)
     }
 
     @Composable
-    override fun DrawNormal(editorViewModel: EditorViewModel) {
+    override fun DrawNormal() {
         ListView(list.map { it.second.value })
-    }
-
-    override fun onSubmit(node: BaseNote) {
-        TODO("Not yet implemented")
     }
 
     override fun toSerializable(): SerializableItemListLayout {

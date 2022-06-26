@@ -61,13 +61,18 @@ class UpdateHolder<T>(old: T) {
 class EditorViewModel(application: Application) : AndroidViewModel(application) {
     data class ObjectNote(
         val currentId: String,
-        var name: MutableState<String>,
+        val name: MutableState<String>,
         override var alternateTitles: Set<String>,
         override var attributes: Set<Attribute>,
-        val dAlternateNames: SnapshotStateList<UpdateHolder<String?>>,
-        val dAttributes: SnapshotStateList<UpdateHolder<String?>>,
         var sPage: SerializablePageLayout,
-        var page: MutableState<PageLayout>,
+        val dAlternateNames: SnapshotStateList<UpdateHolder<String?>> = mutStateListOf(
+            alternateTitles.toList()
+        ) { UpdateHolder(it) },
+        val dAttributes: SnapshotStateList<UpdateHolder<String?>> = mutStateListOf(
+            attributes.toList()
+        )
+        { UpdateHolder(it.name) },
+        var page: MutableState<PageLayout> = mutableStateOf(sPage.toDisplayable()),
         var inEdit: MutableState<Boolean> = mutableStateOf(false),
         var processing: MutableState<Boolean> = mutableStateOf(false)
     ) : BaseNote {
@@ -125,11 +130,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
                         mutableStateOf(rep.getName(id)),
                         alternateNames,
                         attributes,
-                        mutStateListOf(
-                            mutStateListOf(attributes.toList()) { UpdateHolder(it.name) }),
-                        mutStateListOf(alternateNames.toList()) { UpdateHolder(it) },
                         page,
-                        mutableStateOf(page.toDisplayable())
                     )
             }
         }
