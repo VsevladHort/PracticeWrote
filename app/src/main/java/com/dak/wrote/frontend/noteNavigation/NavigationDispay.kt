@@ -123,8 +123,8 @@ fun NavigationDisplay(
                         override val uniqueKey: String = state.currentNote.uniqueKey
                     }
 
-                    navigationViewModel.DAO.deleteEntity(
-                        entity = dummyNote
+                    navigationViewModel.DAO.deleteEntityNote(
+                        entity = dummyNote.uniqueKey
                     )
 
 

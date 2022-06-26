@@ -206,23 +206,23 @@ interface WroteDao {
     suspend fun getName(uniqueKey: String): String
 
     /**
-     * deletes the given uniqueEntity
+     * deletes the given book
      *
      * @return true if successful, false otherwise
      */
-    suspend fun deleteEntity(entity: Book): Boolean
+    suspend fun deleteEntityBook(entity: String): Boolean
 
     /**
-     * deletes the given uniqueEntity
+     * deletes the given note
      *
      * @return true if successful, false otherwise
      */
-    suspend fun deleteEntity(entity: BaseNote): Boolean
+    suspend fun deleteEntityNote(entity: String): Boolean
 
     /**
-     * deletes the given uniqueEntity
+     * deletes the given attribute
      *
      * @return true if successful, false otherwise
      */
-    suspend fun deleteEntity(entity: Attribute): Boolean
+    suspend fun deleteEntityAttribute(entity: Attribute): Boolean
 }

@@ -386,15 +386,18 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         return auxiliaryFile.readLines()[1]
     }
 
-    override suspend fun deleteEntity(entity: Book): Boolean {
-        // just nukes the book, dangerous!
-        return File(entity.uniqueKey).deleteRecursively()
+    override suspend fun deleteEntityBook(entity: String): Boolean {
+        if (getEntryType(entity) != EntryType.BOOK)
+            return false
+        return File(entity).deleteRecursively()
     }
 
-    override suspend fun deleteEntity(entity: BaseNote): Boolean {
+    override suspend fun deleteEntityNote(entity: String): Boolean {
+        if (getEntryType(entity) != EntryType.NOTE)
+            return false
         val listOfKeysDeleted = mutableSetOf<String>()
-        var book = getFileParent(entity.uniqueKey)
-        val result = recursiveDelete(entity.uniqueKey, listOfKeysDeleted)
+        var book = getFileParent(entity)
+        val result = recursiveDelete(entity, listOfKeysDeleted)
         while (getEntryType(book) != EntryType.BOOK)
             book = getFileParent(book)
         val fileListOfNotes = File(book, FILE_NOTES_OF_BOOK)
@@ -432,7 +435,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         }
     }
 
-    override suspend fun deleteEntity(entity: Attribute): Boolean {
+    override suspend fun deleteEntityAttribute(entity: Attribute): Boolean {
         entity.associatedEntities.forEach {
             val fixedAttrs = mutableListOf<Attribute>()
             fixedAttrs.addAll(getAttributes(it))
