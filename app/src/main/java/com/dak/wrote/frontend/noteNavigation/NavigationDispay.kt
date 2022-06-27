@@ -1,5 +1,6 @@
 package com.dak.wrote.frontend.noteNavigation
 
+import android.app.Application
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -23,6 +24,7 @@ import com.dak.wrote.backend.contracts.database.UniqueEntityKeyGenerator
 import com.dak.wrote.backend.contracts.entities.*
 import com.dak.wrote.backend.contracts.entities.constants.NoteType
 import com.dak.wrote.backend.implementations.file_system_impl.database.UniqueKeyGeneratorFileSystemImpl
+import com.dak.wrote.backend.implementations.file_system_impl.database.getKeyGen
 import com.dak.wrote.frontend.viewmodel.NavigationState
 import com.dak.wrote.ui.theme.customColors
 import compose.icons.FeatherIcons
@@ -34,10 +36,10 @@ import java.io.File
 //@Preview(showSystemUi = true)
 //@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-fun NoteNavigation(dir: File, initialNote: NavigationNote) {
+fun NoteNavigation(application: Application, initialNote: NavigationNote) {
     WroteTheme {
         Surface(color = MaterialTheme.customColors.background) {
-            val factory = NoteNavigationViewModelFactory(dir = dir)
+            val factory = NoteNavigationViewModelFactory(application = application)
 
             val navigationViewModel: NoteNavigationViewModel =
                 viewModel(key = null, factory = factory)
@@ -46,7 +48,7 @@ fun NoteNavigation(dir: File, initialNote: NavigationNote) {
                 navigationViewModel.changeNote(initialNote)
             }
 
-            NavigationDisplay(dir, initialNote, navigationViewModel)
+            NavigationDisplay(application, initialNote, navigationViewModel)
         }
     }
 }
@@ -55,22 +57,16 @@ var key = 0
 
 @Composable
 fun NavigationDisplay(
-    dir: File,
+    application: Application,
     initialNote: NavigationNote,
-//    factory: NoteNavigationViewModelFactory,
     navigationViewModel: NoteNavigationViewModel
 
 ) {
-    //TODO nice logic that works with dao and stores everything in viewModel
     val coroutine = rememberCoroutineScope()
 
     val navigationState by navigationViewModel.navigationState.observeAsState()
     val state = // Does it really can be null?
-        navigationState ?: NavigationState(
-            NavigationNote("", ""),
-            emptyList(),
-            ArrayDeque()
-        )
+        navigationState ?: NavigationState()
 
     MainNavigation(state.currentNote.title, state.paragraphs,
         onNoteTapped = { newNoteForNavigation -> navigationViewModel.changeNote(newNoteForNavigation) },
@@ -82,7 +78,7 @@ fun NavigationDisplay(
 
                 // Create empty note for testing
                 val generator: UniqueEntityKeyGenerator =
-                    UniqueKeyGeneratorFileSystemImpl.getInstance(dir)
+                    getKeyGen(application)
 
                 val child = generator.getKey(state.currentNote, EntryType.NOTE)
 
@@ -261,8 +257,10 @@ fun NoteWithParagraphs(
                 onNoteTapped = onNoteTapped
             )
         }
-        item {
-            Spacer(modifier = Modifier.height(100.dp))
+        item(
+            span = { GridItemSpan(maxLineSpan) },
+        ) {
+            Spacer(modifier = Modifier.height(60.dp))
         }
 
     }

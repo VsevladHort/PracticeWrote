@@ -1,8 +1,10 @@
 package com.dak.wrote.frontend.viewmodel
 
+import android.app.Application
 import androidx.lifecycle.*
 import com.dak.wrote.backend.contracts.entities.Book
 import com.dak.wrote.backend.implementations.file_system_impl.dao.WroteDaoFileSystemImpl
+import com.dak.wrote.backend.implementations.file_system_impl.dao.getDAO
 import com.dak.wrote.frontend.noteNavigation.NavigationNote
 import com.dak.wrote.frontend.noteNavigation.NoteNavigation
 import kotlinx.coroutines.Dispatchers
@@ -39,9 +41,9 @@ class NavigationStateFactory {
             newNote: NavigationNote,
             currentNote: NavigationNote?,
             parents: ArrayDeque<NavigationNote>,
-            dir: File
+            application: Application
         ): NavigationState {
-            val DAO = WroteDaoFileSystemImpl.getInstance(dir)
+            val DAO = getDAO(application)
             currentNote?.let { parents.addLast(it) }
 
             return NavigationState(
@@ -77,9 +79,9 @@ class NoteNavigationViewModel(
     initialNote: NavigationNote,
     paragraphs: List<NavigationNote>,
     parents: ArrayDeque<NavigationNote>,
-    private val dir: File
+    private val application: Application
 ) : ViewModel() {
-    val DAO = WroteDaoFileSystemImpl.getInstance(dir);
+    val DAO = getDAO(application)
 
     private val _navigationState = MutableLiveData(
         NavigationState(
@@ -105,7 +107,7 @@ class NoteNavigationViewModel(
                     newNote = newNote,
                     currentNote = currentNote,
                     parents = navigationState.value!!.parents,
-                    dir = dir
+                    application = application
                 )
 
             _navigationState.postValue(newNavigationState)
@@ -120,31 +122,31 @@ class NoteNavigationViewModelFactory : ViewModelProvider.Factory {
     val initialNote: NavigationNote
     val paragraphs: List<NavigationNote>
     val parents: ArrayDeque<NavigationNote>
-    val dir: File
+    val application: Application
 
 
     constructor(
         initialNote: NavigationNote,
         paragraphs: List<NavigationNote>,
         parents: ArrayDeque<NavigationNote>,
-        dir: File
+        application: Application
     ) {
         this.initialNote = initialNote
         this.paragraphs = paragraphs
         this.parents = parents
-        this.dir = dir
+        this.application = application
 
     }
 
-    constructor(dir: File) {
+    constructor(application: Application) {
         val initialState = NavigationState()
         this.initialNote = initialState.currentNote
         this.paragraphs = initialState.paragraphs
         this.parents = initialState.parents
-        this.dir = dir
+        this.application = application
     }
 
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return NoteNavigationViewModel(initialNote, paragraphs, parents, dir) as T
+        return NoteNavigationViewModel(initialNote, paragraphs, parents, application) as T
     }
 }

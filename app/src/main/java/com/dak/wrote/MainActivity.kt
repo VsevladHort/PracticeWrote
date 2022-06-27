@@ -14,7 +14,9 @@ import androidx.navigation.compose.rememberNavController
 import com.dak.wrote.backend.contracts.database.EntryType
 import com.dak.wrote.backend.contracts.entities.Book
 import com.dak.wrote.backend.implementations.file_system_impl.dao.WroteDaoFileSystemImpl
+import com.dak.wrote.backend.implementations.file_system_impl.dao.getDAO
 import com.dak.wrote.backend.implementations.file_system_impl.database.UniqueKeyGeneratorFileSystemImpl
+import com.dak.wrote.backend.implementations.file_system_impl.database.getKeyGen
 import com.dak.wrote.frontend.NavigationScreens
 import com.dak.wrote.frontend.noteNavigation.NoteNavigation
 import com.dak.wrote.frontend.bookNavigation.BookNavigationScreen
@@ -29,28 +31,26 @@ import java.io.File
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val dir = File(applicationContext.filesDir.absolutePath, "data")
+//        val dir = File(applicationContext.filesDir.absolutePath, "data")
 //        dir.mkdir()
 
-//        val book = File(dir.absolutePath, "First Book")
-//        book.mkdir()
 
         val title = "First Book"
         runBlocking {
             val job = async {
 
-                // First lauch
-                /*val book = Book(
-                    UniqueKeyGeneratorFileSystemImpl.getInstance(dir)
-                        .getKey(null, EntryType.BOOK), title
-                )
-
-                WroteDaoFileSystemImpl.getInstance(dir).insertBook(
-                    book
-                )*/
+                // First launch
+//                val book = Book(
+//                    getKeyGen(application)
+//                        .getKey(null, EntryType.BOOK), title
+//                )
+//
+//                getDAO(application).insertBook(
+//                    book
+//                )
 
                 // Second launch
-                val book = WroteDaoFileSystemImpl.getInstance(dir).getBooks().last()
+                val book = getDAO(application).getBooks().last()
 
                 book
             }
@@ -59,7 +59,7 @@ class MainActivity : ComponentActivity() {
                 WroteTheme {
                     // A surface container using the 'background' color from the theme
                     Surface(color = MaterialTheme.colors.background) {
-                        NoteNavigation(dir, NavigationNote(book))
+                        NoteNavigation(application, NavigationNote(book))
                     }
                 }
             }
