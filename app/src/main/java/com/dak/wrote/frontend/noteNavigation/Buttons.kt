@@ -14,13 +14,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.dak.wrote.ui.theme.SoftBlue
-import com.dak.wrote.ui.theme.SoftBlueTransparent
+import com.dak.wrote.backend.contracts.entities.Book
 import com.dak.wrote.ui.theme.customColors
 
 @Composable
@@ -139,7 +137,7 @@ fun DialogButton(
 @Composable
 fun GridButton(
     note: NavigationNote,
-    onNoteTapped: (NavigationNote) -> Unit = {}
+    onNoteClicked: (NavigationNote) -> Unit = {}
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -147,7 +145,7 @@ fun GridButton(
         if (isPressed) MaterialTheme.customColors.primary else MaterialTheme.customColors.background
 
     Button(
-        onClick = { onNoteTapped(note) },
+        onClick = { onNoteClicked(note) },
         colors = ButtonDefaults.buttonColors(
             backgroundColor = color,
             contentColor = color,
@@ -164,6 +162,40 @@ fun GridButton(
     ) {
         Text(
             text = note.title,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.customColors.onBackground,
+            style = MaterialTheme.typography.subtitle1
+        )
+    }
+}
+
+@Composable
+fun ColumnButton(
+    book: Book,
+    onBookClicked: (Book) -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val color =
+        if (isPressed) MaterialTheme.customColors.primary else MaterialTheme.customColors.background
+
+    Button(
+        onClick = { onBookClicked(book) },
+        colors = ButtonDefaults.buttonColors(
+            backgroundColor = color,
+            contentColor = color,
+        ),
+        shape = RoundedCornerShape(25),
+        elevation = ButtonDefaults.elevation(
+            defaultElevation = 10.dp
+        ),
+        interactionSource = interactionSource,
+        modifier = modifier
+            .sizeIn(minHeight = 50.dp)
+    ) {
+        Text(
+            text = book.title,
             textAlign = TextAlign.Center,
             color = MaterialTheme.customColors.onBackground,
             style = MaterialTheme.typography.subtitle1

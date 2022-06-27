@@ -59,7 +59,8 @@ class MainActivity : ComponentActivity() {
                 WroteTheme {
                     // A surface container using the 'background' color from the theme
                     Surface(color = MaterialTheme.colors.background) {
-                        NoteNavigation(application, NavigationNote(book))
+//                        NoteNavigation(NavigationNote(book))
+                        BookNavigationScreen()
                     }
                 }
             }
