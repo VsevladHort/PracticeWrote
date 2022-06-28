@@ -6,31 +6,36 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.*
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.Divider
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.dak.wrote.frontend.viewmodel.NoteNavigationViewModel
-import com.dak.wrote.frontend.viewmodel.NoteNavigationViewModelFactory
-import com.dak.wrote.ui.theme.WroteTheme
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.platform.LocalContext
+import com.dak.wrote.R
 import com.dak.wrote.backend.contracts.database.EntryType
 import com.dak.wrote.backend.contracts.database.UniqueEntityKeyGenerator
-import com.dak.wrote.backend.contracts.entities.*
+import com.dak.wrote.backend.contracts.entities.Attribute
+import com.dak.wrote.backend.contracts.entities.BaseNote
+import com.dak.wrote.backend.contracts.entities.UniqueEntity
 import com.dak.wrote.backend.contracts.entities.constants.NoteType
 import com.dak.wrote.backend.implementations.file_system_impl.database.getKeyGen
 import com.dak.wrote.frontend.viewmodel.NavigationState
+import com.dak.wrote.frontend.viewmodel.NoteNavigationViewModel
+import com.dak.wrote.frontend.viewmodel.NoteNavigationViewModelFactory
 import com.dak.wrote.ui.theme.Material3
-import com.dak.wrote.ui.theme.customColors
+import com.dak.wrote.ui.theme.WroteTheme
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeft
 import compose.icons.feathericons.Trash2
-import kotlinx.coroutines.*
+import kotlinx.coroutines.launch
 
 //@Preview(showSystemUi = true)
 //@SuppressLint("CoroutineCreationDuringComposition")
@@ -237,7 +242,7 @@ fun NoteWithParagraphs(
                     text = title,
                     textAlign = TextAlign.Center,
                     color = Material3.colorScheme.onBackground,
-                    style = MaterialTheme.typography.h3
+                    style = Material3.typography.displayMedium
                 )
             }
         }
@@ -286,19 +291,19 @@ fun DeleteDialog(
         onDismissRequest = { onCloseDialog() },
         title = {
             Text(
-                text = "Delete note?",
-                style = MaterialTheme.typography.h5
+                text = stringResource(id = R.string.delete_dialog_title),
+                style = Material3.typography.titleMedium
             )
         },
         text = {
             Text(
-                text = "Are you sure you want to delete note \"$title\"?",
-                style = MaterialTheme.typography.subtitle1
+                text = stringResource(id = R.string.delete_dialog_body, title),
+                style = Material3.typography.bodySmall
             )
         },
         confirmButton = {
             DialogButton(
-                text = "Delete",
+                text = stringResource(id = R.string.delete),
                 onClick = {
                     onDeleteButton()
                     onCloseDialog()
@@ -307,11 +312,27 @@ fun DeleteDialog(
         },
         dismissButton = {
             DialogButton(
-                text = "Cancel",
+                text = stringResource(id = R.string.cancel),
                 onClick = onCloseDialog
             )
         }
     )
+
+
+//    val dialog = MaterialAlertDialogBuilder(LocalContext.current)
+//        .setTitle(stringResource(R.string.delete_dialog_title))
+//        .setMessage(stringResource(R.string.delete_dialog_title, title))
+//        .setNegativeButton(stringResource(R.string.cancel)) { dialog, which ->
+//            onCloseDialog()
+//        }
+//        .setPositiveButton(stringResource(R.string.delete)) { dialog, which ->
+//            onDeleteButton()
+//            onCloseDialog()
+//        }.create()
+//
+//    if (show)
+//        dialog.show()
+
 }
 
 @Composable

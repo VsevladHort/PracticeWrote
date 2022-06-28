@@ -1,7 +1,5 @@
 package com.dak.wrote.frontend.noteNavigation
 
-import android.view.MotionEvent
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,25 +8,22 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Icon
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dak.wrote.backend.contracts.entities.Book
-import com.dak.wrote.ui.theme.customColors
 import com.dak.wrote.ui.theme.Material3
-import compose.icons.FeatherIcons
-import compose.icons.feathericons.Trash2
+import com.dak.wrote.ui.theme.customColors
 
 @Composable
 fun CreateButton(
@@ -53,9 +48,9 @@ fun CreateButton(
         Text(
             text = "Create",
             textAlign = TextAlign.Center,
-            color = Color.White,
+            color = Material3.colorScheme.onPrimary,
             fontSize = 26.sp,
-            style = MaterialTheme.typography.button
+            style = Material3.typography.labelMedium
         )
     }
 }
@@ -81,9 +76,9 @@ fun NavigationButton(
     ) {
         Text(
             text = label,
-            color = Color.White,
+            color = Material3.colorScheme.onPrimary,
             fontSize = 24.sp,
-            style = MaterialTheme.typography.button
+            style = Material3.typography.labelMedium
         )
     }
 }
@@ -102,9 +97,9 @@ fun ColoredIconButton(
         modifier = modifier
             .size(45.dp),
         colors = ButtonDefaults.buttonColors(
-            backgroundColor = if (buttonEnabled) MaterialTheme.colors.primary else MaterialTheme.colors.surface,
-            contentColor = MaterialTheme. colors.onPrimary,
-            disabledContentColor = MaterialTheme.colors.onSurface
+            backgroundColor = if (buttonEnabled) Material3.customColors.primary else Material3.customColors.surface,
+            contentColor = Material3.customColors.onPrimary,
+            disabledContentColor = Material3.customColors.onSurface
         ),
         enabled = buttonEnabled
     ) {
@@ -127,16 +122,18 @@ fun DialogButton(
             onClick()
         },
         shape = RoundedCornerShape(50.dp),
-
-        colors = ButtonDefaults.outlinedButtonColors(
-//            backgroundColor = SoftBlueTransparent,
-            contentColor = Color.White
+        elevation = ButtonDefaults.elevation(
+            defaultElevation = 0.dp
+        ),
+        colors = ButtonDefaults.buttonColors(
+            backgroundColor = Material3.colorScheme.background,
+            contentColor = Material3.colorScheme.onPrimary
         )
     ) {
         Text(
             text = text,
-            color = Color.White,
-            style = MaterialTheme.typography.button
+            color = Material3.colorScheme.primary,
+            style = Material3.typography.labelMedium
         )
     }
 }
@@ -148,7 +145,8 @@ fun GridButton(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
-    val color = if (isPressed) Material3.colorScheme.primaryContainer else Color.White
+    val color =
+        if (isPressed) Material3.colorScheme.primaryContainer else Material3.colorScheme.background
 
     Button(
         onClick = { onNoteClicked(note) },
@@ -170,7 +168,7 @@ fun GridButton(
             text = note.title,
             textAlign = TextAlign.Center,
             color = Material3.colorScheme.onBackground,
-            style = Material3.typography.bodySmall
+            style = Material3.typography.bodyMedium
         )
     }
 }
@@ -204,7 +202,7 @@ fun ColumnButton(
             text = book.title,
             textAlign = TextAlign.Center,
             color = Material3.colorScheme.onBackground,
-            style = MaterialTheme.typography.subtitle1
+            style = Material3.typography.bodyMedium
         )
     }
 }

@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Wrote</string>
+    <string name="delete_dialog_title">Delete note?</string>
+    <string name="delete_dialog_body">Are you sure you want to delete \"%s\"?</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
 </resources>
