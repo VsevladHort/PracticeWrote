@@ -80,7 +80,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         val auxiliaryFile = File(file, DATA_AUXILIARY_FILE_NAME)
         val dataFile = File(file, DATA_MAIN_FILE_NAME)
         val markerFile = File(file, MARKER_OF_USE)
-        markerFile.printWriter().use { println(EntryType.PRESET.stringRepresentation) }
+        markerFile.printWriter().use { pw -> pw.println(EntryType.PRESET.stringRepresentation) }
         auxiliaryFile.writeBytes(presetManager.saveDisplay(display))
         dataFile.writeBytes(presetManager.saveFull(full))
         return true
@@ -116,7 +116,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
             return false
         val auxiliaryFile = File(file, DATA_AUXILIARY_FILE_NAME)
         val markerFile = File(file, MARKER_OF_USE)
-        markerFile.printWriter().use { println(EntryType.ATTRIBUTE.stringRepresentation) }
+        markerFile.printWriter().use {  it.println(EntryType.ATTRIBUTE.stringRepresentation) }
         auxiliaryFile.printWriter().use { pw ->
             pw.println(attribute.name)
             attribute.associatedEntities.forEach { pw.println(it) }
