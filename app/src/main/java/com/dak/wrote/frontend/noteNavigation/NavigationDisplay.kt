@@ -25,6 +25,7 @@ import com.dak.wrote.backend.contracts.entities.*
 import com.dak.wrote.backend.contracts.entities.constants.NoteType
 import com.dak.wrote.backend.implementations.file_system_impl.database.getKeyGen
 import com.dak.wrote.frontend.viewmodel.NavigationState
+import com.dak.wrote.ui.theme.Material3
 import com.dak.wrote.ui.theme.customColors
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeft
@@ -42,7 +43,7 @@ fun NoteNavigation(
     application: Application = LocalContext.current.applicationContext as Application
 ) {
     WroteTheme {
-        Surface(color = MaterialTheme.customColors.background) {
+        Surface(color = Material3.colorScheme.background) {
             val factory = NoteNavigationViewModelFactory(application = application)
 
             val navigationViewModel: NoteNavigationViewModel =
@@ -152,7 +153,7 @@ fun MainNavigation(
     onDeleteButton: () -> Unit
 ) {
     Column {
-        Divider(color = MaterialTheme.customColors.primary, thickness = 3.dp)
+        Divider(color = Material3.colorScheme.primary, thickness = 3.dp)
 
         val modifier = Modifier
             .weight(1f)
@@ -235,7 +236,7 @@ fun NoteWithParagraphs(
                 Text(
                     text = title,
                     textAlign = TextAlign.Center,
-                    color = MaterialTheme.customColors.onBackground,
+                    color = Material3.colorScheme.onBackground,
                     style = MaterialTheme.typography.h3
                 )
             }
@@ -246,7 +247,7 @@ fun NoteWithParagraphs(
             span = { GridItemSpan(maxLineSpan) },
         ) {
             Column {
-                Divider(color = MaterialTheme.customColors.primary, thickness = 2.dp)
+                Divider(color = Material3.colorScheme.primary, thickness = 2.dp)
                 NavigationButtons(
                     onDeleteButton = { openDeleteDialog.value = true },
                     onBackButton = onBackButton,
@@ -254,7 +255,7 @@ fun NoteWithParagraphs(
                     onEnterButton = onEnterButton,
                 )
                 Divider(
-                    color = MaterialTheme.customColors.primary, thickness = 2.dp,
+                    color = Material3.colorScheme.primary, thickness = 2.dp,
                     modifier = Modifier.padding(bottom = 20.dp)
                 )
             }

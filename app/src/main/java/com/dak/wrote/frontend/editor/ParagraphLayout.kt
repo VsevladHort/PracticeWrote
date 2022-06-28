@@ -6,7 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -21,6 +21,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dak.wrote.backend.contracts.entities.BaseNote
 import com.dak.wrote.frontend.AligningBasicTextField
 import com.dak.wrote.frontend.viewmodel.EditorViewModel
+import com.dak.wrote.ui.theme.Material3
+import com.dak.wrote.ui.theme.WroteTheme
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.Italic
 import compose.icons.feathericons.List
@@ -77,12 +79,12 @@ fun ParagraphEdit(
                 AligningBasicTextField(
                     value = title.value,
                     { title.value = it },
-                    textStyle = MaterialTheme.typography.h4,
+                    textStyle = Material3.typography.titleMedium,
                 )
             }
             Divider(
                 thickness = 3.dp,
-                color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
+                color = Material3.colorScheme.onSurface.copy(alpha = 0.6f),
             )
         }
         Column(
@@ -142,13 +144,13 @@ fun DataLayoutAdditionBox(addLayout: (DataLayout) -> Unit) {
                     rememberRipple(),
                     onClick = { expanded.value = true })
                 .background(
-                    color = MaterialTheme.colors.secondary,
+                    color = Material3.colorScheme.secondaryContainer,
                 )
                 .padding(horizontal = 25.dp, vertical = 10.dp)
         ) {
             @Composable
             fun item(imageVector: ImageVector, text: String, onClick: () -> Unit) {
-                TextButton(onClick = onClick) {
+                OutlinedButton(onClick = onClick) {
                     Icon(imageVector = imageVector, contentDescription = null)
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(text = text)
@@ -185,12 +187,12 @@ fun ParagraphView(title: String, columns: List<DataLayout>) {
         ) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.h4,
+                style = Material3.typography.titleMedium,
                 modifier = Modifier.padding(start = 10.dp)
             )
             Divider(
                 thickness = 3.dp,
-                color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
+                color = Material3.colorScheme.onSurface.copy(alpha = 0.6f),
             )
         }
         Column(
@@ -210,26 +212,30 @@ fun ParagraphView(title: String, columns: List<DataLayout>) {
 @Preview(device = Devices.PIXEL, widthDp = 400, heightDp = 600)
 @Composable
 fun ParagraphViewPreview() {
-    ParagraphView(
-        title = remember { mutableStateOf("Hehe") }.value,
-        columns = listOf(
-            TextDataLayout("Hello"),
-            ItemListLayout(listOf("Я", "Не", "Знаю"))
+    WroteTheme() {
+        ParagraphView(
+            title = remember { mutableStateOf("Hehe") }.value,
+            columns = listOf(
+                TextDataLayout("Hello"),
+                ItemListLayout(listOf("Я", "Не", "Знаю"))
+            )
         )
-    )
+    }
 }
 
 @Preview(device = Devices.PIXEL, widthDp = 400, heightDp = 600)
 @Composable
 fun ParagraphEditPreview() {
-    ParagraphEdit(
-        title = remember { mutableStateOf("Hehe") },
-        columns = remember {
-            mutableStateListOf(
-                *testDataLayout.toTypedArray()
-            )
-        }
-    )
+    WroteTheme() {
+        ParagraphEdit(
+            title = remember { mutableStateOf("Hehe") },
+            columns = remember {
+                mutableStateListOf(
+                    *testDataLayout.toTypedArray()
+                )
+            }
+        )
+    }
 }
 
 

@@ -1,11 +1,13 @@
 package com.dak.wrote.frontend.editor
 
+import android.app.Application
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -13,6 +15,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dak.wrote.backend.contracts.entities.Attribute
 import com.dak.wrote.frontend.noteNavigation.ColoredIconButton
 import com.dak.wrote.frontend.viewmodel.EditorViewModel
+import com.dak.wrote.frontend.viewmodel.EditorViewModelFactory
+import com.dak.wrote.ui.theme.WroteTheme
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.*
 
@@ -24,7 +28,16 @@ private fun goUp(inEdit: MutableState<Boolean>): Boolean {
 }
 
 @Composable
-fun EditorScreen(navigateUp: () -> Unit, editorViewModel: EditorViewModel = viewModel()) {
+fun EditorScreen(
+    navigateUp: () -> Unit,
+    selectedNote: String,
+    editorViewModel: EditorViewModel = viewModel(
+        factory = EditorViewModelFactory(
+            selectedNote,
+            LocalContext.current.applicationContext as Application
+        )
+    )
+) {
     val noteSTate = editorViewModel.note.collectAsState()
     noteSTate.value.let { note ->
         when (note) {
@@ -61,7 +74,7 @@ fun EditorScreenImpl(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 20.dp, end = 20.dp, top = 15.dp)
+                .padding(start = 20.dp, end = 20.dp, top = 15.dp, bottom = 15.dp)
         ) {
             ColoredIconButton(
                 modifier = Modifier.wrapContentSize(Alignment.CenterStart),
@@ -118,27 +131,30 @@ fun EditorScreenImpl(
 @Preview(showSystemUi = true, device = Devices.PIXEL_3)
 @Composable
 fun EditorScreenPreview() {
-    EditorScreenImpl(
-        note = remember {
-            EditorViewModel.ObjectNote(
-                "",
-                mutableStateOf(""),
-                alternateTitles = setOf("King of the florals", "Horn of the tribe"),
-                attributes = setOf("character", "king", "floral").map { Attribute("", it) }.toSet(),
-                sPage = SerializablePageLayout(
-                    listOf(
-                        SerializableParagraphLayout(
-                            "History",
-                            testDataLayout.map { it.toSerializable() }),
-                        SerializableParagraphLayout(
-                            "History",
-                            testDataLayout.map { it.toSerializable() })
+    WroteTheme() {
+        EditorScreenImpl(
+            note = remember {
+                EditorViewModel.ObjectNote(
+                    "",
+                    mutableStateOf(""),
+                    alternateTitles = setOf("King of the florals", "Horn of the tribe"),
+                    attributes = setOf("character", "king", "floral").map { Attribute("", it) }
+                        .toSet(),
+                    sPage = SerializablePageLayout(
+                        listOf(
+                            SerializableParagraphLayout(
+                                "History",
+                                testDataLayout.map { it.toSerializable() }),
+                            SerializableParagraphLayout(
+                                "History",
+                                testDataLayout.map { it.toSerializable() })
+                        )
                     )
                 )
-            )
-        },
-        updatePage = {  },
-        navigateUp = {  }) {
+            },
+            updatePage = { },
+            navigateUp = { }) {
 
+        }
     }
 }

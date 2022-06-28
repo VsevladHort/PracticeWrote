@@ -29,6 +29,16 @@ interface WroteDao {
         full: Full
     ): Boolean
 
+    suspend fun <Display : UniqueEntity> updatePresetDisplay(
+        presetManager: PresetManager<Display, *>,
+        display: Display,
+    ) : Boolean
+
+    suspend fun <Full : UniqueEntity> updatePresetFull(
+        presetManager: PresetManager<*, Full>,
+        full: Full,
+    ) : Boolean
+
     /**
      * Deletes the Preset identified by the given key
      *

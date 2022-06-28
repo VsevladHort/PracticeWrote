@@ -58,7 +58,8 @@ class UpdateHolder<T>(old: T) {
 
 
 @OptIn(ExperimentalSerializationApi::class)
-class EditorViewModel(application: Application) : AndroidViewModel(application) {
+class EditorViewModel(application: Application, val currentId: String) :
+    AndroidViewModel(application) {
     data class ObjectNote(
         val currentId: String,
         val name: MutableState<String>,
@@ -101,8 +102,6 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     }
 
-    private val _currentId: MutableStateFlow<String?> = MutableStateFlow(null)
-    val currentId = _currentId.distinctUntilChanged { old, new -> old == new }
 
     private val rep = getDAO(application)
     private val keyGen = getKeyGen(application)
@@ -112,27 +111,25 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
 
     init {
         viewModelScope.launch {
-
-            currentId.filterNotNull().collect { id ->
-                val page =
-                    Json.decodeFromStream<SerializablePageLayout>(
-                        ByteArrayInputStream(
-                            rep.getNoteSaveData(
-                                id
-                            )
+            val id = currentId
+            val page =
+                Json.decodeFromStream<SerializablePageLayout>(
+                    ByteArrayInputStream(
+                        rep.getNoteSaveData(
+                            id
                         )
                     )
-                val attributes = rep.getAttributes(id)
-                val alternateNames = rep.getAlternateTitles(id).toSet()
-                note.value =
-                    ObjectNote(
-                        id,
-                        mutableStateOf(rep.getName(id)),
-                        alternateNames,
-                        attributes,
-                        page,
-                    )
-            }
+                )
+            val attributes = rep.getAttributes(id)
+            val alternateNames = rep.getAlternateTitles(id).toSet()
+            note.value =
+                ObjectNote(
+                    id,
+                    mutableStateOf(rep.getName(id)),
+                    alternateNames,
+                    attributes,
+                    page,
+                )
         }
     }
 
@@ -145,7 +142,7 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             note.processing.value = true
             val key = keyGen.getKey(null, EntryType.PRESET)
-            rep.insetPreset(note)
+//            rep.insetPreset(note)
             note.processing.value = false
         }
     }
@@ -211,6 +208,14 @@ class EditorViewModel(application: Application) : AndroidViewModel(application) 
             note.processing.value = false
         }
     }
+}
 
-
+class EditorViewModelFactory(
+    private val selectedNote: String,
+    private val application: Application
+) :
+    ViewModelProvider.Factory {
+    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+        return GlossaryViewModel(selectedNote, application) as T
+    }
 }

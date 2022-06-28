@@ -16,7 +16,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.*
 
-class GlossaryViewModel(val bookId: String, application: Application) :
+class GlossaryViewModel(private val bookId: String, application: Application) :
     AndroidViewModel(application) {
     data class PartialNote(
         val title: String,

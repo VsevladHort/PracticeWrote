@@ -86,6 +86,35 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         return true
     }
 
+    override suspend fun <Display : UniqueEntity> updatePresetDisplay(
+        presetManager: PresetManager<Display, *>,
+        display: Display,
+    ) : Boolean {
+        val file = File(display.uniqueKey)
+        if(!file.exists())
+            return false
+        val auxiliaryFile = File(file, DATA_AUXILIARY_FILE_NAME)
+        val markerFile = File(file, MARKER_OF_USE)
+        markerFile.printWriter().use { pw -> pw.println(EntryType.PRESET.stringRepresentation) }
+        auxiliaryFile.writeBytes(presetManager.saveDisplay(display))
+        return true
+    }
+
+    override suspend fun <Full : UniqueEntity> updatePresetFull(
+        presetManager: PresetManager<*, Full>,
+        full: Full,
+    ) : Boolean {
+        val file = File(full.uniqueKey)
+        if(!file.exists())
+            return false
+        val markerFile = File(file, MARKER_OF_USE)
+        val dataFile = File(file, DATA_MAIN_FILE_NAME)
+        dataFile.writeBytes(presetManager.saveFull(full))
+        markerFile.printWriter().use { pw -> pw.println(EntryType.PRESET.stringRepresentation) }
+        return true
+    }
+
+
     override suspend fun deletePreset(uniqueKey: String): Boolean {
         val file = File(uniqueKey)
         checkEntryValidity(file)

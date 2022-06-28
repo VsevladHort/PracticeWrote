@@ -4,64 +4,106 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.dak.wrote.backend.contracts.entities.PresetManager
 import com.dak.wrote.backend.contracts.entities.UniqueEntity
 import com.dak.wrote.frontend.editor.*
 import com.dak.wrote.frontend.viewmodel.NoteAdditionViewModel
+import com.dak.wrote.ui.theme.WroteTheme
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ChevronDown
 import compose.icons.feathericons.ChevronUp
-import compose.icons.feathericons.ChevronsDown
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
+import kotlinx.serialization.json.encodeToStream
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 
-abstract class FullPreset(
-    name: String,
-    val alternateTitles: Set<String>,
-    val attributes: Set<String>,
+interface FullPreset {
     val pageLayout: SerializablePageLayout
-) {
-    val name = mutableStateOf(name)
+}
+
+interface DisplayPreset {
+    val name: String
+    val alternateTitles: Set<String>
+    val attributes: Set<String>
+}
+
+@OptIn(ExperimentalSerializationApi::class)
+class UserPresetSaver : PresetManager<SerializableDisplayUserPreset, SerializableFullUserPreset> {
+    override fun loadDisplay(byteData: ByteArray): SerializableDisplayUserPreset {
+        return Json.decodeFromStream(ByteArrayInputStream(byteData))
+    }
+
+    override fun loadFull(byteData: ByteArray): SerializableFullUserPreset {
+        return Json.decodeFromStream(ByteArrayInputStream(byteData))
+    }
+
+    override fun saveDisplay(display: SerializableDisplayUserPreset): ByteArray {
+        val output = ByteArrayOutputStream()
+        Json.encodeToStream(display, output)
+        return output.toByteArray()
+    }
+
+    override fun saveFull(full: SerializableFullUserPreset): ByteArray {
+        val output = ByteArrayOutputStream()
+        Json.encodeToStream(full, output)
+        return output.toByteArray()
+    }
+
 }
 
 @Serializable
 class SerializableDisplayUserPreset(
     val name: String,
     val alternateTitles: Set<String>,
-    val attributes: Set<String>,
-) {
-    fun toPreset() = DisplayUserPreset(name, alternateTitles, attributes)
+    val attributes: Set<String>, override val uniqueKey: String,
+) : UniqueEntity {
+    fun toPreset() = DisplayUserPreset(name, alternateTitles, attributes, uniqueKey)
 }
 
 class DisplayUserPreset(
     name: String,
-    val alternateTitles: Set<String>,
-    val attributes: Set<String>,
-) {
-    val name = mutableStateOf(name)
+    override val alternateTitles: Set<String>,
+    override val attributes: Set<String>, override val uniqueKey: String,
+) : DisplayPreset, UniqueEntity {
+    val nameState = mutableStateOf(name)
+    override var name: String
+        get() = nameState.value
+        set(value) {
+            nameState.value = value
+        }
 
-    fun toSerializable() = DisplayUserPreset(name.value, alternateTitles, attributes)
+    fun toSerializable() =
+        SerializableDisplayUserPreset(name, alternateTitles, attributes, uniqueKey)
 }
 
 @Serializable
 class SerializableFullUserPreset(
-    val name: String,
-    val alternateTitles: Set<String>,
-    val attributes: Set<String>,
-    val pageLayout: SerializablePageLayout
-) {
-}
+    override val pageLayout: SerializablePageLayout, override val uniqueKey: String
+) : FullPreset, UniqueEntity
 
+open class BasicPreset(
+    override val name: String,
+    override val alternateTitles: Set<String>,
+    override val attributes: Set<String>,
+    override val pageLayout: SerializablePageLayout,
+) : DisplayPreset, FullPreset
 
 class CharacterPreset() :
-    FullPreset("Character", setOf(), setOf("character"), CharacterPresetLayout) {
+    BasicPreset("Character", setOf(), setOf("character"), CharacterPresetLayout) {
 }
 
 private val CharacterPresetLayout
@@ -72,7 +114,7 @@ fun NoteAdditionDisplay() {
     val noteAdditionViewModel = viewModel<NoteAdditionViewModel>()
 }
 
-val normalPresets = listOf<FullPreset>(CharacterPreset())
+val normalPresets = listOf(CharacterPreset())
 
 
 @Composable
@@ -81,13 +123,18 @@ fun NoteAdditionScreen() {
 }
 
 @Composable
-fun PresetListView(normalPresets: List<FullPreset>, userPresets: List<DisplayUserPreset>) {
-    Column() {
+fun PresetListView(
+    normalPresets: List<BasicPreset>,
+    userPresets: List<DisplayUserPreset>,
+    selectFull: (BasicPreset) -> Unit,
+    selectUser: (DisplayUserPreset) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
         userPresets.forEach {
-            UserPresetView(userPreset = it)
+            UserPresetView(it) { selectUser(it) }
         }
         normalPresets.forEach {
-            NormalPresetView(userPreset = it)
+            NormalPresetView(it) { selectFull(it) }
         }
     }
 }
@@ -95,7 +142,7 @@ fun PresetListView(normalPresets: List<FullPreset>, userPresets: List<DisplayUse
 @Composable
 fun AdditionalPresetView(alternateTitles: Set<String>, attributes: Set<String>) {
     var expanded by remember { mutableStateOf(false) }
-    TextButton(onClick = { expanded = !expanded }, shape = CircleShape) {
+    TextButton(onClick = { expanded = !expanded }, modifier = Modifier.padding(4.dp)) {
         Text(text = "Additional")
         Spacer(modifier = Modifier.width(10.dp))
         Icon(
@@ -107,7 +154,7 @@ fun AdditionalPresetView(alternateTitles: Set<String>, attributes: Set<String>) 
         @Composable
         fun titles(text: String, list: List<String>) {
             Surface(
-                elevation = 1.5f.dp,
+                tonalElevation = 1.5f.dp,
                 modifier = Modifier.padding(horizontal = 5.dp),
                 shape = RoundedCornerShape(20.dp)
             ) {
@@ -127,9 +174,9 @@ fun AdditionalPresetView(alternateTitles: Set<String>, attributes: Set<String>) 
 }
 
 @Composable
-fun NormalPresetView(userPreset: FullPreset) {
+fun UserPresetView(userPreset: DisplayUserPreset, onSelect: () -> Unit) {
     Surface(
-        elevation = 2.dp,
+        tonalElevation = 2.dp,
         shape = RoundedCornerShape(25.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -139,23 +186,25 @@ fun NormalPresetView(userPreset: FullPreset) {
                 verticalArrangement = Arrangement.spacedBy(5.dp)
             ) {
                 Text(
-                    userPreset.name.value,
-                    style = MaterialTheme.typography.h5,
+                    userPreset.nameState.value,
+                    style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(start = 10.dp)
                 )
+
+                AdditionalPresetView(
+                    alternateTitles = userPreset.alternateTitles,
+                    attributes = userPreset.attributes
+                )
             }
-            AdditionalPresetView(
-                alternateTitles = userPreset.alternateTitles,
-                attributes = userPreset.attributes
-            )
+//            Spacer(modifier = Modifier.height(10.dp))
         }
     }
 }
 
 @Composable
-fun UserPresetView(userPreset: DisplayUserPreset) {
+fun NormalPresetView(preset: BasicPreset, onSelect: () -> Unit) {
     Surface(
-        elevation = 2.dp,
+        tonalElevation = 2.dp,
         shape = RoundedCornerShape(25.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -165,11 +214,11 @@ fun UserPresetView(userPreset: DisplayUserPreset) {
                 verticalArrangement = Arrangement.spacedBy(5.dp)
             ) {
                 Text(
-                    userPreset.name.value,
-                    style = MaterialTheme.typography.h5,
+                    preset.name,
+                    style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(start = 10.dp)
                 )
-                AdditionalPresetView(userPreset.alternateTitles, userPreset.attributes)
+                AdditionalPresetView(preset.alternateTitles, preset.attributes)
             }
         }
     }
@@ -178,85 +227,36 @@ fun UserPresetView(userPreset: DisplayUserPreset) {
 
 @Preview(showSystemUi = true, device = Devices.PIXEL_3)
 @Composable
-fun UserPresetViewPreview() {
+fun PresetViewPreview() {
     UserPresetView(
-        userPreset = DisplayUserPreset(
+        DisplayUserPreset(
             "Hehe",
             setOf("Honorable Knight"),
-            setOf("я", "character", "king")
-        )
+            setOf("я", "character", "king"),
+            ""
+        ), {}
     )
 }
 
-//@Composable
-//fun PresetViewTop(presets: List<SerializableUserPreset>) {
-//    Column {
-//        for (i in presets) {
-//            PresetViewController(i) {}
-//        }
-//    }
-//}
-//
-//@Preview
-//@Composable
-//fun PreviewPresetViewController() {
-//    val layout = SerializablePageLayout(
-//        listOf(
-//            SerializableParagraphLayout(
-//                listOf(
-//                    SerializableTextDataLayout("Hello")
-//                )
-//            )
-//        )
-//    )
-//    val preset = SerializableUserPreset("Hello", listOf("Character", "Cat"), layout)
-//    PresetViewController(preset) {
-//
-//    }
-//}
-
-//@Composable
-//fun PresetViewController(preset: SerializableUserPreset, updatePreset: (SerializableUserPreset) -> Unit) {
-//    var inEdit by rememberSaveable() {
-//        mutableStateOf(false)
-//    }
-////    var currentPreset by rememberSaveable(preset) { mutableStateOf(preset.toPresetView()) }
-//    Surface() {
-//        Column(
-//            Modifier
-//                .wrapContentHeight()
-//                .fillMaxWidth()
-//        ) {
-//            Row(horizontalArrangement = Arrangement.End) {
-//                if (!inEdit) {
-//                    IconButton(onClick = {
-//                        inEdit = false; currentPreset = preset.toPresetView()
-//                    }) {
-//                        Icon(imageVector = FeatherIcons.Delete, contentDescription = "Trash edit")
-//                    }
-//                } else {
-//                    IconButton(onClick = { inEdit = true }) {
-//                        Icon(
-//                            imageVector = FeatherIcons.Edit3,
-//                            contentDescription = "Edit preset"
-//                        )
-//                    }
-//                }
-//            }
-//
-//            if (inEdit) {
-//                currentPreset.Edit()
-//
-//                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-//                    Button(
-//                        onClick = { if (!currentPreset.error.value) updatePreset(currentPreset.toSerializablePreset()) },
-//                        enabled = !currentPreset.error.value
-//                    ) {
-//                        Text(text = "Submit")
-//                    }
-//                }
-//            } else
-//                currentPreset.View()
-//        }
-//    }
-//}
+@Preview(showSystemUi = true, device = Devices.PIXEL_3)
+@Composable
+fun PresetListViewPreview() {
+    WroteTheme() {
+        PresetListView(
+            normalPresets = normalPresets, userPresets = listOf(
+                DisplayUserPreset(
+                    "Temerian King",
+                    setOf("Honorable Knight"),
+                    setOf("character", "", "king"),
+                    ""
+                ),
+                DisplayUserPreset(
+                    "Hero's team member",
+                    setOf(""),
+                    setOf("", "character", "hero's team member"),
+                    ""
+                ),
+            ), {}, {}
+        )
+    }
+}

@@ -26,6 +26,7 @@ import com.dak.wrote.frontend.noteNavigation.ColumnButton
 import com.dak.wrote.frontend.noteNavigation.CreateButton
 import com.dak.wrote.frontend.noteNavigation.GridButton
 import com.dak.wrote.frontend.viewmodel.BookNavigationViewModel
+import com.dak.wrote.ui.theme.Material3
 import com.dak.wrote.ui.theme.customColors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -67,7 +68,7 @@ fun BookNavigation(
     onCreateButton: () -> Unit
 ) {
     Column {
-        Divider(color = MaterialTheme.customColors.primary, thickness = 3.dp)
+        Divider(color = Material3.colorScheme.primary, thickness = 3.dp)
 
 
         val modifier = Modifier
@@ -107,12 +108,12 @@ fun BooksColumn(
             Text(
                 text = title,
                 textAlign = TextAlign.Center,
-                color = MaterialTheme.customColors.onBackground,
+                color = Material3.colorScheme.onBackground,
                 style = MaterialTheme.typography.h4
             )
         }
         item {
-            Divider(color = MaterialTheme.customColors.primary, thickness = 2.dp)
+            Divider(color = Material3.colorScheme.primary, thickness = 2.dp)
         }
         items(books) { book ->
             ColumnButton(

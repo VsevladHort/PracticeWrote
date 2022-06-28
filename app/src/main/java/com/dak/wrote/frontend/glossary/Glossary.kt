@@ -35,6 +35,7 @@ import com.dak.wrote.frontend.editor.AdditionalValuesView
 import com.dak.wrote.frontend.noteNavigation.ColoredIconButton
 import com.dak.wrote.frontend.viewmodel.GlossaryViewModel
 import com.dak.wrote.frontend.viewmodel.GlossaryViewModelFactory
+import com.dak.wrote.ui.theme.WroteTheme
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.*
 
@@ -52,6 +53,9 @@ fun GlossaryScreen(currentBookId: String, back: () -> Unit, open: (name: String)
                 CircularProgressIndicator(color = MaterialTheme.colors.primaryVariant)
             }
             else -> {
+                GlossaryScreenImpl(back = back, open = open, data = data) {
+
+                }
             }
         }
     }
@@ -86,11 +90,13 @@ fun GlossaryScreenImpl(
 @Preview(device = Devices.PIXEL_3, showSystemUi = true)
 @Composable
 fun GlossaryScreenPreview() {
-    GlossaryScreenImpl(back = {  }, open = {}, data = GlossaryViewModel.Data(
-        sortedMapOf(), sortedMapOf(), sortedMapOf()
-    )
-    ) {
+    WroteTheme() {
+        GlossaryScreenImpl(back = { }, open = {}, data = GlossaryViewModel.Data(
+            sortedMapOf(), sortedMapOf(), sortedMapOf()
+        )
+        ) {
 
+        }
     }
 }
 
