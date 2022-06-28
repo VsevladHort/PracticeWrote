@@ -27,9 +27,15 @@ import com.dak.wrote.frontend.noteNavigation.CreateButton
 import com.dak.wrote.frontend.noteNavigation.GridButton
 import com.dak.wrote.frontend.viewmodel.BookNavigationViewModel
 import com.dak.wrote.ui.theme.customColors
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun BookNavigationScreen(
+    onBookClicked: (Book) -> Unit,
+    onCreateButton: suspend () -> Unit,
     application: Application = LocalContext.current.applicationContext as Application,
     booksViewModel: BookNavigationViewModel = viewModel()
 ) {
@@ -39,12 +45,17 @@ fun BookNavigationScreen(
     }
 
     val books by booksViewModel.bookState.observeAsState()
-
+    val coroutine = rememberCoroutineScope()
     BookNavigation(
         title = title,
         books = books ?: emptyList(),
-        onBookClicked = {},
-        onCreateButton = {}
+        onBookClicked = onBookClicked,
+        onCreateButton = {
+            coroutine.launch {
+                onCreateButton()
+                booksViewModel.updateBooks(application)
+            }
+        }
     )
 }
 

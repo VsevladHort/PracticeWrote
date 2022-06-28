@@ -36,6 +36,9 @@ import kotlinx.coroutines.*
 @Composable
 fun NoteNavigation(
     initialNote: NavigationNote,
+    onEnterButton: (String) -> Unit,
+    onCreateButton: () -> Unit,
+    onDeleteBookButton: () -> Unit,
     application: Application = LocalContext.current.applicationContext as Application
 ) {
     WroteTheme {
@@ -49,7 +52,13 @@ fun NoteNavigation(
                 navigationViewModel.changeNote(initialNote)
             }
 
-            NavigationDisplay(application, navigationViewModel)
+            NavigationDisplay(
+                application = application,
+                navigationViewModel = navigationViewModel,
+                onEnterButton = onEnterButton,
+                onCreateButton = onCreateButton,
+                onDeleteBookButton = onDeleteBookButton
+            )
         }
     }
 }
@@ -59,8 +68,10 @@ var key = 0
 @Composable
 fun NavigationDisplay(
     application: Application,
-    navigationViewModel: NoteNavigationViewModel
-
+    navigationViewModel: NoteNavigationViewModel,
+    onEnterButton: (String) -> Unit,
+    onCreateButton: () -> Unit,
+    onDeleteBookButton: () -> Unit
 ) {
     val coroutine = rememberCoroutineScope()
 
@@ -69,14 +80,19 @@ fun NavigationDisplay(
         navigationState ?: NavigationState()
 
     MainNavigation(state.currentNote.title, state.paragraphs,
-        onNoteClicked = { newNoteForNavigation -> navigationViewModel.changeNote(newNoteForNavigation) },
+        onNoteClicked = { newNoteForNavigation ->
+            navigationViewModel.changeNote(
+                newNoteForNavigation
+            )
+        },
         backButtonEnabled = !state.parents.isEmpty(),
         onBackButton = { navigationViewModel.goBack() },
-        onEnterButton = { /*TODO*/ },
+        onEnterButton = { onEnterButton(state.currentNote.uniqueKey) },
         onCreateButton = {
             coroutine.launch {
+//                onCreateButton() // real create
 
-                // Create empty note for testing
+//              Create empty note for testing
                 val generator: UniqueEntityKeyGenerator =
                     getKeyGen(application)
 
@@ -100,6 +116,7 @@ fun NavigationDisplay(
                     dummyNote
                 )
 
+//              Update for new note to appear
                 navigationViewModel.changeNote(state.currentNote, ignoreCurrent = true)
             }
         },
@@ -107,10 +124,10 @@ fun NavigationDisplay(
             coroutine.launch {
                 if (state.parents.isEmpty()) {
 //                    TODO delete entire Book
-//                    navigationViewModel.DAO.deleteEntityBook(
-//                        entity = state.currentNote.uniqueKey
-//                    )
-//                    goBackToBookDisplay()
+                    navigationViewModel.DAO.deleteEntityBook(
+                        entity = state.currentNote.uniqueKey
+                    )
+                    onDeleteBookButton() //go back to BookDisplay
                 } else {
                     navigationViewModel.DAO.deleteEntityNote(
                         entity = state.currentNote.uniqueKey
