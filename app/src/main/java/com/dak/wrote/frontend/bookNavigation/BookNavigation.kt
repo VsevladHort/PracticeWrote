@@ -34,7 +34,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
-fun BookNavigationScreen(
+fun BookDisplay(
     onBookClicked: (Book) -> Unit,
     onCreateButton: suspend () -> Unit,
     application: Application = LocalContext.current.applicationContext as Application,

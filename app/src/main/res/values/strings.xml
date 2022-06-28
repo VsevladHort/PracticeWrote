@@ -4,4 +4,7 @@
     <string name="delete_dialog_body">Are you sure you want to delete \"%s\"?</string>
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
+    <string name="glossary_title">Glossary</string>
+    <string name="note_title">Note</string>
+    <string name="note_prefix">Note/</string>
 </resources>

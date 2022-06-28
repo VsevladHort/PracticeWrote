@@ -6,11 +6,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -20,17 +17,14 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.dak.wrote.backend.contracts.database.EntryType
 import com.dak.wrote.backend.contracts.entities.Book
-import com.dak.wrote.backend.implementations.file_system_impl.dao.WroteDaoFileSystemImpl
 import com.dak.wrote.backend.implementations.file_system_impl.dao.getDAO
-import com.dak.wrote.backend.implementations.file_system_impl.database.UniqueKeyGeneratorFileSystemImpl
 import com.dak.wrote.backend.implementations.file_system_impl.database.getKeyGen
 import com.dak.wrote.frontend.NavigationScreens
 import com.dak.wrote.frontend.noteNavigation.NoteNavigation
-import com.dak.wrote.frontend.bookNavigation.BookNavigationScreen
+import com.dak.wrote.frontend.bookNavigation.BookDisplay
+import com.dak.wrote.frontend.controller.ControllerDisplay
 import com.dak.wrote.frontend.noteNavigation.NavigationNote
 import com.dak.wrote.ui.theme.WroteTheme
-import kotlinx.coroutines.*
-import java.io.File
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -93,13 +87,12 @@ fun NavigationHost(
         startDestination = NavigationScreens.BookNavigation.path
     ) {
         composable(NavigationScreens.BookNavigation.path) {
-            BookNavigationScreen(
+            BookDisplay(
                 onBookClicked = { book ->
-                    navigateToSingleNoteNavigation(
+                    navigateToControllerWithBook(
                         controller,
-                        // tse prikol kaneshna
-                        book.uniqueKey.replace('/', '\\'), // won't work without replace
-                        book.title.replace('/', '\\') // won't work without replace
+                        book.uniqueKey,
+                        book.title
                     )
                 },
                 onCreateButton = {
@@ -118,34 +111,35 @@ fun NavigationHost(
             )
         }
         composable(
-            route = "${NavigationScreens.NoteNavigation.path}/{noteKey}/{noteTitle}",
+            route = "${NavigationScreens.Controller.path}/{bookKey}/{bookTitle}",
             arguments = listOf(
-                navArgument("noteKey") {
+                navArgument("bookKey") {
                     type = NavType.StringType
                 },
-                navArgument("noteTitle") {
+                navArgument("bookTitle") {
                     type = NavType.StringType
                 }
             )
         ) { entry ->
-            val noteKey = (entry.arguments?.getString("noteKey") ?: "")
+            val noteKey = (entry.arguments?.getString("bookKey") ?: "")
                 .replace('\\', '/')
-            val noteTitle = (entry.arguments?.getString("noteTitle") ?: "")
+            val noteTitle = (entry.arguments?.getString("bookTitle") ?: "")
                 .replace('\\', '/')
-            NoteNavigation(
-                initialNote = NavigationNote(noteKey, noteTitle),
-                onEnterButton = { /*TODO*/ },
-                onCreateButton = { /*TODO*/ },
-                onDeleteBookButton = { controller.popBackStack() }
+            ControllerDisplay(
+                book = Book(noteKey, noteTitle),
             )
         }
     }
 }
 
-private fun navigateToSingleNoteNavigation(
+private fun navigateToControllerWithBook(
     navController: NavController,
-    noteKey: String,
-    noteTitle: String
+    bookKey: String,
+    bookTitle: String
 ) {
-    navController.navigate("${NavigationScreens.NoteNavigation.path}/$noteKey/$noteTitle")
+    navController.navigate(
+        "${NavigationScreens.Controller.path}/" +
+                "${bookKey.replace('/', '\\')}/" +  // won't work without replace
+                bookTitle.replace('/', '\\')        // won't work without replace
+    )
 }
