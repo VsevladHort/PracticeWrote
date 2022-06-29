@@ -28,6 +28,7 @@ import com.dak.wrote.backend.contracts.entities.BaseNote
 import com.dak.wrote.frontend.AligningBasicTextField
 import com.dak.wrote.frontend.viewmodel.EditorViewModel
 import com.dak.wrote.frontend.viewmodel.UpdateHolder
+import com.dak.wrote.ui.theme.Material3
 import com.dak.wrote.ui.theme.Shapes
 import com.dak.wrote.ui.theme.WroteTheme
 import compose.icons.FeatherIcons
@@ -341,7 +342,7 @@ fun ParagraphAdditionBox(addParagraph: () -> Unit) {
                     rememberRipple(),
                     onClick = { expanded.value = true })
                 .background(
-                    color = MaterialTheme.colors.secondary,
+                    color = Material3.colorScheme.secondaryContainer,
                 )
                 .padding(horizontal = 25.dp, vertical = 10.dp)
         ) {

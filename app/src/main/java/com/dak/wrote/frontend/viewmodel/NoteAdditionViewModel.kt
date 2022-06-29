@@ -9,6 +9,7 @@ import com.dak.wrote.backend.implementations.file_system_impl.dao.getDAO
 import com.dak.wrote.frontend.preset.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -19,9 +20,11 @@ class NoteAdditionViewModel(application: Application) : AndroidViewModel(applica
     data class Data(
         val userPresets: List<DisplayUserPreset>,
         var loadingJob: Job? = null,
+        val name: MutableState<String> = mutableStateOf(""),
         val loading: MutableState<Boolean> = mutableStateOf(false),
-        val currentSelected: MutableState<DisplayPreset?>,
-        val loadedSelected: MutableState<FullPreset?>
+        val currentSelected: MutableState<DisplayPreset?> = mutableStateOf(null),
+        val loadedSelected: MutableState<FullPreset?> = mutableStateOf(null),
+        val canCreate: MutableState<Boolean> = mutableStateOf(false)
     )
 
     private val _currentId: MutableStateFlow<String?> = MutableStateFlow(null)
@@ -38,14 +41,14 @@ class NoteAdditionViewModel(application: Application) : AndroidViewModel(applica
         data.loadingJob?.cancel()
         data.loading.value = true
         data.loadingJob = viewModelScope.launch {
-            userPreset
+            data.loadedSelected.value = rep.getPresetFull(UserPresetSaver(), userPreset.uniqueKey)
             data.loading.value = false
         }
     }
 
     fun updateName(displayUserPreset: DisplayUserPreset) {
         viewModelScope.launch {
-
+            rep.updatePresetDisplay(UserPresetSaver(), displayUserPreset.toSerializable())
         }
     }
 
@@ -58,9 +61,10 @@ class NoteAdditionViewModel(application: Application) : AndroidViewModel(applica
 
     init {
         viewModelScope.launch {
-//            data.value = Data(rep.getPresets().map { })
             currentId.filterNotNull().collect {
-//                rep.getPresets()
+                data.value = Data(
+                    rep.getPresets().map { rep.getPresetDisplay(UserPresetSaver(), it).toPreset() },
+                )
             }
         }
     }

@@ -98,7 +98,7 @@ class EditorViewModel(application: Application, val currentId: String) :
         }
 
         override val uniqueKey: String
-            get() = TODO("Not yet implemented")
+            get() = currentId
 
     }
 

@@ -10,7 +10,7 @@ import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -47,7 +47,10 @@ fun AligningTextField(
     singleLine: Boolean = false,
     maxLines: Int = Int.MAX_VALUE,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-    shape: Shape = TextFieldDefaults.TextFieldShape,
+    shape: Shape = MaterialTheme.shapes.small.copy(
+        bottomEnd = ZeroCornerSize,
+        bottomStart = ZeroCornerSize
+    ),
     colors: TextFieldColors = TextFieldDefaults.textFieldColors()
 ) {
     val relocation = remember { BringIntoViewRequester() }

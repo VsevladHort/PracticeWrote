@@ -79,7 +79,7 @@ fun ParagraphEdit(
                 AligningBasicTextField(
                     value = title.value,
                     { title.value = it },
-                    textStyle = Material3.typography.titleMedium,
+                    textStyle = Material3.typography.headlineLarge,
                 )
             }
             Divider(
@@ -187,7 +187,7 @@ fun ParagraphView(title: String, columns: List<DataLayout>) {
         ) {
             Text(
                 text = title,
-                style = Material3.typography.titleMedium,
+                style = Material3.typography.headlineLarge,
                 modifier = Modifier.padding(start = 10.dp)
             )
             Divider(

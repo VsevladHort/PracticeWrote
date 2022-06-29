@@ -2,7 +2,6 @@ package com.dak.wrote.frontend.glossary
 
 import android.app.Application
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -10,34 +9,30 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.*
 import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.dak.wrote.frontend.AligningBasicTextField
 import com.dak.wrote.frontend.AligningOutlinedTextField
-import com.dak.wrote.frontend.AligningTextField
 import com.dak.wrote.frontend.editor.AdditionalValuesView
 import com.dak.wrote.frontend.noteNavigation.ColoredIconButton
 import com.dak.wrote.frontend.viewmodel.GlossaryViewModel
 import com.dak.wrote.frontend.viewmodel.GlossaryViewModelFactory
+import com.dak.wrote.ui.theme.Material3
 import com.dak.wrote.ui.theme.WroteTheme
 import compose.icons.FeatherIcons
-import compose.icons.feathericons.*
+import compose.icons.feathericons.ArrowLeft
+import compose.icons.feathericons.Plus
+import compose.icons.feathericons.Trash2
 
 @Composable
 fun GlossaryScreen(currentBookId: String, back: () -> Unit, open: (name: String) -> Unit) {
@@ -50,12 +45,12 @@ fun GlossaryScreen(currentBookId: String, back: () -> Unit, open: (name: String)
     viewModel.data.collectAsState().value.let { data ->
         when (data) {
             null -> {
-                CircularProgressIndicator(color = MaterialTheme.colors.primaryVariant)
+                CircularProgressIndicator(color = Material3.colorScheme.primary)
             }
             else -> {
-                GlossaryScreenImpl(back = back, open = open, data = data) {
-
-                }
+                GlossaryScreenImpl(back = back, open = open, data = data, searchAnew = {
+                    viewModel.searchAnew(data)
+                })
             }
         }
     }
@@ -75,13 +70,13 @@ fun GlossaryScreenImpl(
             updateSearch = searchAnew,
             back
         )
-        Divider(Modifier.padding(10.dp), MaterialTheme.colors.primaryVariant, 3.dp)
+        Divider(Modifier.padding(10.dp), Material3.colorScheme.primary, 3.dp)
         data.foundNotes.value.let { foundNotes ->
             if (foundNotes != null)
                 SuggestionList(suggestions = foundNotes, onClick = open)
             else
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                    Text(text = "Nothing to show", style = MaterialTheme.typography.h2)
+                    Text(text = "Nothing to show", style = Material3.typography.displayMedium)
                 }
         }
     }
@@ -90,7 +85,7 @@ fun GlossaryScreenImpl(
 @Preview(device = Devices.PIXEL_3, showSystemUi = true)
 @Composable
 fun GlossaryScreenPreview() {
-    WroteTheme() {
+    WroteTheme {
         GlossaryScreenImpl(back = { }, open = {}, data = GlossaryViewModel.Data(
             sortedMapOf(), sortedMapOf(), sortedMapOf()
         )
@@ -199,7 +194,7 @@ fun SuggestionSearch(
                         Icon(
                             imageVector = FeatherIcons.Trash2,
                             contentDescription = "Delete",
-                            tint = MaterialTheme.colors.secondaryVariant
+                            tint = Material3.colorScheme.primary
                         )
                     }
                     AligningOutlinedTextField(
@@ -257,7 +252,7 @@ fun SuggestionList(
         suggestions.forEach { suggestion ->
             Surface(
                 shape = RoundedCornerShape(30.dp),
-                elevation = 3.dp,
+                tonalElevation = 3.dp,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(Modifier.padding(10.dp)) {
@@ -271,7 +266,7 @@ fun SuggestionList(
                                 rememberRipple(),
                                 onClick = { onClick(suggestion.keyId) }
                             ),
-                        style = MaterialTheme.typography.h5
+                        style = Material3.typography.headlineMedium
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     AdditionalValuesView(
