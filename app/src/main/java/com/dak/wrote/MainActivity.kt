@@ -94,19 +94,6 @@ fun NavigationHost(
                         book.uniqueKey,
                         book.title
                     )
-                },
-                onCreateButton = {
-                    /*TODO normal creation*/
-
-                    //Create empty book
-                    val book = Book(
-                        getKeyGen(application)
-                            .getKey(null, EntryType.BOOK), "Book ${key++}"
-                    )
-
-                    getDAO(application).insertBook(book)
-
-
                 }
             )
         }

@@ -101,11 +101,11 @@ fun NoteAdditionScreenImpl(
                                 .padding(10.dp, 5.dp),
                             horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End)
                         ) {
-                            Button(onClick = onCreate, enabled = data.canCreate.value) {
-                                Text(text = "Create")
-                            }
                             TextButton(onClick = exit) {
                                 Text(text = "Cancel")
+                            }
+                            Button(onClick = onCreate, enabled = data.canCreate.value) {
+                                Text(text = "Create")
                             }
                         }
                     }

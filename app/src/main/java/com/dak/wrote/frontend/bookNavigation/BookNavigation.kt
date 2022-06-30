@@ -9,11 +9,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -36,27 +33,24 @@ import kotlinx.coroutines.withContext
 @Composable
 fun BookDisplay(
     onBookClicked: (Book) -> Unit,
-    onCreateButton: suspend () -> Unit,
-    application: Application = LocalContext.current.applicationContext as Application,
     booksViewModel: BookNavigationViewModel = viewModel()
 ) {
-    val title = "Welcome to \"Wrote\""
-    LaunchedEffect(rememberCoroutineScope()) {
-        booksViewModel.updateBooks(application)
-    }
+    val title = """Welcome to "Wrote""""
 
     val books by booksViewModel.bookState.observeAsState()
-    val coroutine = rememberCoroutineScope()
+
+    val addingBook = remember { mutableStateOf(false) }
+
+    if(addingBook.value)
+        BookAdditionDialog(exit = { addingBook.value = false }, submit = {
+            booksViewModel.createBook(it)
+            addingBook.value = false
+        })
     BookNavigation(
         title = title,
         books = books ?: emptyList(),
         onBookClicked = onBookClicked,
-        onCreateButton = {
-            coroutine.launch {
-                onCreateButton()
-                booksViewModel.updateBooks(application)
-            }
-        }
+        onCreateButton = {addingBook.value = true}
     )
 }
 
