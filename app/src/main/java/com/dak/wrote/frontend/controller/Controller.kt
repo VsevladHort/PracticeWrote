@@ -8,8 +8,8 @@ import androidx.compose.material.Icon
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -25,8 +25,11 @@ import androidx.navigation.navArgument
 import com.dak.wrote.R
 import com.dak.wrote.backend.contracts.entities.Book
 import com.dak.wrote.frontend.NavigationScreens
+import com.dak.wrote.frontend.editor.EditorScreen
 import com.dak.wrote.frontend.noteNavigation.NavigationNote
 import com.dak.wrote.frontend.noteNavigation.NoteNavigation
+import com.dak.wrote.utility.fromNav
+import com.dak.wrote.utility.toNav
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.Book
 import compose.icons.feathericons.FileText
@@ -37,19 +40,21 @@ fun ControllerDisplay(
     book: Book
 ) {
     val controller = rememberNavController()
+    val showDrawer = rememberSaveable { mutableStateOf(true) }
     Scaffold(
-        topBar = { /*TODO top bar?*/ },
         bottomBar = {
-            ControllerBottomBar(
-                navController = controller,
-                book = book
-            )
+            if (showDrawer.value)
+                ControllerBottomBar(
+                    navController = controller,
+                    book = book
+                )
         }
     ) { padding ->
         NavigationHost(
             navController = controller,
             book = book,
-            modifier = Modifier.padding(padding)
+            modifier = Modifier.padding(padding),
+            showDrawer
         )
     }
 }
@@ -112,8 +117,9 @@ fun NavigationHost(
     navController: NavHostController,
     book: Book,
     modifier: Modifier = Modifier,
-    application: Application = LocalContext.current.applicationContext as Application
+    showDrawer: MutableState<Boolean>,
 ) {
+    val application: Application = LocalContext.current.applicationContext as Application
     val notePrefix = stringResource(id = R.string.note_prefix)
     NavHost(
         navController = navController,
@@ -135,6 +141,7 @@ fun NavigationHost(
                 }
             )
         ) { entry ->
+            showDrawer.value = true
             val noteKey = (entry.arguments?.getString("noteKey") ?: "")
                 .replace('\\', '/')
             val noteTitle = (entry.arguments?.getString("noteTitle") ?: "")
@@ -142,9 +149,8 @@ fun NavigationHost(
             NoteNavigation(
                 initialNote = NavigationNote(noteKey, noteTitle),
                 onEnterButton = {
-                    navController.navigate(notePrefix + NavigationScreens.Editor.path)
+                    navController.navigate("$notePrefix${NavigationScreens.Editor.path}/${it.toNav()}")
                 },
-                onCreateButton = { /*TODO*/ },
                 onDeleteBookButton = { navController.popBackStack() }
             )
         }
@@ -154,9 +160,10 @@ fun NavigationHost(
             Text("Glossary")
         }
 
-        composable(notePrefix + NavigationScreens.Editor.path) {
-//            EditorScreen()
-            Text("Editor")
+        composable(notePrefix + NavigationScreens.Editor.path + "/{noteId}") {
+            val id = it.arguments!!.getString("noteId")!!.fromNav()
+            showDrawer.value = false
+            EditorScreen(navigateUp = { navController.popBackStack() }, selectedNote = id)
         }
 
     }

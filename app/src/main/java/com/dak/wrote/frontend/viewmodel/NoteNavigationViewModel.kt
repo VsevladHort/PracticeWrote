@@ -1,15 +1,23 @@
 package com.dak.wrote.frontend.viewmodel
 
 import android.app.Application
+import androidx.core.text.htmlEncode
 import androidx.lifecycle.*
-import com.dak.wrote.backend.contracts.entities.Book
+import com.dak.wrote.backend.contracts.database.EntryType
+import com.dak.wrote.backend.contracts.entities.Attribute
+import com.dak.wrote.backend.contracts.entities.BaseNote
+import com.dak.wrote.backend.contracts.entities.constants.NoteType
 import com.dak.wrote.backend.implementations.file_system_impl.dao.WroteDaoFileSystemImpl
 import com.dak.wrote.backend.implementations.file_system_impl.dao.getDAO
+import com.dak.wrote.backend.implementations.file_system_impl.database.getKeyGen
 import com.dak.wrote.frontend.noteNavigation.NavigationNote
-import com.dak.wrote.frontend.noteNavigation.NoteNavigation
+import com.dak.wrote.frontend.preset.NoteCreation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.io.File
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.encodeToStream
+import java.io.ByteArrayOutputStream
 import java.util.*
 import kotlin.collections.ArrayDeque
 
@@ -79,9 +87,10 @@ class NoteNavigationViewModel(
     initialNote: NavigationNote,
     paragraphs: List<NavigationNote>,
     parents: ArrayDeque<NavigationNote>,
-    private val application: Application
-) : ViewModel() {
-    val DAO = getDAO(application)
+    application: Application
+) : AndroidViewModel(application) {
+    val rep = getDAO(application)
+    val keyGen = getKeyGen(application)
 
     private val _navigationState = MutableLiveData(
         NavigationState(
@@ -94,7 +103,6 @@ class NoteNavigationViewModel(
 
 
     fun changeNote(newNote: NavigationNote, ignoreCurrent: Boolean = false) {
-//        viewModelScope.launch {
         viewModelScope.launch(Dispatchers.IO) {
             val currentNote =
                 if (ignoreCurrent || navigationState.value!!.currentNote.title == "")
@@ -107,7 +115,7 @@ class NoteNavigationViewModel(
                     newNote = newNote,
                     currentNote = currentNote,
                     parents = navigationState.value!!.parents,
-                    application = application
+                    application = getApplication<Application>()
                 )
 
             _navigationState.postValue(newNavigationState)
@@ -116,6 +124,57 @@ class NoteNavigationViewModel(
 
 
     fun goBack() = changeNote(navigationState.value!!.parents.removeLast(), ignoreCurrent = true)
+
+    @OptIn(ExperimentalSerializationApi::class)
+    fun createNote(creation: NoteCreation) {
+        viewModelScope.launch(Dispatchers.IO) {
+
+            val key = keyGen.getKey(navigationState.value!!.currentNote, EntryType.NOTE)
+
+            val attributes = creation.displayPreset.attributes.map {
+                val currentNoteKey = navigationState.value!!.currentNote.uniqueKey
+                rep.run {
+                    getOrCreateAttribute(
+                        getBook(
+                            if (getEntryType(currentNoteKey) == EntryType.BOOK)
+                                currentNoteKey
+                            else
+                                getBookOfNote(
+                                    currentNoteKey
+                                )
+                        ),
+                        keyGen, it
+                    )
+                }
+            }.toSet()
+            val dummyNote: BaseNote = object : BaseNote {
+                override var title: String = creation.name
+                override var alternateTitles: Set<String> = creation.displayPreset.alternateTitles
+                override var attributes: Set<Attribute> = attributes
+                override val type: NoteType = NoteType.PLAIN_TEXT
+                override fun generateSaveData(): ByteArray {
+                    val byteArr = ByteArrayOutputStream()
+                    Json.encodeToStream(creation.fullPreset.pageLayout, byteArr)
+                    return byteArr.toByteArray()
+                }
+
+                override fun loadSaveData(value: ByteArray) = throw Error("Unimplemented")
+                override fun getIndexingData() = ""
+                override val uniqueKey: String = key
+            }
+            attributes.forEach {
+                it.addEntity(key)
+                rep.updateAttributeEntry(it)
+            }
+            rep.insetNote(
+                navigationState.value!!.currentNote,
+                dummyNote
+            )
+
+//              update for new note to appear
+            changeNote(navigationState.value!!.currentNote, ignoreCurrent = true)
+        }
+    }
 }
 
 class NoteNavigationViewModelFactory : ViewModelProvider.Factory {

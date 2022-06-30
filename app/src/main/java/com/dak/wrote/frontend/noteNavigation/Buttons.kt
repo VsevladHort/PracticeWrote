@@ -14,6 +14,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -22,6 +23,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dak.wrote.backend.contracts.entities.Book
+import com.dak.wrote.frontend.preset.NoteAdditionScreen
+import com.dak.wrote.frontend.preset.NoteCreation
 import com.dak.wrote.ui.theme.Material3
 import com.dak.wrote.ui.theme.customColors
 
@@ -30,8 +33,9 @@ fun CreateButton(
     modifier: Modifier,
     onCreateButton: () -> Unit
 ) {
+
     Button(
-        onClick = { onCreateButton() },
+        onClick = onCreateButton,
         colors = ButtonDefaults.buttonColors(
             backgroundColor = Material3.customColors.primary,
             contentColor = Material3.colorScheme.onPrimary

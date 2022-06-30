@@ -3,6 +3,7 @@ package com.dak.wrote.backend.implementations.file_system_impl.dao
 import android.content.Context
 import com.dak.wrote.backend.contracts.dao.WroteDao
 import com.dak.wrote.backend.contracts.database.EntryType
+import com.dak.wrote.backend.contracts.database.UniqueEntityKeyGenerator
 import com.dak.wrote.backend.contracts.entities.*
 import com.dak.wrote.backend.contracts.entities.constants.NoteType
 import com.dak.wrote.backend.implementations.file_system_impl.*
@@ -68,6 +69,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         dataFile.writeBytes(note.generateSaveData())
         return true
     }
+
 
     override suspend fun <Display : UniqueEntity, Full : UniqueEntity> insetPreset(
         presetManager: PresetManager<Display, Full>,
@@ -281,6 +283,9 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         return markerFile.readLines()[1]
     }
 
+    override suspend fun getBook(uniqueKey: String): Book =
+        getBooks().find { it.uniqueKey == uniqueKey }!!
+
     override suspend fun getAttribute(uniqueKey: String): Attribute {
         val file = File(uniqueKey)
         checkEntryValidity(file)
@@ -472,6 +477,20 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
             insertAttributes(it, fixedAttrs)
         }
         return File(entity.uniqueKey).deleteRecursively()
+    }
+
+    override suspend fun getOrCreateAttribute(
+        book: Book,
+        keyGenerator: UniqueEntityKeyGenerator,
+        name: String
+    ): Attribute {
+        val attribute = getAttributes(book).find { it.name == name } ?: Attribute(
+            keyGenerator.getKey(
+                book,
+                EntryType.ATTRIBUTE
+            ), name
+        )
+        return attribute
     }
 
     private fun checkEntryValidity(file: File) {

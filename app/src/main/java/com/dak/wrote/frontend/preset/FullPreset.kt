@@ -104,7 +104,8 @@ open class BasicPreset(
     override val alternateTitles: Set<String>,
     override val attributes: Set<String>,
     override val pageLayout: SerializablePageLayout,
-) : DisplayPreset, FullPreset
+
+    ) : DisplayPreset, FullPreset
 
 class CharacterPreset() :
     BasicPreset("Character", setOf(), setOf("character"), CharacterPresetLayout) {
@@ -112,11 +113,6 @@ class CharacterPreset() :
 
 private val CharacterPresetLayout
     get() = SerializablePageLayout(listOf())
-
-@Composable
-fun NoteAdditionDisplay() {
-    val noteAdditionViewModel = viewModel<NoteAdditionViewModel>()
-}
 
 val normalPresets = listOf(CharacterPreset())
 
@@ -135,14 +131,20 @@ fun PresetListView(
     ) {
         userPresets.forEach {
             UserPresetView(
-                it,
+                it.name,
+                it.alternateTitles,
+                it.attributes,
                 remember { derivedStateOf { currentSelected.value == it } }) { selectUser(it) }
         }
-//        normalPresets.forEach {
-//            NormalPresetView(
-//                it,
-//                remember { derivedStateOf { currentSelected.value == it } }) { selectFull(it) }
-//        }
+        normalPresets.forEach {
+            UserPresetView(
+                name = it.name,
+                alternateTitles = it.alternateTitles,
+                attributes = it.attributes,
+                isSelected = remember { derivedStateOf { currentSelected.value == it } },
+            )
+            { selectBasic(it) }
+        }
     }
 }
 
@@ -190,8 +192,11 @@ fun AdditionalPresetView(alternateTitles: Set<String>, attributes: Set<String>) 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserPresetView(
-    userPreset: DisplayUserPreset,
+    name: String,
+    alternateTitles: Set<String>,
+    attributes: Set<String>,
     isSelected: State<Boolean>,
+    editingValues: Pair<(String) -> Unit, () -> Unit>? = null,
     onSelect: () -> Unit
 ) {
     Surface(
@@ -200,14 +205,8 @@ fun UserPresetView(
         shape = RoundedCornerShape(25.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(25.dp))
-//            .clickable {
-//                onSelect()
-//            }
-        ,
+            .clip(RoundedCornerShape(25.dp)),
         onClick = onSelect,
-//        elevation = CardDefaults.outlinedCardElevation(),
-
     ) {
         Box(modifier = Modifier.padding(horizontal = 10.dp, vertical = 15.dp)) {
             Column(
@@ -220,7 +219,7 @@ fun UserPresetView(
                         .padding(horizontal = 10.dp), Arrangement.SpaceBetween
                 ) {
                     Text(
-                        userPreset.nameState.value,
+                        name,
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier
                     )
@@ -238,11 +237,10 @@ fun UserPresetView(
                 }
 
                 AdditionalPresetView(
-                    alternateTitles = userPreset.alternateTitles,
-                    attributes = userPreset.attributes
+                    alternateTitles = alternateTitles,
+                    attributes = attributes
                 )
             }
-//            Spacer(modifier = Modifier.height(10.dp))
         }
     }
 }

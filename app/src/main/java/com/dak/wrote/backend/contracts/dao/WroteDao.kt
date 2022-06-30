@@ -1,6 +1,7 @@
 package com.dak.wrote.backend.contracts.dao
 
 import com.dak.wrote.backend.contracts.database.EntryType
+import com.dak.wrote.backend.contracts.database.UniqueEntityKeyGenerator
 import com.dak.wrote.backend.contracts.entities.*
 import com.dak.wrote.backend.contracts.entities.constants.NoteType
 
@@ -171,6 +172,7 @@ interface WroteDao {
      */
     suspend fun getBooks(): List<Book>
 
+    suspend fun getBook(uniqueKey: String): Book
     /**
      * @return A list of unique keys of children of the note identified by the given key
      */
@@ -235,4 +237,6 @@ interface WroteDao {
      * @return true if successful, false otherwise
      */
     suspend fun deleteEntityAttribute(entity: Attribute): Boolean
+
+    suspend fun getOrCreateAttribute(book: Book, keyGenerator: UniqueEntityKeyGenerator, name: String) : Attribute
 }
