@@ -89,9 +89,9 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
     override suspend fun <Display : UniqueEntity> updatePresetDisplay(
         presetManager: PresetManager<Display, *>,
         display: Display,
-    ) : Boolean {
+    ): Boolean {
         val file = File(display.uniqueKey)
-        if(!file.exists())
+        if (!file.exists())
             return false
         val auxiliaryFile = File(file, DATA_AUXILIARY_FILE_NAME)
         val markerFile = File(file, MARKER_OF_USE)
@@ -103,9 +103,9 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
     override suspend fun <Full : UniqueEntity> updatePresetFull(
         presetManager: PresetManager<*, Full>,
         full: Full,
-    ) : Boolean {
+    ): Boolean {
         val file = File(full.uniqueKey)
-        if(!file.exists())
+        if (!file.exists())
             return false
         val markerFile = File(file, MARKER_OF_USE)
         val dataFile = File(file, DATA_MAIN_FILE_NAME)
@@ -127,7 +127,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
     ): Display {
         val file = File(uniqueKey)
         checkEntryValidity(file)
-        return presetManager.loadDisplay(File(file, DATA_MAIN_FILE_NAME).readBytes())
+        return presetManager.loadDisplay(File(file, DATA_AUXILIARY_FILE_NAME).readBytes())
     }
 
     override suspend fun <Full : UniqueEntity> getPresetFull(
@@ -145,7 +145,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
             return false
         val auxiliaryFile = File(file, DATA_AUXILIARY_FILE_NAME)
         val markerFile = File(file, MARKER_OF_USE)
-        markerFile.printWriter().use {  it.println(EntryType.ATTRIBUTE.stringRepresentation) }
+        markerFile.printWriter().use { it.println(EntryType.ATTRIBUTE.stringRepresentation) }
         auxiliaryFile.printWriter().use { pw ->
             pw.println(attribute.name)
             attribute.associatedEntities.forEach { pw.println(it) }
