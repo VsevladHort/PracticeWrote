@@ -3,6 +3,7 @@ package com.dak.wrote.backend.implementations.file_system_impl.dao
 import android.content.Context
 import com.dak.wrote.backend.contracts.dao.WroteDao
 import com.dak.wrote.backend.contracts.database.EntryType
+import com.dak.wrote.backend.contracts.database.UniqueEntityKeyGenerator
 import com.dak.wrote.backend.contracts.entities.*
 import com.dak.wrote.backend.contracts.entities.constants.NoteType
 import com.dak.wrote.backend.implementations.file_system_impl.*
@@ -69,6 +70,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         return true
     }
 
+
     override suspend fun <Display : UniqueEntity, Full : UniqueEntity> insetPreset(
         presetManager: PresetManager<Display, Full>,
         display: Display,
@@ -89,9 +91,9 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
     override suspend fun <Display : UniqueEntity> updatePresetDisplay(
         presetManager: PresetManager<Display, *>,
         display: Display,
-    ) : Boolean {
+    ): Boolean {
         val file = File(display.uniqueKey)
-        if(!file.exists())
+        if (!file.exists())
             return false
         val auxiliaryFile = File(file, DATA_AUXILIARY_FILE_NAME)
         val markerFile = File(file, MARKER_OF_USE)
@@ -103,9 +105,9 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
     override suspend fun <Full : UniqueEntity> updatePresetFull(
         presetManager: PresetManager<*, Full>,
         full: Full,
-    ) : Boolean {
+    ): Boolean {
         val file = File(full.uniqueKey)
-        if(!file.exists())
+        if (!file.exists())
             return false
         val markerFile = File(file, MARKER_OF_USE)
         val dataFile = File(file, DATA_MAIN_FILE_NAME)
@@ -145,7 +147,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
             return false
         val auxiliaryFile = File(file, DATA_AUXILIARY_FILE_NAME)
         val markerFile = File(file, MARKER_OF_USE)
-        markerFile.printWriter().use {  it.println(EntryType.ATTRIBUTE.stringRepresentation) }
+        markerFile.printWriter().use { it.println(EntryType.ATTRIBUTE.stringRepresentation) }
         auxiliaryFile.printWriter().use { pw ->
             pw.println(attribute.name)
             attribute.associatedEntities.forEach { pw.println(it) }
@@ -280,6 +282,9 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
             throw IllegalStateException("Malformed note entry")
         return markerFile.readLines()[1]
     }
+
+    override suspend fun getBook(uniqueKey: String): Book =
+        getBooks().find { it.uniqueKey == uniqueKey }!!
 
     override suspend fun getAttribute(uniqueKey: String): Attribute {
         val file = File(uniqueKey)
@@ -472,6 +477,20 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
             insertAttributes(it, fixedAttrs)
         }
         return File(entity.uniqueKey).deleteRecursively()
+    }
+
+    override suspend fun getOrCreateAttribute(
+        book: Book,
+        keyGenerator: UniqueEntityKeyGenerator,
+        name: String
+    ): Attribute {
+        val attribute = getAttributes(book).find { it.name == name } ?: Attribute(
+            keyGenerator.getKey(
+                book,
+                EntryType.ATTRIBUTE
+            ), name
+        )
+        return attribute
     }
 
     private fun checkEntryValidity(file: File) {

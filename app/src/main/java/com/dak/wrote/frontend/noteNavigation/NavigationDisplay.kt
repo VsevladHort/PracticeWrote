@@ -18,15 +18,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dak.wrote.R
-import com.dak.wrote.backend.contracts.database.EntryType
-import com.dak.wrote.backend.contracts.database.UniqueEntityKeyGenerator
-import com.dak.wrote.backend.contracts.entities.Attribute
-import com.dak.wrote.backend.contracts.entities.BaseNote
-import com.dak.wrote.backend.contracts.entities.UniqueEntity
-import com.dak.wrote.backend.contracts.entities.constants.NoteType
-import com.dak.wrote.backend.implementations.file_system_impl.database.getKeyGen
+import com.dak.wrote.frontend.preset.NoteAdditionScreen
+import com.dak.wrote.frontend.preset.NoteCreation
 import com.dak.wrote.frontend.viewmodel.NavigationState
 import com.dak.wrote.frontend.viewmodel.NoteNavigationViewModel
 import com.dak.wrote.frontend.viewmodel.NoteNavigationViewModelFactory
@@ -43,7 +39,6 @@ import kotlinx.coroutines.launch
 fun NoteNavigation(
     initialNote: NavigationNote,
     onEnterButton: (String) -> Unit,
-    onCreateButton: () -> Unit,
     onDeleteBookButton: () -> Unit,
     application: Application = LocalContext.current.applicationContext as Application
 ) {
@@ -59,10 +54,8 @@ fun NoteNavigation(
             }
 
             NavigationDisplay(
-                application = application,
                 navigationViewModel = navigationViewModel,
                 onEnterButton = onEnterButton,
-                onCreateButton = onCreateButton,
                 onDeleteBookButton = onDeleteBookButton
             )
         }
@@ -73,10 +66,8 @@ var key = 0
 
 @Composable
 fun NavigationDisplay(
-    application: Application,
     navigationViewModel: NoteNavigationViewModel,
     onEnterButton: (String) -> Unit,
-    onCreateButton: () -> Unit,
     onDeleteBookButton: () -> Unit
 ) {
     val coroutine = rememberCoroutineScope()
@@ -94,48 +85,17 @@ fun NavigationDisplay(
         backButtonEnabled = !state.parents.isEmpty(),
         onBackButton = { navigationViewModel.goBack() },
         onEnterButton = { onEnterButton(state.currentNote.uniqueKey) },
-        onCreateButton = {
-            coroutine.launch {
-//                onCreateButton() // real create
-
-//              Create empty note for testing
-                val generator: UniqueEntityKeyGenerator =
-                    getKeyGen(application)
-
-                val child = generator.getKey(state.currentNote, EntryType.NOTE)
-
-                val dummyNote: BaseNote = object : BaseNote {
-                    override var title: String = "Note №${key++}"
-                    override var alternateTitles: Set<String> = emptySet()
-                    override var attributes: Set<Attribute> = emptySet()
-                    override val type: NoteType = NoteType.PLAIN_TEXT
-                    override fun generateSaveData(): ByteArray = byteArrayOf()
-                    override fun loadSaveData(value: ByteArray) {}
-                    override fun getIndexingData(): String = ""
-                    override val uniqueKey: String = child
-                }
-
-                navigationViewModel.DAO.insetNote(
-                    object : UniqueEntity {
-                        override val uniqueKey: String = state.currentNote.uniqueKey
-                    },
-                    dummyNote
-                )
-
-//              Update for new note to appear
-                navigationViewModel.changeNote(state.currentNote, ignoreCurrent = true)
-            }
-        },
+        onCreateButton = navigationViewModel::createNote,
         onDeleteButton = {
             coroutine.launch {
                 if (state.parents.isEmpty()) {
 //                    TODO delete entire Book
-                    navigationViewModel.DAO.deleteEntityBook(
+                    navigationViewModel.rep.deleteEntityBook(
                         entity = state.currentNote.uniqueKey
                     )
                     onDeleteBookButton() //go back to BookDisplay
                 } else {
-                    navigationViewModel.DAO.deleteEntityNote(
+                    navigationViewModel.rep.deleteEntityNote(
                         entity = state.currentNote.uniqueKey
                     )
 
@@ -154,9 +114,17 @@ fun MainNavigation(
     backButtonEnabled: Boolean,
     onBackButton: () -> Unit,
     onEnterButton: () -> Unit,
-    onCreateButton: () -> Unit,
+    onCreateButton: (NoteCreation) -> Unit,
     onDeleteButton: () -> Unit
 ) {
+    val createDialog = remember { mutableStateOf(false) }
+    if (createDialog.value)
+        Dialog(onDismissRequest = { createDialog.value = false }) {
+            NoteAdditionScreen(
+                confirmValue = { onCreateButton(it); createDialog.value = false },
+                exit = { createDialog.value = false })
+        }
+
     Column {
         Divider(color = Material3.colorScheme.primary, thickness = 3.dp)
 
@@ -176,7 +144,7 @@ fun MainNavigation(
             )
             CreateButton(
                 modifier = Modifier.align(Alignment.BottomCenter),
-                onCreateButton = onCreateButton
+                onCreateButton = { createDialog.value = true }
             )
         }
     }

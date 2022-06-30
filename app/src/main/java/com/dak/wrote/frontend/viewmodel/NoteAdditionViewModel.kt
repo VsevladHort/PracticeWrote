@@ -27,22 +27,17 @@ class NoteAdditionViewModel(application: Application) : AndroidViewModel(applica
         val canCreate: MutableState<Boolean> = mutableStateOf(false)
     )
 
-    private val _currentId: MutableStateFlow<String?> = MutableStateFlow(null)
-    val currentId = _currentId.distinctUntilChanged { old, new -> old == new }
-
-    fun passId(id: String) {
-        _currentId.value = id
-    }
-
     val rep = getDAO(application.applicationContext)
     val data: MutableStateFlow<Data?> = MutableStateFlow(null)
 
     fun load(data: Data, userPreset: DisplayUserPreset) {
         data.loadingJob?.cancel()
         data.loading.value = true
+        data.canCreate.value = false
         data.loadingJob = viewModelScope.launch {
             data.loadedSelected.value = rep.getPresetFull(UserPresetSaver(), userPreset.uniqueKey)
             data.loading.value = false
+            data.canCreate.value = true
         }
     }
 
@@ -57,15 +52,14 @@ class NoteAdditionViewModel(application: Application) : AndroidViewModel(applica
         data.loading.value = false
         data.loadedSelected.value = preset
         data.currentSelected.value = preset
+        data.canCreate.value = true
     }
 
     init {
         viewModelScope.launch {
-            currentId.filterNotNull().collect {
-                data.value = Data(
-                    rep.getPresets().map { rep.getPresetDisplay(UserPresetSaver(), it).toPreset() },
-                )
-            }
+            data.value = Data(
+                rep.getPresets().map { rep.getPresetDisplay(UserPresetSaver(), it).toPreset() },
+            )
         }
     }
 }

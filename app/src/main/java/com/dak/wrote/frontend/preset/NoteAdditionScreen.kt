@@ -27,12 +27,10 @@ data class NoteCreation(
 
 @Composable
 fun NoteAdditionScreen(
-    currentId: String,
     confirmValue: (NoteCreation) -> Unit,
     exit: () -> Unit,
 ) {
     val noteAdditionViewModel = viewModel<NoteAdditionViewModel>()
-    LaunchedEffect(currentId) { noteAdditionViewModel.passId(currentId) }
 
     noteAdditionViewModel.data.collectAsState().value.let { data ->
         when (data) {

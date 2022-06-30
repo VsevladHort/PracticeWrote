@@ -58,7 +58,7 @@ class UpdateHolder<T>(old: T) {
 
 
 @OptIn(ExperimentalSerializationApi::class)
-class EditorViewModel(application: Application, val currentId: String) :
+class EditorViewModel(val currentId: String, application: Application) :
     AndroidViewModel(application) {
     data class ObjectNote(
         val currentId: String,
@@ -216,6 +216,6 @@ class EditorViewModelFactory(
 ) :
     ViewModelProvider.Factory {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return GlossaryViewModel(selectedNote, application) as T
+        return EditorViewModel(selectedNote, application) as T
     }
 }
