@@ -4,20 +4,24 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.ViewModel
@@ -146,7 +150,7 @@ fun BottomNavTest() {
                         imageVector = FeatherIcons.Edit2,
                         contentDescription = "Edit $it"
                     )
-                }, label = { Text(text = "Edit $it")})
+                }, label = { Text(text = "Edit $it") })
 
             }
         }
@@ -155,5 +159,34 @@ fun BottomNavTest() {
         ViewModelTest {
 
         }
+    }
+}
+
+@Preview
+@Composable
+fun SampleLayout(text: String = "uoua,uauauahutoaus oatu toau htoae uhoaten uhtoae utao tuaoeh") {
+    ConstraintLayout(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        val (title, viewAll) = createRefs()
+
+        Text(text = "View all", Modifier
+            .background(Color.Green)
+            .constrainAs(viewAll) {
+                top.linkTo(parent.top, 8.dp)
+                end.linkTo(parent.end, 8.dp)
+            })
+
+        Text(text = "Short title uoa oau oe aoe ueo  uoa oeau oau e o ua u u oe eu oa",
+//            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .background(Color.White)
+                .constrainAs(title) {
+                    top.linkTo(parent.top, 8.dp)
+                    start.linkTo(parent.start, 8.dp)
+                    end.linkTo(viewAll.start, 8.dp)
+                    width = Dimension.fillToConstraints
+                })
     }
 }

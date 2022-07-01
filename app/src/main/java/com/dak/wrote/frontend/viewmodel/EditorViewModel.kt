@@ -3,18 +3,23 @@ package com.dak.wrote.frontend.viewmodel
 import android.app.Application
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.*
 import com.dak.wrote.backend.contracts.database.EntryType
 import com.dak.wrote.backend.contracts.entities.Attribute
 import com.dak.wrote.backend.contracts.entities.BaseNote
 import com.dak.wrote.backend.contracts.entities.Book
+import com.dak.wrote.backend.contracts.entities.PresetManager
 import com.dak.wrote.backend.contracts.entities.constants.NoteType
 import com.dak.wrote.backend.implementations.file_system_impl.dao.getDAO
 import com.dak.wrote.backend.implementations.file_system_impl.database.getKeyGen
 import com.dak.wrote.frontend.editor.PageLayout
 import com.dak.wrote.frontend.editor.SerializablePageLayout
 import com.dak.wrote.frontend.editor.mutStateListOf
+import com.dak.wrote.frontend.preset.SerializableDisplayUserPreset
+import com.dak.wrote.frontend.preset.SerializableFullUserPreset
+import com.dak.wrote.frontend.preset.UserPresetSaver
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -49,7 +54,7 @@ class UpdateHolder<T>(old: T) {
 
     var next = mutableStateOf(old)
     val updated
-        get() = old == next.value
+        get() = old != next.value
 
     fun refresh() {
         old = next.value
@@ -133,16 +138,21 @@ class EditorViewModel(val currentId: String, application: Application) :
         }
     }
 
-//    fun onSave(note : ObjectNote) {
-//       note.sPage = note.page.value.toSerializable()
-//       note.page.value = note.sPage.toDisplayable()
-//    }
 
     fun savePreset(note: ObjectNote) {
         viewModelScope.launch {
             note.processing.value = true
             val key = keyGen.getKey(null, EntryType.PRESET)
-//            rep.insetPreset(note)
+            rep.insetPreset(
+                UserPresetSaver(),
+                SerializableDisplayUserPreset(
+                    note.name.value,
+                    note.alternateTitles,
+                    note.attributes.map { it.name }.toSet(),
+                    key
+                ),
+                SerializableFullUserPreset(note.sPage, key)
+            )
             note.processing.value = false
         }
     }
@@ -153,7 +163,7 @@ class EditorViewModel(val currentId: String, application: Application) :
         note.processing.value = true
         viewModelScope.launch {
             val parsedAttributes = note.dAttributes.filter {
-                it.old != null && !it.next.value.isNullOrBlank()
+                it.old != null || !it.next.value.isNullOrBlank()
             }
             val addedAttributes =
                 parsedAttributes.filter { it.updated && !it.next.value.isNullOrBlank() }
@@ -180,7 +190,7 @@ class EditorViewModel(val currentId: String, application: Application) :
                     found.addEntity(note.currentId)
                     rep.insetAttribute(found)
                 } else {
-                    val key = keyGen.getKey(null, EntryType.ATTRIBUTE)
+                    val key = keyGen.getKey(book, EntryType.ATTRIBUTE)
                     val attribute = Attribute(key, added)
                     rep.insetAttribute(attribute)
                     updatedAttributes.add(attribute)

@@ -43,7 +43,8 @@ fun BookDisplay(
 
     if(addingBook.value)
         BookAdditionDialog(exit = { addingBook.value = false }, submit = {
-            booksViewModel.createBook(it)
+            val book = it.ifBlank { "Plain Book" }
+            booksViewModel.createBook(book)
             addingBook.value = false
         })
     BookNavigation(

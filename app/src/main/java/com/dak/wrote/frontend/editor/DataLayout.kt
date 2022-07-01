@@ -138,7 +138,7 @@ fun PageView(
         Column(Modifier.padding(vertical = 10.dp)) {
             Text(
                 text = name,
-                style = MaterialTheme.typography.h3.copy(fontWeight = FontWeight.Bold)
+                style = Material3.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
             )
         }
         AdditionalValuesView(alternateNames = alternateNames, attributes = attributes)
@@ -211,9 +211,10 @@ fun PageEdit(
             .padding(horizontal = 20.dp, vertical = 10.dp)
     ) {
         Column(Modifier.padding(vertical = 10.dp)) {
-            Text(
-                text = name.value,
-                style = MaterialTheme.typography.h3.copy(fontWeight = FontWeight.Bold),
+            AligningBasicTextField(
+                value = name.value,
+                name.component2(),
+                textStyle = Material3.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -277,7 +278,7 @@ fun AdditionalValuesEdit(
                                         modifier = Modifier
                                             .size(30.dp)
                                             .padding(5.dp),
-                                        onClick = { list.removeAt(index) },
+                                        onClick = { name.next.value = null },
                                         imageVector = FeatherIcons.Trash,
                                         description = "delete item"
                                     )
@@ -342,7 +343,7 @@ fun ParagraphAdditionBox(addParagraph: () -> Unit) {
                     rememberRipple(),
                     onClick = { expanded.value = true })
                 .background(
-                    color = Material3.colorScheme.secondaryContainer,
+                    color = Material3.colorScheme.primaryContainer,
                 )
                 .padding(horizontal = 25.dp, vertical = 10.dp)
         ) {

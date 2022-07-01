@@ -3,7 +3,7 @@ package com.dak.wrote.frontend.editor
 import android.app.Application
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -89,7 +89,13 @@ fun EditorScreenImpl(
                     ColoredIconButton(
                         imageVector = FeatherIcons.Save,
                         description = "Save",
-                        onClick = { note.inEdit.value = false }
+                        onClick = { note.inEdit.value = false; updatePage() }
+                    )
+                } else {
+                    ColoredIconButton(
+                        imageVector = FeatherIcons.Edit2,
+                        description = "Edit",
+                        onClick = { note.inEdit.value = true }
                     )
                     val expandedMenu = remember { mutableStateOf(false) }
                     IconButton(onClick = {
@@ -103,16 +109,10 @@ fun EditorScreenImpl(
                     DropdownMenu(
                         expanded = expandedMenu.value,
                         onDismissRequest = { expandedMenu.value = false }) {
-                        DropdownMenuItem(onClick = { savePreset() }) {
+                        DropdownMenuItem(onClick = { savePreset(); expandedMenu.value = false }, text = {
                             Text(text = "Save as a preset")
-                        }
+                        })
                     }
-                } else {
-                    ColoredIconButton(
-                        imageVector = FeatherIcons.Edit2,
-                        description = "Edit",
-                        onClick = { note.inEdit.value = true }
-                    )
                 }
             }
         }

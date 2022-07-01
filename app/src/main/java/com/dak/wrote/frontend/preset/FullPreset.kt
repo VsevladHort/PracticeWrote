@@ -5,11 +5,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -17,16 +20,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dak.wrote.backend.contracts.entities.PresetManager
 import com.dak.wrote.backend.contracts.entities.UniqueEntity
+import com.dak.wrote.frontend.AligningBasicTextField
 import com.dak.wrote.frontend.editor.*
 import com.dak.wrote.frontend.viewmodel.NoteAdditionViewModel
+import com.dak.wrote.frontend.viewmodel.UpdateHolder
 import com.dak.wrote.ui.theme.Material3
 import com.dak.wrote.ui.theme.WroteTheme
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ChevronDown
 import compose.icons.feathericons.ChevronUp
+import compose.icons.feathericons.Delete
+import compose.icons.feathericons.Edit2
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -48,6 +57,7 @@ interface DisplayPreset {
 @OptIn(ExperimentalSerializationApi::class)
 class UserPresetSaver : PresetManager<SerializableDisplayUserPreset, SerializableFullUserPreset> {
     override fun loadDisplay(byteData: ByteArray): SerializableDisplayUserPreset {
+        val a = byteData.decodeToString()
         return Json.decodeFromStream(ByteArrayInputStream(byteData))
     }
 
@@ -83,11 +93,11 @@ class DisplayUserPreset(
     override val alternateTitles: Set<String>,
     override val attributes: Set<String>, override val uniqueKey: String,
 ) : DisplayPreset, UniqueEntity {
-    val nameState = mutableStateOf(name)
+    val nameState = UpdateHolder(name)
     override var name: String
-        get() = nameState.value
+        get() = nameState.next.value
         set(value) {
-            nameState.value = value
+            nameState.next.value = value
         }
 
     fun toSerializable() =
@@ -122,19 +132,31 @@ fun PresetListView(
     normalPresets: List<BasicPreset>,
     userPresets: List<DisplayUserPreset>,
     currentSelected: MutableState<DisplayPreset?>,
+    updateUserPreset: (DisplayUserPreset) -> Unit,
+    delete: (Int) -> Unit,
     selectBasic: (BasicPreset) -> Unit,
     selectUser: (DisplayUserPreset) -> Unit,
 ) {
     Column(
-        modifier = Modifier.padding(horizontal = 10.dp),
-        verticalArrangement = Arrangement.spacedBy(15.dp)
+        modifier = Modifier
+            .padding(horizontal = 10.dp)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(15.dp),
     ) {
-        userPresets.forEach {
+        userPresets.forEachIndexed { i, preset ->
             UserPresetView(
-                it.name,
-                it.alternateTitles,
-                it.attributes,
-                remember { derivedStateOf { currentSelected.value == it } }) { selectUser(it) }
+                preset.nameState.next.value,
+                preset.alternateTitles,
+                preset.attributes,
+                remember { derivedStateOf { currentSelected.value == preset } },
+                remember {
+                    EditingValues(
+                        preset.nameState.next.component2(), { updateUserPreset(preset) },
+                        { preset.nameState.next.value = preset.nameState.old },
+                        { delete(i) }
+                    )
+                },
+            ) { selectUser(preset) }
         }
         normalPresets.forEach {
             UserPresetView(
@@ -189,6 +211,13 @@ fun AdditionalPresetView(alternateTitles: Set<String>, attributes: Set<String>) 
     }
 }
 
+data class EditingValues(
+    val updateText: (String) -> Unit,
+    val submit: () -> Unit,
+    val cancel: () -> Unit,
+    val delete: () -> Unit
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserPresetView(
@@ -196,9 +225,10 @@ fun UserPresetView(
     alternateTitles: Set<String>,
     attributes: Set<String>,
     isSelected: State<Boolean>,
-    editingValues: Pair<(String) -> Unit, () -> Unit>? = null,
+    editingValues: EditingValues? = null,
     onSelect: () -> Unit
 ) {
+    val inEdit = rememberSaveable { mutableStateOf(false) }
     Surface(
         tonalElevation = 30.dp,
 
@@ -208,7 +238,7 @@ fun UserPresetView(
             .clip(RoundedCornerShape(25.dp)),
         onClick = onSelect,
     ) {
-        Box(modifier = Modifier.padding(horizontal = 10.dp, vertical = 15.dp)) {
+        Box(modifier = Modifier.padding(horizontal = 15.dp, vertical = 15.dp)) {
             Column(
                 Modifier.animateContentSize(),
                 verticalArrangement = Arrangement.spacedBy(5.dp)
@@ -216,30 +246,63 @@ fun UserPresetView(
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 10.dp), Arrangement.SpaceBetween
+                        .padding(horizontal = 10.dp),
+                    Arrangement.spacedBy(10.dp, Alignment.End),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        name,
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier
-                    )
-                    if (isSelected.value)
-                        Box(
-                            modifier = Modifier.wrapContentSize(Alignment.TopCenter)
-                        ) {
+                    if (!inEdit.value && editingValues != null) {
+                        IconButton(onClick = editingValues.delete) {
+                            Icon(imageVector = FeatherIcons.Delete, contentDescription = "Delete")
+                        }
+                        IconButton(onClick = { inEdit.value = true }) {
+                            Icon(imageVector = FeatherIcons.Edit2, contentDescription = "Edit")
+                        }
+                    }
+                    Box(
+                        modifier = Modifier.size(26.dp)
+                    ) {
+                        if (isSelected.value)
                             Box(
                                 modifier = Modifier
                                     .size(26.dp)
                                     .clip(CircleShape)
                                     .background(Material3.colorScheme.tertiary)
                             )
-                        }
+                    }
+                }
+                if (!inEdit.value) {
+                    Text(
+                        name,
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                } else {
+                    editingValues!!
+                    AligningBasicTextField(
+                        value = name,
+                        onValueChange = editingValues.updateText,
+                        textStyle = Material3.typography.titleLarge,
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
 
                 AdditionalPresetView(
                     alternateTitles = alternateTitles,
                     attributes = attributes
                 )
+                if (inEdit.value)
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End)
+                    ) {
+                        editingValues!!
+                        Button(onClick = {editingValues.submit(); inEdit.value = false}) {
+                            Text(text = "Submit")
+                        }
+                        TextButton(onClick = {editingValues.cancel(); inEdit.value = false}) {
+                            Text(text = "Cancel")
+                        }
+                    }
             }
         }
     }
@@ -290,7 +353,7 @@ val presetImitations = listOf(
         ""
     ),
     DisplayUserPreset(
-        "Hero's team member",
+        "Hero's team member ha ha ha ha ha",
         setOf(),
         setOf("", "character", "hero's team member"),
         ""
@@ -338,6 +401,6 @@ fun PresetListViewPreview() {
             userPresets = presetImitations,
             remember { mutableStateOf(presetImitations[1]) },
             {},
-            {})
+            {}, {}, {})
     }
 }

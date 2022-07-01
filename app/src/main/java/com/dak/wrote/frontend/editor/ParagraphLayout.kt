@@ -111,6 +111,7 @@ fun ParagraphEdit(
                     layout.DrawEdit()
                 }
             }
+            DataLayoutAdditionBox(addLayout = { columns.add(it) })
 
         }
     }
@@ -144,7 +145,7 @@ fun DataLayoutAdditionBox(addLayout: (DataLayout) -> Unit) {
                     rememberRipple(),
                     onClick = { expanded.value = true })
                 .background(
-                    color = Material3.colorScheme.secondaryContainer,
+                    color = Material3.colorScheme.primaryContainer,
                 )
                 .padding(horizontal = 25.dp, vertical = 10.dp)
         ) {
