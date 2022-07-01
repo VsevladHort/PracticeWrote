@@ -19,6 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dak.wrote.R
 import com.dak.wrote.frontend.preset.NoteAdditionScreen
@@ -119,7 +120,7 @@ fun MainNavigation(
 ) {
     val createDialog = remember { mutableStateOf(false) }
     if (createDialog.value)
-        Dialog(onDismissRequest = { createDialog.value = false }) {
+        Dialog(onDismissRequest = { createDialog.value = false }, DialogProperties()) {
             NoteAdditionScreen(
                 confirmValue = { onCreateButton(it); createDialog.value = false },
                 exit = { createDialog.value = false })

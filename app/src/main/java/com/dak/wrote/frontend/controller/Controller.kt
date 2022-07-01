@@ -5,9 +5,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
@@ -66,10 +64,10 @@ fun ControllerBottomBar(
     book: Book
 ) {
     val prefix = stringResource(id = R.string.note_prefix)
-    BottomNavigation {
+    NavigationBar {
         val backStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = backStackEntry?.destination?.route
-        BottomNavigationItem(
+        NavigationBarItem(
             selected = currentRoute == NavigationScreens.Glossary.path,
             onClick = {
                 navController.navigate(NavigationScreens.Glossary.path)
@@ -87,7 +85,7 @@ fun ControllerBottomBar(
             }
         )
 
-        BottomNavigationItem(
+        NavigationBarItem(
             selected = currentRoute?.startsWith(prefix) ?: false,
             onClick = {
                 navigateToSingleNoteNavigation(
@@ -156,6 +154,7 @@ fun NavigationHost(
         }
 
         composable(NavigationScreens.Glossary.path) {
+            showDrawer.value = true
 //            GlossaryScreen()
             Text("Glossary")
         }
