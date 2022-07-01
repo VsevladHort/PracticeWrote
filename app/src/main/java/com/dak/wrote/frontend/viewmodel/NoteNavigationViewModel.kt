@@ -1,7 +1,6 @@
 package com.dak.wrote.frontend.viewmodel
 
 import android.app.Application
-import androidx.core.text.htmlEncode
 import androidx.lifecycle.*
 import com.dak.wrote.backend.contracts.database.EntryType
 import com.dak.wrote.backend.contracts.entities.Attribute
@@ -51,12 +50,12 @@ class NavigationStateFactory {
             parents: ArrayDeque<NavigationNote>,
             application: Application
         ): NavigationState {
-            val DAO = getDAO(application)
+            val rep = getDAO(application)
             currentNote?.let { parents.addLast(it) }
 
             return NavigationState(
                 currentNote = newNote,
-                paragraphs = getParagraphs(newNote, DAO),
+                paragraphs = getParagraphs(newNote, rep),
                 parents = parents
             )
         }
@@ -105,7 +104,8 @@ class NoteNavigationViewModel(
     fun changeNote(newNote: NavigationNote, ignoreCurrent: Boolean = false) {
         viewModelScope.launch(Dispatchers.IO) {
             val currentNote =
-                if (ignoreCurrent || navigationState.value!!.currentNote.title == "")
+//                if (ignoreCurrent || navigationState.value!!.currentNote.title == "")
+                if (ignoreCurrent)
                     null
                 else
                     navigationState.value!!.currentNote

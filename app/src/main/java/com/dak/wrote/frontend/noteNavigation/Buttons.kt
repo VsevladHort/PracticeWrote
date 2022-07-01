@@ -14,7 +14,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -23,8 +22,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dak.wrote.backend.contracts.entities.Book
-import com.dak.wrote.frontend.preset.NoteAdditionScreen
-import com.dak.wrote.frontend.preset.NoteCreation
 import com.dak.wrote.ui.theme.Material3
 import com.dak.wrote.ui.theme.customColors
 
@@ -80,7 +77,7 @@ fun NavigationButton(
     ) {
         Text(
             text = label,
-            color = Material3.colorScheme.onPrimary,
+            color = if (buttonEnabled) Material3.colorScheme.onPrimary else Material3.colorScheme.onSurface,
             fontSize = 24.sp,
             style = Material3.typography.labelMedium
         )
@@ -179,14 +176,14 @@ fun GridButton(
 
 @Composable
 fun ColumnButton(
+    modifier: Modifier = Modifier,
     book: Book,
-    onBookClicked: (Book) -> Unit = {},
-    modifier: Modifier = Modifier
+    onBookClicked: (Book) -> Unit = {}
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     val color =
-        if (isPressed) Material3.colorScheme.primary else Material3.colorScheme.background
+        if (isPressed) Material3.colorScheme.primaryContainer else Material3.colorScheme.background
 
     Button(
         onClick = { onBookClicked(book) },
@@ -206,7 +203,7 @@ fun ColumnButton(
             text = book.title,
             textAlign = TextAlign.Center,
             color = Material3.colorScheme.onBackground,
-            style = Material3.typography.bodyMedium
+            style = Material3.typography.headlineSmall
         )
     }
 }

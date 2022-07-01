@@ -12,6 +12,7 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -34,8 +35,6 @@ import compose.icons.feathericons.ArrowLeft
 import compose.icons.feathericons.Trash2
 import kotlinx.coroutines.launch
 
-//@Preview(showSystemUi = true)
-//@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun NoteNavigation(
     initialNote: NavigationNote,
@@ -50,8 +49,12 @@ fun NoteNavigation(
             val navigationViewModel: NoteNavigationViewModel =
                 viewModel(key = null, factory = factory)
 
-            LaunchedEffect(rememberCoroutineScope()) {
-                navigationViewModel.changeNote(initialNote)
+            val firstInit = rememberSaveable {
+                mutableStateOf(false)
+            }
+            if (!firstInit.value) {
+                navigationViewModel.changeNote(initialNote, true)
+                firstInit.value = true
             }
 
             NavigationDisplay(
@@ -63,8 +66,6 @@ fun NoteNavigation(
     }
 }
 
-var key = 0
-
 @Composable
 fun NavigationDisplay(
     navigationViewModel: NoteNavigationViewModel,
@@ -74,8 +75,7 @@ fun NavigationDisplay(
     val coroutine = rememberCoroutineScope()
 
     val navigationState by navigationViewModel.navigationState.observeAsState()
-    val state = // Does it really can be null?
-        navigationState ?: NavigationState()
+    val state = navigationState ?: NavigationState()
 
     MainNavigation(state.currentNote.title, state.paragraphs,
         onNoteClicked = { newNoteForNavigation ->
@@ -90,7 +90,6 @@ fun NavigationDisplay(
         onDeleteButton = {
             coroutine.launch {
                 if (state.parents.isEmpty()) {
-//                    TODO delete entire Book
                     navigationViewModel.rep.deleteEntityBook(
                         entity = state.currentNote.uniqueKey
                     )
@@ -186,34 +185,13 @@ fun NoteWithParagraphs(
         item(
             span = { GridItemSpan(maxLineSpan) }
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            )
-            {
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-/*                    IconButton(
-                        modifier = modifier.wrapContentSize(Alignment.CenterStart),
-                        imageVector = FeatherIcons.ArrowLeft,
-                        description = "Back",
-                        buttonEnabled = backButtonEnabled,
-                        onClick = onBackButton
-                    )
-                    IconButton(
-                        modifier = modifier.wrapContentSize(Alignment.CenterEnd),
-                        imageVector = FeatherIcons.Trash2,
-                        description = "Delete",
-                        onClick = { openDeleteDialog.value = true }
-                    )*/
-                }
+            if (backButtonEnabled) // to ignore book title
                 Text(
                     text = title,
                     textAlign = TextAlign.Center,
                     color = Material3.colorScheme.onBackground,
                     style = Material3.typography.displayMedium
                 )
-            }
         }
 
         // Navigation buttons
@@ -319,7 +297,6 @@ private fun NavigationButtons(
                 horizontal = 16.dp
             )
             .fillMaxWidth(),
-//        horizontalArrangement = Arrangement.spacedBy(30.dp)
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         // Back button
@@ -336,18 +313,13 @@ private fun NavigationButtons(
         NavigationButton(
             label = "Enter",
             modifier = Modifier,
-//                .weight(0.9f),
-//                .padding(
-//                    vertical = 5.dp,
-//                    horizontal = 50.dp
-//                ),
+            buttonEnabled = backButtonEnabled,
             onButtonClicked = onEnterButton
         )
 
         //Delete button
         ColoredIconButton(
             imageVector = FeatherIcons.Trash2,
-//            modifier = Modifier.weight(0.35f),
             description = "Delete",
             onClick = onDeleteButton
         )
