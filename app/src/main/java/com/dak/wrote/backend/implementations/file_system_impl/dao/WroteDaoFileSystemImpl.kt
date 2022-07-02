@@ -407,7 +407,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         File(file, DATA_NOTE_ATTRIBUTES)
         val list = mutableListOf<String>()
         auxiliaryFile.readLines().withIndex()
-            .forEach { if (it.index != 1 && it.index != 2) list.add(it.value) }
+            .forEach { if (it.index != 0 && it.index != 1) list.add(it.value) }
         return list
     }
 
