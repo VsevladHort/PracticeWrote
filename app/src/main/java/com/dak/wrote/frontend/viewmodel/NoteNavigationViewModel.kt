@@ -11,10 +11,11 @@ import com.dak.wrote.backend.implementations.file_system_impl.dao.getDAO
 import com.dak.wrote.backend.implementations.file_system_impl.database.getKeyGen
 import com.dak.wrote.frontend.noteNavigation.NavigationNote
 import com.dak.wrote.frontend.preset.NoteCreation
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToStream
@@ -107,8 +108,7 @@ class NoteNavigationViewModel(
     fun changeNote(newNote: NavigationNote, ignoreCurrent: Boolean = false) {
         viewModelScope.launch(Dispatchers.IO) {
             val currentNote =
-//                if (ignoreCurrent || navigationState.value!!.currentNote.title == "")
-                if (ignoreCurrent)
+                if (ignoreCurrent || navigationState.value!!.currentNote.title == "")
                     null
                 else
                     navigationState.value!!.currentNote
@@ -186,12 +186,10 @@ class NoteNavigationViewModel(
     fun delete(): Deferred<Boolean> {
         return viewModelScope.async {
             val state = navigationState.value!!
-            println(state.parents)
             if (state.parents.isEmpty()) {
                 rep.deleteEntityBook(
                     entity = state.currentNote.uniqueKey
                 )
-                println("AAAAAAAAAAAAAAAAAAA")
                 true
             } else {
                 rep.deleteEntityNote(
@@ -205,7 +203,7 @@ class NoteNavigationViewModel(
 
     fun update() {
         viewModelScope.launch {
-            changeNote(_navigationState.value!!.currentNote)
+            changeNote(_navigationState.value!!.currentNote, true)
         }
     }
 

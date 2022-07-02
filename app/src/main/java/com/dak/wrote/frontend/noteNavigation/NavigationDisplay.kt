@@ -10,9 +10,11 @@ import androidx.compose.material.AlertDialog
 import androidx.compose.material.Divider
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -33,10 +35,7 @@ import com.dak.wrote.ui.theme.WroteTheme
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeft
 import compose.icons.feathericons.Trash2
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 @Composable
@@ -58,13 +57,13 @@ fun NoteNavigation(
             val navigationViewModel: NoteNavigationViewModel =
                 viewModel(key = null, factory = factory)
 
-            val firstInit = rememberSaveable {
-                mutableStateOf(false)
-            }
-            if (!firstInit.value) {
-                navigationViewModel.changeNote(initialNote, true)
-                firstInit.value = true
-            }
+//            val firstInit = rememberSaveable {
+//                mutableStateOf(false)
+//            }
+//            if (!firstInit.value) {
+//                navigationViewModel.changeNote(initialNote, true)
+//                firstInit.value = true
+//            }
 
             NavigationDisplay(
                 navigationViewModel = navigationViewModel,
@@ -81,12 +80,11 @@ fun NavigationDisplay(
     onEnterButton: (String) -> Unit,
     onDeleteBookButton: () -> Unit
 ) {
-    val coroutine = rememberCoroutineScope()
-
     val navigationState by navigationViewModel.navigationState.observeAsState()
     val state = navigationState ?: NavigationState()
 
-    MainNavigation(state.currentNote.title, state.paragraphs,
+    MainNavigation(
+        state.currentNote.title, state.paragraphs,
         onNoteClicked = { newNoteForNavigation ->
             navigationViewModel.changeNote(
                 newNoteForNavigation
@@ -99,7 +97,7 @@ fun NavigationDisplay(
         onDeleteButton = {
             runBlocking {
                 val res = navigationViewModel.delete().await()
-                if(res)
+                if (res)
                     onDeleteBookButton()
             }
         }
@@ -185,13 +183,13 @@ fun NoteWithParagraphs(
         item(
             span = { GridItemSpan(maxLineSpan) }
         ) {
-            if (backButtonEnabled) // to ignore book title
-                Text(
-                    text = title,
-                    textAlign = TextAlign.Center,
-                    color = Material3.colorScheme.onBackground,
-                    style = Material3.typography.displayMedium
-                )
+//            if (backButtonEnabled) // to ignore book title
+            Text(
+                text = title,
+                textAlign = TextAlign.Center,
+                color = Material3.colorScheme.onBackground,
+                style = Material3.typography.displayMedium
+            )
         }
 
         // Navigation buttons
@@ -239,13 +237,13 @@ fun DeleteDialog(
         title = {
             Text(
                 text = stringResource(id = R.string.delete_dialog_title),
-                style = Material3.typography.titleMedium
+                style = Material3.typography.titleLarge
             )
         },
         text = {
             Text(
                 text = stringResource(id = R.string.delete_dialog_body, title),
-                style = Material3.typography.bodySmall
+                style = Material3.typography.bodyMedium
             )
         },
         confirmButton = {
@@ -264,22 +262,6 @@ fun DeleteDialog(
             )
         }
     )
-
-
-//    val dialog = MaterialAlertDialogBuilder(LocalContext.current)
-//        .setTitle(stringResource(R.string.delete_dialog_title))
-//        .setMessage(stringResource(R.string.delete_dialog_title, title))
-//        .setNegativeButton(stringResource(R.string.cancel)) { dialog, which ->
-//            onCloseDialog()
-//        }
-//        .setPositiveButton(stringResource(R.string.delete)) { dialog, which ->
-//            onDeleteButton()
-//            onCloseDialog()
-//        }.create()
-//
-//    if (show)
-//        dialog.show()
-
 }
 
 @Composable

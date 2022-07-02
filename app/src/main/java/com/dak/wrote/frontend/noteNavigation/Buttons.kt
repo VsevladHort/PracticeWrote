@@ -134,6 +134,7 @@ fun DialogButton(
         Text(
             text = text,
             color = Material3.colorScheme.primary,
+            fontSize = 20.sp,
             style = Material3.typography.labelMedium
         )
     }

@@ -10,14 +10,23 @@ fun navigateToSingleNoteNavigation(
     navController: NavController,
     prefix: String,
     noteKey: String,
-    noteTitle: String
+    noteTitle: String,
+    restore: Boolean
 ) {
     navController.navigate(
         prefix +
                 "${NavigationScreens.NoteNavigation.path}/" +
                 "${noteKey.toNav()}/" +
                 noteTitle.toNav()
-    )
+    ) {
+        println("Well")
+        popUpTo(navController.currentBackStackEntry!!.destination.route!!) {
+            saveState = true
+            inclusive = true
+        }
+        launchSingleTop = true
+        restoreState = restore
+    }
 
 }
 
