@@ -284,8 +284,14 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         return markerFile.readLines()[1]
     }
 
-    override suspend fun getBook(uniqueKey: String): Book =
-        getBooks().find { it.uniqueKey == uniqueKey }!!
+    override suspend fun getBook(uniqueKey: String): Book {
+        val file = File(uniqueKey)
+        checkEntryValidity(file)
+        if (getEntryType(uniqueKey) != EntryType.BOOK)
+            throw KeyForWrongEntityException("Expected a book key, got something else")
+        val auxiliaryFile = File(file, DATA_AUXILIARY_FILE_NAME)
+        return Book(uniqueKey, auxiliaryFile.readLines()[0])
+    }
 
     override suspend fun getAttribute(uniqueKey: String): Attribute {
         val file = File(uniqueKey)
@@ -434,11 +440,10 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         return true
     }
 
-    override suspend fun getParentKey(entry: BaseNote): String {
-        return getFileParent(entry.uniqueKey)
-    }
-
-    suspend fun getParentKey(uniqueKey: String): String {
+    override suspend fun getParentKey(uniqueKey: String): String {
+        checkEntryValidity(File(uniqueKey))
+        if (getEntryType(uniqueKey) != EntryType.NOTE)
+            throw KeyForWrongEntityException("Expected key for Note, got something else")
         return getFileParent(uniqueKey)
     }
 

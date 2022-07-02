@@ -217,7 +217,7 @@ interface WroteDao {
     /**
      * @return parent key for the given note
      */
-    suspend fun getParentKey(entry: BaseNote): String
+    suspend fun getParentKey(uniqueKey: String): String
 
     /**
      * @return name of the entity identified by the given uniqueKey
