@@ -11,8 +11,10 @@ import com.dak.wrote.backend.implementations.file_system_impl.dao.getDAO
 import com.dak.wrote.backend.implementations.file_system_impl.database.getKeyGen
 import com.dak.wrote.frontend.noteNavigation.NavigationNote
 import com.dak.wrote.frontend.preset.NoteCreation
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToStream
@@ -86,7 +88,8 @@ class NoteNavigationViewModel(
     initialNote: NavigationNote,
     paragraphs: List<NavigationNote>,
     parents: ArrayDeque<NavigationNote>,
-    application: Application
+    application: Application,
+    private val update: MutableSharedFlow<Unit>
 ) : AndroidViewModel(application) {
     val rep = getDAO(application)
     val keyGen = getKeyGen(application)
@@ -109,10 +112,13 @@ class NoteNavigationViewModel(
                     null
                 else
                     navigationState.value!!.currentNote
-
+            val key = newNote.uniqueKey
+            val name = if (rep.getEntryType(key) == EntryType.BOOK)
+                rep.getBook(key).title
+            else rep.getName(key)
             val newNavigationState =
                 NavigationStateFactory.create(
-                    newNote = newNote,
+                    newNote = newNote.copy(title = name),
                     currentNote = currentNote,
                     parents = navigationState.value!!.parents,
                     application = getApplication<Application>()
@@ -173,6 +179,27 @@ class NoteNavigationViewModel(
 
 //              update for new note to appear
             changeNote(navigationState.value!!.currentNote, ignoreCurrent = true)
+            update.emit(Unit)
+        }
+    }
+
+    fun delete(): Deferred<Boolean> {
+        return viewModelScope.async {
+            val state = navigationState.value!!
+            println(state.parents)
+            if (state.parents.isEmpty()) {
+                rep.deleteEntityBook(
+                    entity = state.currentNote.uniqueKey
+                )
+                println("AAAAAAAAAAAAAAAAAAA")
+                true
+            } else {
+                rep.deleteEntityNote(
+                    entity = state.currentNote.uniqueKey
+                )
+                goBack()
+                false
+            }
         }
     }
 
@@ -184,6 +211,12 @@ class NoteNavigationViewModel(
 
     init {
         update()
+        viewModelScope.launch {
+            update.collect {
+                println("I exist")
+                update()
+            }
+        }
     }
 }
 
@@ -192,30 +225,34 @@ class NoteNavigationViewModelFactory : ViewModelProvider.Factory {
     val paragraphs: List<NavigationNote>
     val parents: ArrayDeque<NavigationNote>
     val application: Application
+    val update: MutableSharedFlow<Unit>
 
 
     constructor(
         initialNote: NavigationNote,
         paragraphs: List<NavigationNote>,
         parents: ArrayDeque<NavigationNote>,
-        application: Application
+        application: Application,
+        update: MutableSharedFlow<Unit>
     ) {
         this.initialNote = initialNote
         this.paragraphs = paragraphs
         this.parents = parents
         this.application = application
 
+        this.update = update
     }
 
-    constructor(application: Application, note: NavigationNote) {
+    constructor(application: Application, note: NavigationNote, update: MutableSharedFlow<Unit>) {
         val initialState = NavigationState()
         this.initialNote = note
         this.paragraphs = initialState.paragraphs
         this.parents = initialState.parents
         this.application = application
+        this.update = update
     }
 
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return NoteNavigationViewModel(initialNote, paragraphs, parents, application) as T
+        return NoteNavigationViewModel(initialNote, paragraphs, parents, application, update) as T
     }
 }

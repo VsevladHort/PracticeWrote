@@ -207,7 +207,7 @@ interface WroteDao {
      *
      * @return true if the insert was successful, false otherwise
      */
-    suspend fun insertAttributes(uniqueKey: String, titles: List<Attribute>): Boolean
+    suspend fun insertAttributes(uniqueKey: String, titles: Set<Attribute>): Boolean
 
     /**
      * @return parent key for the given note

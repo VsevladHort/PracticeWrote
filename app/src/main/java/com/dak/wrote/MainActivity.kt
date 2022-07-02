@@ -80,7 +80,8 @@ fun NavigationHost(
                 .fromNav()
             ControllerDisplay(
                 book = Book(noteKey, noteTitle),
-                goUp = { controller.popBackStack() }
+                goUp = {
+                    controller.popBackStack() }
             )
         }
     }

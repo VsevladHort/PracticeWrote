@@ -32,7 +32,8 @@ fun BookAdditionDialog(exit: () -> Unit, submit: (String) -> Unit) {
                 value = name.value,
                 onValueChange = name.component2(),
                 modifier = Modifier.fillMaxWidth(),
-                textStyle = Material3.typography.titleLarge
+                textStyle = Material3.typography.titleLarge,
+                singleLine = true
             )
         }, dismissButton = {
             TextButton(onClick = exit) {
