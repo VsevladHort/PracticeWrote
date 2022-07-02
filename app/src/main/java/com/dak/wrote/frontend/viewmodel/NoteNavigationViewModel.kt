@@ -112,7 +112,6 @@ class NoteNavigationViewModel(
 
     fun changeNote(ignoreCurrent: Boolean = false): Job {
         return viewModelScope.launch(Dispatchers.IO) {
-            println("Ima here")
             val currentNote =
                 if (ignoreCurrent || navigationState.value!!.currentNote.title == "")
                     null
@@ -132,7 +131,6 @@ class NoteNavigationViewModel(
                 )
 
             _navigationState.postValue(newNavigationState)
-            println("Ima end")
         }
     }
 
@@ -226,7 +224,6 @@ class NoteNavigationViewModel(
         update()
         viewModelScope.launch {
             update.collect {
-                println("I exist")
                 update()
             }
         }
