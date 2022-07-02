@@ -502,7 +502,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         keyGenerator: UniqueEntityKeyGenerator,
         name: String
     ): Attribute {
-        return getAttributes(book).find { it.name == name } ?: Attribute(
+        return getAttributes(book.uniqueKey).find { it.name == name } ?: Attribute(
             keyGenerator.getKey(
                 book,
                 EntryType.ATTRIBUTE
