@@ -8,6 +8,7 @@ import com.dak.wrote.backend.contracts.entities.*
 import com.dak.wrote.backend.contracts.entities.constants.NoteType
 import com.dak.wrote.backend.implementations.file_system_impl.*
 import com.dak.wrote.backend.implementations.file_system_impl.dao.exceptions.KeyException
+import com.dak.wrote.backend.implementations.file_system_impl.dao.exceptions.KeyForWrongEntityException
 import com.dak.wrote.backend.implementations.file_system_impl.dao.exceptions.UnknownKeyException
 import java.io.File
 import java.lang.IllegalStateException
@@ -307,12 +308,30 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
     override suspend fun getAttributes(uniqueKey: String): Set<Attribute> {
         val file = File(uniqueKey)
         checkEntryValidity(file)
-        val attributes = File(file, DATA_NOTE_ATTRIBUTES)
-        val attrSet = mutableSetOf<Attribute>()
-        attributes.readLines().forEach {
-            getAttribute(it).let { it1 -> attrSet.add(it1) }
+        return when (getEntryType(uniqueKey)) {
+            EntryType.NOTE -> {
+                val attributes = File(file, DATA_NOTE_ATTRIBUTES)
+                if (attributes.exists()) {
+                    val attrSet = mutableSetOf<Attribute>()
+                    attributes.readLines().forEach {
+                        getAttribute(it).let { it1 -> attrSet.add(it1) }
+                    }
+                    attrSet
+                } else
+                    emptySet()
+            }
+            EntryType.BOOK -> {
+                val fileBooks = File(baseDir, DIR_BOOKS)
+                val fileAttributes = File(fileBooks, DIR_ATTRIBUTES)
+                val attrSet = mutableSetOf<Attribute>()
+                fileAttributes.listFiles()?.let { stream ->
+                    stream.asSequence().filter { checkIfInserted(it) }
+                        .forEach { attrSet.add(getAttribute(it.absolutePath)) }
+                }
+                attrSet
+            }
+            else -> throw KeyForWrongEntityException("Only books or notes can contain attributes")
         }
-        return attrSet
     }
 
     override suspend fun getNoteKeys(book: Book): Set<String> {
@@ -484,13 +503,12 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         keyGenerator: UniqueEntityKeyGenerator,
         name: String
     ): Attribute {
-        val attribute = getAttributes(book).find { it.name == name } ?: Attribute(
+        return getAttributes(book).find { it.name == name } ?: Attribute(
             keyGenerator.getKey(
                 book,
                 EntryType.ATTRIBUTE
             ), name
         )
-        return attribute
     }
 
     private fun checkEntryValidity(file: File) {
