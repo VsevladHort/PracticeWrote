@@ -166,7 +166,7 @@ class NoteNavigationViewModel(
                 it.addEntity(key)
                 rep.updateAttributeEntry(it)
             }
-            rep.insetNote(
+            rep.insertNote(
                 navigationState.value!!.currentNote,
                 dummyNote
             )

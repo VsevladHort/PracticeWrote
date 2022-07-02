@@ -63,11 +63,11 @@ class AttributeInsertionTest {
         Assert.assertTrue(listOfAttrs2.isEmpty())
         Assert.assertTrue(listOfAttrs3.isEmpty())
         runBlocking {
-            dao.insetAttribute(attr1_1)
-            dao.insetAttribute(attr1_2)
-            dao.insetAttribute(attr1_3)
-            dao.insetAttribute(attr2_1)
-            dao.insetAttribute(attr2_2)
+            dao.insertAttribute(attr1_1)
+            dao.insertAttribute(attr1_2)
+            dao.insertAttribute(attr1_3)
+            dao.insertAttribute(attr2_1)
+            dao.insertAttribute(attr2_2)
         }
         listOfAttrs1 = runBlocking { dao.getAttributes(book1Object.uniqueKey) }
         listOfAttrs2 = runBlocking { dao.getAttributes(book2Object.uniqueKey) }
