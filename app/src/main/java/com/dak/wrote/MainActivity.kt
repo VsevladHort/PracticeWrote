@@ -81,7 +81,10 @@ fun NavigationHost(
             ControllerDisplay(
                 book = Book(noteKey, noteTitle),
                 goUp = {
-                    controller.popBackStack() }
+                    controller.navigate(NavigationScreens.BookNavigation.path) {
+                        popUpTo(0)
+                    }
+                }
             )
         }
     }
