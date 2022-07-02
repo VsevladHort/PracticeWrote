@@ -5,6 +5,7 @@ import com.dak.wrote.backend.contracts.database.EntryType
 import com.dak.wrote.backend.contracts.database.UniqueEntityKeyGenerator
 import com.dak.wrote.backend.contracts.entities.Attribute
 import com.dak.wrote.backend.contracts.entities.Book
+import com.dak.wrote.backend.contracts.entities.UniqueEntity
 import com.dak.wrote.backend.implementations.file_system_impl.dao.WroteDaoFileSystemImpl
 import com.dak.wrote.backend.implementations.file_system_impl.database.UniqueKeyGeneratorFileSystemImpl
 import kotlinx.coroutines.CoroutineScope
@@ -19,6 +20,8 @@ import java.util.logging.Level
 import java.util.logging.Logger
 
 class AttributeInsertionTest {
+    class UniqueEntitySpoof(override val uniqueKey: String) : UniqueEntity
+
     @Test
     fun attributeSetTest() {
         // Context of the app under test.
@@ -32,6 +35,7 @@ class AttributeInsertionTest {
         val book2 = runBlocking { generator.getKey(null, EntryType.BOOK) }
         val book3 = runBlocking { generator.getKey(null, EntryType.BOOK) }
         val book1Object = Book(book1, "BOOK1")
+        val note1 = runBlocking { UniqueEntitySpoof(generator.getKey(book1Object, EntryType.BOOK)) }
         val book2Object = Book(book2, "BOOK2")
         val book3Object = Book(book3, "BOOK3")
         val attr1_1 =
@@ -68,6 +72,16 @@ class AttributeInsertionTest {
         listOfAttrs1 = runBlocking { dao.getAttributes(book1Object.uniqueKey) }
         listOfAttrs2 = runBlocking { dao.getAttributes(book2Object.uniqueKey) }
         listOfAttrs3 = runBlocking { dao.getAttributes(book3Object.uniqueKey) }
+        var associatedEntities =
+            runBlocking { dao.updateAttributeObject(attr1_1); attr1_1.associatedEntities }
+        Assert.assertTrue(associatedEntities.isEmpty())
+        attr1_1.addEntity(note1.uniqueKey)
+        runBlocking { dao.updateAttributeEntry(attr1_1) }
+        val attrCopy = Attribute(attr1_1.uniqueKey, attr1_1.name)
+        Assert.assertTrue(attrCopy.associatedEntities.isEmpty())
+        associatedEntities =
+            runBlocking { dao.updateAttributeObject(attrCopy); attrCopy.associatedEntities }
+        Assert.assertTrue(associatedEntities.contains(note1.uniqueKey))
         Assert.assertTrue(listOfAttrs1.size == 3)
         Assert.assertTrue(listOfAttrs2.size == 2)
         Assert.assertTrue(listOfAttrs3.isEmpty())
