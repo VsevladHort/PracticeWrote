@@ -73,7 +73,16 @@ fun ControllerBottomBar(
         NavigationBarItem(
             selected = currentRoute == NavigationScreens.Glossary.path,
             onClick = {
-                navController.navigate(NavigationScreens.Glossary.path)
+                if (currentRoute != NavigationScreens.Glossary.path)
+                    navController.navigate(NavigationScreens.Glossary.path) {
+                        popUpTo(NavigationScreens.Glossary.path) {
+                            inclusive = true
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+
+                    }
             },
             icon = {
                 Icon(
@@ -92,13 +101,23 @@ fun ControllerBottomBar(
         NavigationBarItem(
             selected = currentRoute?.startsWith(prefix) ?: false,
             onClick = {
-                navigateToSingleNoteNavigation(
-                    navController,
-                    prefix,
-                    book.uniqueKey,
-                    book.title,
-                    true
-                )
+                if (currentRoute?.startsWith(prefix) != true) {
+                    println("hohoho")
+                    navController.navigate(
+                        prefix +
+                                "${NavigationScreens.NoteNavigation.path}/" +
+                                "${book.uniqueKey.replace('/', '\\')}/" +
+                                book.title.replace('/', '\\')
+                    ) {
+                        println("Well")
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+//                            inclusive = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
             },
             icon = {
                 Icon(
@@ -197,8 +216,10 @@ private fun navigateToSingleNoteNavigation(
                 "${noteKey.replace('/', '\\')}/" +
                 noteTitle.replace('/', '\\')
     ) {
+        println("Well")
         popUpTo(navController.graph.findStartDestination().id) {
             saveState = true
+            inclusive = true
         }
         launchSingleTop = true
         restoreState = restore

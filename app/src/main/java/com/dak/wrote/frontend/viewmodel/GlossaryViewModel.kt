@@ -44,7 +44,7 @@ class GlossaryViewModel(private val bookId: String, application: Application) :
     val data = MutableStateFlow<Data?>(null)
 
     init {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch() {
             val attributes = kotlin.run {
                 val a =
                     rep.getAttributes(bookId)
@@ -94,6 +94,7 @@ class GlossaryViewModel(private val bookId: String, application: Application) :
         fun nextStr(text: String): String {
             return text.substring(0 until text.lastIndex) + text.last().inc()
         }
+        println("helloo")
         data.searchJob?.cancel()
         data.searchJob = viewModelScope.launch {
             val filtered = data.searchedAttributes.filter { it.value.isNotBlank() }
