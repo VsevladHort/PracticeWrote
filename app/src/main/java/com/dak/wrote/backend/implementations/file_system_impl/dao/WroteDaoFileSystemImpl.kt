@@ -321,8 +321,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
                     emptySet()
             }
             EntryType.BOOK -> {
-                val fileBooks = File(baseDir, DIR_BOOKS)
-                val fileAttributes = File(fileBooks, DIR_ATTRIBUTES)
+                val fileAttributes = File(file, DIR_ATTRIBUTES)
                 val attrSet = mutableSetOf<Attribute>()
                 fileAttributes.listFiles()?.let { stream ->
                     stream.asSequence().filter { checkIfInserted(it) }
