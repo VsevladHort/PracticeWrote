@@ -1,16 +1,18 @@
 package com.dak.wrote.frontend.controller
 
-import androidx.compose.foundation.layout.*
+import android.app.Application
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.BottomNavigation
+import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
-import androidx.compose.material.TopAppBar
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -22,15 +24,12 @@ import com.dak.wrote.R
 import com.dak.wrote.backend.contracts.entities.Book
 import com.dak.wrote.frontend.NavigationScreens
 import com.dak.wrote.frontend.editor.EditorScreen
-import com.dak.wrote.frontend.noteNavigation.ColoredIconButton
+import com.dak.wrote.frontend.glossary.GlossaryScreen
 import com.dak.wrote.frontend.noteNavigation.NavigationNote
 import com.dak.wrote.frontend.noteNavigation.NoteNavigation
-import com.dak.wrote.ui.theme.Material3
 import com.dak.wrote.utility.fromNav
-import com.dak.wrote.utility.navigateToSingleNoteNavigation
 import com.dak.wrote.utility.toNav
 import compose.icons.FeatherIcons
-import compose.icons.feathericons.ArrowLeft
 import compose.icons.feathericons.Book
 import compose.icons.feathericons.FileText
 
@@ -38,86 +37,11 @@ import compose.icons.feathericons.FileText
 @Composable
 fun ControllerDisplay(
     book: Book,
-    onBackToBookDisplay: () -> Unit
+    goUp: () -> Unit
 ) {
     val controller = rememberNavController()
     val showDrawer = rememberSaveable { mutableStateOf(true) }
     Scaffold(
-        topBar = {
-            if (showDrawer.value)
-                TopAppBar(
-/*
-                    title = {
-                        Text(
-//                            text = "Back to books",
-                            text = book.title,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth(),
-                            color = Material3.colorScheme.onBackground,
-                            style = Material3.typography.headlineMedium
-                        )
-                    },
-                    navigationIcon = {
-//                        Button(
-//                            onClick = onBackToBookDisplay,
-////                            shape = RoundedCornerShape(50.dp),
-//                            modifier = Modifier.width(350.dp)
-//                        ) {
-//                            Row(
-//                                modifier = Modifier.fillMaxWidth(),
-//
-//                                ) {
-//                                Icon(
-//                                    imageVector = FeatherIcons.ArrowLeft,
-//                                    contentDescription = "Back"
-//                                )
-//                                Text(
-//                                    text = "To book",
-//                                    color = Material3.colorScheme.onPrimary,
-//                                    fontSize = 24.sp,
-//                                    style = Material3.typography.labelMedium
-//                                )
-//                            }
-//                        }
-
-//                        NavigationButton(
-//                            label = "Back to books",
-//                            modifier = Modifier
-//                                .fillMaxWidth()
-//                                .widthIn(min = 350.dp),
-//                            onButtonClicked = onBackToBookDisplay
-//                        )
-                        ColoredIconButton(
-                            onClick = onBackToBookDisplay,
-                            imageVector = FeatherIcons.ArrowLeft,
-                            description = "Back"
-                        )
-                    },
-*/
-                    backgroundColor = Material3.colorScheme.surface,
-                    elevation = 10.dp
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        ColoredIconButton(
-                            onClick = onBackToBookDisplay,
-                            imageVector = FeatherIcons.ArrowLeft,
-                            description = "Back"
-                        )
-                        Text(
-                            text = book.title,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.wrapContentSize(),
-                            color = Material3.colorScheme.onBackground,
-                            style = Material3.typography.headlineMedium
-                        )
-                        Spacer(modifier = Modifier.size(45.dp))
-                    }
-                }
-        },
         bottomBar = {
             if (showDrawer.value)
                 ControllerBottomBar(
@@ -130,7 +54,8 @@ fun ControllerDisplay(
             navController = controller,
             book = book,
             modifier = Modifier.padding(padding),
-            showDrawer
+            showDrawer,
+            goUp
         )
     }
 }
@@ -163,6 +88,7 @@ fun ControllerBottomBar(
             }
         )
 
+
         NavigationBarItem(
             selected = currentRoute?.startsWith(prefix) ?: false,
             onClick = {
@@ -170,7 +96,8 @@ fun ControllerBottomBar(
                     navController,
                     prefix,
                     book.uniqueKey,
-                    book.title
+                    book.title,
+                    true
                 )
             },
             icon = {
@@ -194,28 +121,22 @@ fun NavigationHost(
     book: Book,
     modifier: Modifier = Modifier,
     showDrawer: MutableState<Boolean>,
+    goUp: () -> Unit
 ) {
-//    val application: Application = LocalContext.current.applicationContext as Application
+    val application: Application = LocalContext.current.applicationContext as Application
     val notePrefix = stringResource(id = R.string.note_prefix)
     NavHost(
         navController = navController,
         modifier = modifier,
         startDestination =
 //        NavigationScreens.Glossary.path
-        NavigationScreens.StartPlaceholder.path
+        "$notePrefix${NavigationScreens.NoteNavigation.path}/{noteKey}/{noteTitle}"
+
+//        notePrefix +
+//                NavigationScreens.NoteNavigation.path +
+//                "/${book.uniqueKey.replace('/', '\\')}" +
+//                "/${book.title.replace('/', '\\')}"
     ) {
-        composable(NavigationScreens.StartPlaceholder.path) {
-            LaunchedEffect(rememberCoroutineScope()) {
-                navController.navigate(
-                    notePrefix +
-                            NavigationScreens.NoteNavigation.path +
-                            "/${book.uniqueKey.toNav()}" +
-                            "/${book.title.toNav()}"
-                ) {
-                    popUpTo(0) // delete start placeholder(this composable) from back stack
-                }
-            }
-        }
         composable(
             route = notePrefix + "${NavigationScreens.NoteNavigation.path}/{noteKey}/{noteTitle}",
             arguments = listOf(
@@ -228,16 +149,12 @@ fun NavigationHost(
             )
         ) { entry ->
             showDrawer.value = true
-            val noteKey = (entry.arguments?.getString("noteKey") ?: "")
-                .fromNav()
-//            val noteTitle = (entry.arguments?.getString("noteTitle") ?: "")
-//                .fromNav()
+            val noteKey = (entry.arguments?.getString("noteKey") ?: book.uniqueKey)
+                .replace('\\', '/')
+            val noteTitle = (entry.arguments?.getString("noteTitle") ?: book.title)
+                .replace('\\', '/')
             NoteNavigation(
-//                initialNote = NavigationNote(noteKey, noteTitle),
-                initialNote = NavigationNote(
-                    noteKey,
-                    ""
-                ), // book title is in top bar, not in navigation
+                initialNote = NavigationNote(noteKey, noteTitle),
                 onEnterButton = {
                     navController.navigate("$notePrefix${NavigationScreens.Editor.path}/${it.toNav()}")
                 },
@@ -245,17 +162,46 @@ fun NavigationHost(
             )
         }
 
-        composable(NavigationScreens.Glossary.path) {
+        composable(
+            NavigationScreens.Glossary.path,
+        ) {
             showDrawer.value = true
-//            GlossaryScreen()
+            GlossaryScreen(
+                book.uniqueKey,
+                { navController.popBackStack() },
+                { id, name ->
+                    navigateToSingleNoteNavigation(navController, notePrefix, id, name, false)
+                })
             Text("Glossary")
         }
 
         composable(notePrefix + NavigationScreens.Editor.path + "/{noteId}") {
             val id = it.arguments!!.getString("noteId")!!.fromNav()
-            EditorScreen(navigateUp = { navController.popBackStack() }, selectedNote = id)
             showDrawer.value = false
+            EditorScreen(navigateUp = { navController.popBackStack() }, selectedNote = id)
         }
 
     }
+}
+
+private fun navigateToSingleNoteNavigation(
+    navController: NavController,
+    prefix: String,
+    noteKey: String,
+    noteTitle: String,
+    restore: Boolean
+) {
+    navController.navigate(
+        prefix +
+                "${NavigationScreens.NoteNavigation.path}/" +
+                "${noteKey.replace('/', '\\')}/" +
+                noteTitle.replace('/', '\\')
+    ) {
+        popUpTo(navController.graph.findStartDestination().id) {
+            saveState = true
+        }
+        launchSingleTop = true
+        restoreState = restore
+    }
+
 }

@@ -175,6 +175,16 @@ class NoteNavigationViewModel(
             changeNote(navigationState.value!!.currentNote, ignoreCurrent = true)
         }
     }
+
+    fun update() {
+        viewModelScope.launch {
+            changeNote(_navigationState.value!!.currentNote)
+        }
+    }
+
+    init {
+        update()
+    }
 }
 
 class NoteNavigationViewModelFactory : ViewModelProvider.Factory {
@@ -197,9 +207,9 @@ class NoteNavigationViewModelFactory : ViewModelProvider.Factory {
 
     }
 
-    constructor(application: Application) {
+    constructor(application: Application, note: NavigationNote) {
         val initialState = NavigationState()
-        this.initialNote = initialState.currentNote
+        this.initialNote = note
         this.paragraphs = initialState.paragraphs
         this.parents = initialState.parents
         this.application = application

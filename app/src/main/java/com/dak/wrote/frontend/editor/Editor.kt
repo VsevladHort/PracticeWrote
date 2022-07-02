@@ -58,6 +58,7 @@ fun EditorScreen(
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditorScreenImpl(
     note: EditorViewModel.ObjectNote,
@@ -69,13 +70,8 @@ fun EditorScreenImpl(
         note.inEdit.value = false
         updatePage()
     }
-    Column() {
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 20.dp, end = 20.dp, top = 15.dp, bottom = 15.dp)
-        ) {
+    Scaffold(topBar = {
+        SmallTopAppBar(modifier = Modifier.padding(horizontal = 16.dp), navigationIcon = {
             ColoredIconButton(
                 modifier = Modifier.wrapContentSize(Alignment.CenterStart),
                 imageVector = FeatherIcons.ArrowLeft,
@@ -84,6 +80,7 @@ fun EditorScreenImpl(
                     if (goUp(note.inEdit)) navigateUp()
                 }
             )
+        }, actions = {
             Row(Modifier.wrapContentSize(Alignment.CenterEnd)) {
                 if (note.inEdit.value) {
                     ColoredIconButton(
@@ -98,9 +95,12 @@ fun EditorScreenImpl(
                         onClick = { note.inEdit.value = true }
                     )
                     val expandedMenu = remember { mutableStateOf(false) }
-                    IconButton(onClick = {
+                    IconButton(
+                        onClick = {
                         expandedMenu.value = !expandedMenu.value
-                    }) {
+                    },
+                        Modifier.size(40.dp)
+                    ) {
                         Icon(
                             imageVector = FeatherIcons.MoreVertical,
                             contentDescription = "Open menu"
@@ -109,22 +109,36 @@ fun EditorScreenImpl(
                     DropdownMenu(
                         expanded = expandedMenu.value,
                         onDismissRequest = { expandedMenu.value = false }) {
-                        DropdownMenuItem(onClick = { savePreset(); expandedMenu.value = false }, text = {
-                            Text(text = "Save as a preset")
-                        })
+                        DropdownMenuItem(
+                            onClick = { savePreset(); expandedMenu.value = false },
+                            text = {
+                                Text(text = "Save as a preset")
+                            })
                     }
                 }
             }
+        }, title = {})
+//        {
+//            Row(
+//                horizontalArrangement = Arrangement.SpaceBetween,
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(start = 20.dp, end = 20.dp, top = 15.dp, bottom = 15.dp)
+//            ) {
+//            }
+//        }
+    }) {
+        Box(modifier = Modifier.padding(it)) {
+            if (note.inEdit.value)
+                PageEdit(note.name, note.dAlternateNames, note.dAttributes, note.page.value)
+            else
+                PageView(
+                    note.name.value,
+                    note.dAlternateNames.map { it.next.value!! },
+                    note.dAttributes.map { it.next.value!! },
+                    note.page.value
+                )
         }
-        if (note.inEdit.value)
-            PageEdit(note.name, note.dAlternateNames, note.dAttributes, note.page.value)
-        else
-            PageView(
-                note.name.value,
-                note.dAlternateNames.map { it.next.value!! },
-                note.dAttributes.map { it.next.value!! },
-                note.page.value
-            )
     }
 }
 

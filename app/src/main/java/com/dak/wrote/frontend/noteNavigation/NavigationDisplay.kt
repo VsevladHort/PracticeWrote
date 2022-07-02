@@ -44,10 +44,10 @@ fun NoteNavigation(
 ) {
     WroteTheme {
         Surface(color = Material3.colorScheme.background) {
-            val factory = NoteNavigationViewModelFactory(application = application)
+            val factory = NoteNavigationViewModelFactory(application = application, initialNote)
 
             val navigationViewModel: NoteNavigationViewModel =
-                viewModel(key = null, factory = factory)
+               viewModel(key = null, factory = factory)
 
             val firstInit = rememberSaveable {
                 mutableStateOf(false)

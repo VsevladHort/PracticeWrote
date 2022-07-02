@@ -35,7 +35,7 @@ import compose.icons.feathericons.Plus
 import compose.icons.feathericons.Trash2
 
 @Composable
-fun GlossaryScreen(currentBookId: String, back: () -> Unit, open: (name: String) -> Unit) {
+fun GlossaryScreen(currentBookId: String, back: () -> Unit, open: (id: String, name : String) -> Unit) {
     val viewModel = viewModel<GlossaryViewModel>(
         factory = GlossaryViewModelFactory(
             currentBookId,
@@ -59,7 +59,7 @@ fun GlossaryScreen(currentBookId: String, back: () -> Unit, open: (name: String)
 
 @Composable
 fun GlossaryScreenImpl(
-    back: () -> Unit, open: (name: String) -> Unit,
+    back: () -> Unit, open: (id: String, name : String) -> Unit,
     data: GlossaryViewModel.Data,
     searchAnew: () -> Unit
 ) {
@@ -86,7 +86,7 @@ fun GlossaryScreenImpl(
 @Composable
 fun GlossaryScreenPreview() {
     WroteTheme {
-        GlossaryScreenImpl(back = { }, open = {}, data = GlossaryViewModel.Data(
+        GlossaryScreenImpl(back = { }, open = {_, _ ->}, data = GlossaryViewModel.Data(
             sortedMapOf(), sortedMapOf(), sortedMapOf()
         )
         ) {
@@ -246,7 +246,7 @@ fun SuggestionSearch(
 @Composable
 fun SuggestionList(
     suggestions: List<GlossaryViewModel.PartialNote>,
-    onClick: (id: String) -> Unit
+    onClick: (id: String, name : String) -> Unit,
 ) {
     Column(Modifier.padding(10.dp), Arrangement.spacedBy(15.dp)) {
         suggestions.forEach { suggestion ->
@@ -264,7 +264,7 @@ fun SuggestionList(
                             .clickable(
                                 remember { MutableInteractionSource() },
                                 rememberRipple(),
-                                onClick = { onClick(suggestion.keyId) }
+                                onClick = { onClick(suggestion.keyId, suggestion.title) }
                             ),
                         style = Material3.typography.headlineMedium
                     )
