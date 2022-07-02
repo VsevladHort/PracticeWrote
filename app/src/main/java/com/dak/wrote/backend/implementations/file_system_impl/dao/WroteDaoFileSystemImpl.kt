@@ -440,7 +440,6 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
 
     private fun getFileParent(fileName: String): String {
         val file = File(fileName)
-        checkEntryValidity(file)
         return File(file.parent!!).absolutePath
     }
 

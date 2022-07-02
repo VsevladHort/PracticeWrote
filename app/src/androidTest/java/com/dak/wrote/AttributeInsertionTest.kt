@@ -79,9 +79,9 @@ class AttributeInsertionTest {
         runBlocking { dao.updateAttributeEntry(attr1_1) }
         val attrCopy = Attribute(attr1_1.uniqueKey, attr1_1.name)
         Assert.assertTrue(attrCopy.associatedEntities.isEmpty())
-        associatedEntities =
+        val associatedEntities1 =
             runBlocking { dao.updateAttributeObject(attrCopy); attrCopy.associatedEntities }
-        Assert.assertTrue(associatedEntities.contains(note1.uniqueKey))
+        Assert.assertTrue(associatedEntities1.contains(note1.uniqueKey))
         Assert.assertTrue(listOfAttrs1.size == 3)
         Assert.assertTrue(listOfAttrs2.size == 2)
         Assert.assertTrue(listOfAttrs3.isEmpty())
