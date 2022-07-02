@@ -92,7 +92,7 @@ fun ColoredIconButton(
     onClick: () -> Unit
 ) {
     FilledIconButton(onClick = onClick, modifier.size(45.dp), enabled = buttonEnabled) {
-       Icon(imageVector = imageVector, contentDescription = description, modifier = Modifier.size(35.dp))
+       Icon(imageVector = imageVector, contentDescription = description, modifier = Modifier.size(30.dp))
     }
 }
 
@@ -106,17 +106,9 @@ fun DialogButton(
             onClick()
         },
         shape = RoundedCornerShape(50.dp),
-//        elevation = ButtonDefaults.elevation(
-//            defaultElevation = 0.dp
-//        ),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Material3.colorScheme.background,
-            contentColor = Material3.colorScheme.onPrimary
-        )
     ) {
         Text(
             text = text,
-            color = Material3.colorScheme.primary,
             fontSize = 20.sp,
             style = Material3.typography.labelMedium
         )
