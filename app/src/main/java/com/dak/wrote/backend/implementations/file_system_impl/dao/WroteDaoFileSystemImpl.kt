@@ -343,6 +343,19 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         return result
     }
 
+    override suspend fun getNoteKeysWithoutAttributes(book: Book): Set<String> {
+        val file = File(book.uniqueKey)
+        checkEntryValidity(file)
+        val result = mutableSetOf<String>()
+        File(file, FILE_NOTES_OF_BOOK).readLines()
+            .filter {
+                checkIfInserted(File(it)) && File(it, DATA_NOTE_ATTRIBUTES).readLines().isEmpty()
+            }.forEach {
+                result.add(it)
+            }
+        return result
+    }
+
     override suspend fun getPresets(): List<String> {
         val file = File(baseDir, DIR_PRESETS)
         val list = file.listFiles() ?: return listOf()
