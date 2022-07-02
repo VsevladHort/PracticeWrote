@@ -146,7 +146,7 @@ class GlossaryViewModelFactory(
     private val update : SharedFlow<Unit>
 ) :
     ViewModelProvider.Factory {
-    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return GlossaryViewModel(selectedBook, application, update) as T
     }
 }

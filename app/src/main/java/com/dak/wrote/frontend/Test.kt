@@ -26,34 +26,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentContainerView
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.Edit2
-
-@Preview
-@Composable
-fun LazyTest() {
-    LazyColumn(Modifier.fillMaxSize()) {
-        item {
-            LazyColumn(
-                Modifier.wrapTruly(), state = rememberLazyListState()
-            ) {
-                item { Text(text = "Hello") }
-            }
-        }
-    }
-}
-
-fun Modifier.wrapTruly() = layout { measurable, constraints ->
-    val placeable = measurable.measure(Constraints())
-    layout(placeable.width, placeable.height) {
-        placeable.placeRelative(0, 0)
-    }
-}
 
 class TstVM : ViewModel() {
     val ms = mutableStateOf(0)
@@ -65,10 +43,9 @@ class TstVM2(he: Int) : ViewModel() {
 }
 
 class TstVM2CTOR(val i: Int) : ViewModelProvider.Factory {
-    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return TstVM2(i) as T
     }
-
 }
 
 @Composable
