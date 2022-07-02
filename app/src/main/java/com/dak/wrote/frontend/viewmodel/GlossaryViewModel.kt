@@ -51,6 +51,7 @@ class GlossaryViewModel(
     val data = MutableStateFlow<Data?>(null)
 
     init {
+        update()
         viewModelScope.launch {
            update.collect {
                update()

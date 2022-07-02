@@ -17,10 +17,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.dak.wrote.backend.contracts.entities.BaseNote
 import com.dak.wrote.frontend.AligningBasicTextField
-import com.dak.wrote.frontend.viewmodel.EditorViewModel
 import com.dak.wrote.ui.theme.Material3
 import com.dak.wrote.ui.theme.WroteTheme
 import compose.icons.FeatherIcons
@@ -247,6 +244,6 @@ val testDataLayout
     )
 val testSDataLayout
     get() = listOf(
-        SerializableTextDataLayout("Hello"),
+        STextDL("Hello"),
         SerializableItemListLayout(listOf("Я", "Не", "Знаю"))
     )

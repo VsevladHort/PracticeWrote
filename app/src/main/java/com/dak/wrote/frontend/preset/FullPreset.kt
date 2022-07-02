@@ -117,16 +117,6 @@ open class BasicPreset(
 
     ) : DisplayPreset, FullPreset
 
-class CharacterPreset() :
-    BasicPreset("Character", setOf(), setOf("character"), CharacterPresetLayout) {
-}
-
-private val CharacterPresetLayout
-    get() = SerializablePageLayout(listOf())
-
-val normalPresets = listOf(CharacterPreset())
-
-
 @Composable
 fun PresetListView(
     normalPresets: List<BasicPreset>,
@@ -397,7 +387,7 @@ val presetImitations = listOf(
 fun PresetListViewPreview() {
     WroteTheme() {
         PresetListView(
-            normalPresets = normalPresets,
+            normalPresets = predefinedPresets,
             userPresets = presetImitations,
             remember { mutableStateOf(presetImitations[1]) },
             {},

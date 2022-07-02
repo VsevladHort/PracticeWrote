@@ -145,7 +145,7 @@ fun NoteAdditionScreenImpl(
                             .fillMaxSize()
                     ) {
                         PresetListView(
-                            normalPresets = normalPresets,
+                            normalPresets = predefinedPresets,
                             userPresets = data.userPresets,
                             currentSelected = data.currentSelected,
                             updateUserPreset,

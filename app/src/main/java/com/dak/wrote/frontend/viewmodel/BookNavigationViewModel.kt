@@ -12,6 +12,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 
+/**
+ * Responsible for loading and selecting books
+ */
 class BookNavigationViewModel(application: Application) : AndroidViewModel(application) {
     private val _bookState: MutableLiveData<List<Book>?> = MutableLiveData(null)
     val bookState: LiveData<List<Book>?> = _bookState

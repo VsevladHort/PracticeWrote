@@ -195,11 +195,10 @@ fun NavigationHost(
             showDrawer.value = true
             GlossaryScreen(
                 book.uniqueKey,
-                { navController.popBackStack() },
+                { goUp() },
                 { id, name ->
                     navigateToSingleNoteNavigation(navController, notePrefix, id, name, false)
                 }, controllerViewModel.update)
-            Text("Glossary")
         }
 
         composable(notePrefix + NavigationScreens.Editor.path + "/{noteId}") {

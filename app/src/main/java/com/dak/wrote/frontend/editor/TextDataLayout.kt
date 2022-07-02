@@ -7,9 +7,9 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.dak.wrote.backend.contracts.entities.BaseNote
+import com.dak.wrote.ui.theme.Material3
 import kotlinx.serialization.Serializable
 
 class TextDataLayout(text: String) : DataLayout() {
@@ -35,17 +35,52 @@ class TextDataLayout(text: String) : DataLayout() {
     }
 
     override fun toSerializable(): SerializableDataLayout {
-        return SerializableTextDataLayout(text.value)
+        return STextDL(text.value)
     }
 
 }
 
 @Serializable
-class SerializableTextDataLayout(val text: String) : SerializableDataLayout() {
+class STextDL(val text: String) : SerializableDataLayout() {
     override fun toDisplayable(): DataLayout {
         return TextDataLayout(text)
     }
 }
 
+class BoldDL(text: String) : DataLayout() {
+    val text = mutableStateOf(text)
+
+    @Composable
+    override fun DrawEdit() {
+        Box(Modifier.padding(horizontal = 10.dp)) {
+            Text(text = text.value, style = textStyle())
+        }
+    }
+
+    @Composable
+    override fun DrawNormal() {
+        Box(modifier = Modifier.padding(horizontal = 10.dp)) {
+            BasicTextField(
+                value = text.value,
+                onValueChange = { text.value = it },
+                textStyle = textStyle().copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+
+    override fun toSerializable(): SerializableDataLayout {
+        return SBoldDL(text.value)
+    }
+}
+
+@Serializable
+class SBoldDL(val text: String) : SerializableDataLayout() {
+    override fun toDisplayable(): DataLayout {
+        return BoldDL(text)
+    }
+
+}
+
 @Composable
-private fun textStyle() = MaterialTheme.typography.body1.copy(fontSize = 20.sp)
+private fun textStyle() = Material3.typography.titleSmall
