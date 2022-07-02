@@ -297,7 +297,16 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         val file = File(uniqueKey)
         checkEntryValidity(file)
         val auxiliaryFile = File(file, DATA_AUXILIARY_FILE_NAME)
-        return Attribute(uniqueKey, auxiliaryFile.readLines()[0])
+        val attribute = Attribute(uniqueKey, "")
+        val mutableSet = mutableSetOf<String>()
+        auxiliaryFile.readLines().withIndex().forEach {
+            if (it.index == 0)
+                attribute.name = it.value
+            else
+                mutableSet.add(it.value)
+        }
+        attribute.associatedEntities = mutableSet
+        return attribute
     }
 
     override suspend fun getAttributes(book: Book): List<Attribute> {
