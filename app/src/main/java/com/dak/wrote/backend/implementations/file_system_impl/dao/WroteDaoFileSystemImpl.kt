@@ -514,12 +514,15 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         keyGenerator: UniqueEntityKeyGenerator,
         name: String
     ): Attribute {
-        return getAttributes(book.uniqueKey).find { it.name == name } ?: Attribute(
-            keyGenerator.getKey(
-                book,
-                EntryType.ATTRIBUTE
-            ), name
-        )
+        return getAttributes(book.uniqueKey).find { it.name.compareTo(name, true) == 0 }
+            ?: kotlin.run {
+                Attribute(
+                    keyGenerator.getKey(
+                        book,
+                        EntryType.ATTRIBUTE
+                    ), name
+                )
+            }
     }
 
     private fun checkEntryValidity(file: File) {

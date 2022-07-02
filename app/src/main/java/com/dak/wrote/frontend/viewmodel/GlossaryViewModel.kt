@@ -53,9 +53,9 @@ class GlossaryViewModel(
     init {
         update()
         viewModelScope.launch {
-           update.collect {
-               update()
-           }
+            update.collect {
+                update()
+            }
         }
     }
 
@@ -64,14 +64,38 @@ class GlossaryViewModel(
             val attributes = kotlin.run {
                 val a =
                     rep.getAttributes(bookId)
+                a.forEach {
+                    rep.updateAttributeObject(it)
+                }
                 TreeMap<String, Attribute>().apply {
                     putAll(a.map { it.name to it })
                 }
             }
-
+            attributes.forEach {
+                println(it.value.associatedEntities)
+            }
             val (allNotes, allNames) = kotlin.run {
                 val ac = TreeMap<String, PartialNote>()
                 val names = TreeMap<String, MutableList<PartialNote>>()
+                fun addToName(name: String, note: PartialNote) {
+                    val lowerCaseName = name.toLowerCase(Locale.current)
+                    val list = names[lowerCaseName]
+                    if (list == null) {
+                        names[lowerCaseName] = mutableListOf(note)
+                    } else list.add(note)
+                }
+                rep.getNoteKeysWithoutAttributes(rep.getBook(bookId)).forEach { id ->
+                    val note =
+                        PartialNote(
+                            rep.getName(id),
+                            rep.getAlternateTitles(id).toSet(),
+                            rep.getAttributes(id),
+                            id
+                        )
+                    ac[id] = note
+                    addToName(note.title, note)
+                    note.alternateNames.forEach { addToName(it, note) }
+                }
                 attributes.forEach { attribute ->
                     attribute.value.associatedEntities.forEach { id ->
                         if (!ac.contains(id)) {
@@ -84,13 +108,6 @@ class GlossaryViewModel(
                                 )
                             ac[id] = note
 
-                            fun addToName(name: String, note: PartialNote) {
-                                val lowerCaseName = name.toLowerCase(Locale.current)
-                                val list = names[lowerCaseName]
-                                if (list == null) {
-                                    names[lowerCaseName] = mutableListOf(note)
-                                } else list.add(note)
-                            }
                             addToName(note.title, note)
                             note.alternateNames.forEach { addToName(it, note) }
                         }
@@ -98,12 +115,14 @@ class GlossaryViewModel(
                 }
                 ac to (names.mapValues { it.value as List<PartialNote> }.toSortedMap())
             }
+            println(attributes)
+            println(allNotes)
+            println(allNames)
             data.value = Data(
                 attributes,
                 allNotes,
                 allNames,
             )
-            println(data.value)
         }
     }
 
@@ -111,12 +130,13 @@ class GlossaryViewModel(
         fun nextStr(text: String): String {
             return text.substring(0 until text.lastIndex) + text.last().inc()
         }
-        println("helloo")
+        println("anew")
         data.searchJob?.cancel()
         data.searchJob = viewModelScope.launch {
             val filtered = data.searchedAttributes.filter { it.value.isNotBlank() }
             val name = data.searchedName.value.toLowerCase(Locale.current)
-            if (filtered.isNotEmpty() && name.isNotBlank()) {
+            if (filtered.isNotEmpty() || name.isNotBlank()) {
+                println("input passed")
                 val result = when {
                     filtered.isEmpty() -> {
                         data.allNames.subMap(name, nextStr(name)).toList().flatMap { it.second!! }
@@ -134,6 +154,7 @@ class GlossaryViewModel(
                     }
                 }
                 data.searchJob = null
+                println("result")
                 data.foundNotes.value = result
             }
         }
@@ -143,7 +164,7 @@ class GlossaryViewModel(
 class GlossaryViewModelFactory(
     private val selectedBook: String,
     private val application: Application,
-    private val update : SharedFlow<Unit>
+    private val update: SharedFlow<Unit>
 ) :
     ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {

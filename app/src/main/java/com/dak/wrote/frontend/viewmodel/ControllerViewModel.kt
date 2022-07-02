@@ -10,17 +10,9 @@ class ControllerViewModel : ViewModel() {
     val update: MutableSharedFlow<Unit> = MutableSharedFlow()
 
     fun callUpdate() {
-        println("ima here")
         viewModelScope.launch {
             update.emit(Unit)
         }
     }
 
-    init {
-        viewModelScope.launch {
-            update.collect {
-                println("AAAAA")
-            }
-        }
-    }
 }

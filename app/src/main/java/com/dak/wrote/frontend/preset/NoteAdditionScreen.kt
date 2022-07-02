@@ -1,22 +1,18 @@
 package com.dak.wrote.frontend.preset
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dak.wrote.frontend.AligningOutlinedTextField
-import com.dak.wrote.frontend.AligningTextField
 import com.dak.wrote.frontend.editor.mutStateListOf
 import com.dak.wrote.frontend.viewmodel.NoteAdditionViewModel
 import com.dak.wrote.ui.theme.Material3
@@ -54,30 +50,7 @@ fun NoteAdditionScreen(
                 noteAdditionViewModel::updateName,
                 { noteAdditionViewModel.remove(data, it) }
             )
-//                Column() {
-//
-//                PresetListView(
-//                    normalPresets = normalPresets,
-//                    userPresets = data.userPresets,
-//                    selectFull = { noteAdditionViewModel.setFull(data, it) },
-//                    selectUser = { },
-//                    currentSelected = data.currentSelected
-//                )
-//            }
         }
-    }
-    Column() {
-
-//        PresetListView(
-//            normalPresets,
-//            listOf(
-//                DisplayUserPreset(
-//                    "Hehe",
-//                    setOf("Honorable Knight"),
-//                    setOf("я", "character", "king"), ""
-//                )
-//            ), {}, {}
-//        )
     }
 }
 
@@ -133,7 +106,7 @@ fun NoteAdditionScreenImpl(
                                         )
                                     },
                                     singleLine = true,
-                                    textStyle = Material3.typography.titleLarge
+                                    textStyle = Material3.typography.titleLarge,
                                 )
                             }
                         }

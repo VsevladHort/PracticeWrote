@@ -33,7 +33,6 @@ import com.dak.wrote.frontend.viewmodel.NoteNavigationViewModelFactory
 import com.dak.wrote.ui.theme.Material3
 import com.dak.wrote.ui.theme.WroteTheme
 import compose.icons.FeatherIcons
-import compose.icons.feathericons.ArrowLeft
 import compose.icons.feathericons.CornerLeftUp
 import compose.icons.feathericons.Trash2
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -91,17 +90,17 @@ fun NavigationDisplay(
     MainNavigation(
         state.currentNote.title, state.paragraphs,
         onNoteClicked = { newNoteForNavigation ->
-            navigationViewModel.changeNote(
+            navigationViewModel.selectNote(
                 newNoteForNavigation
             )
         },
         backButtonEnabled = !state.parents.isEmpty(),
-        onBackButton = { navigationViewModel.goBack() },
+        onBackButton = { navigationViewModel.goBackAsync() },
         onEnterButton = { onEnterButton(state.currentNote.uniqueKey) },
         onCreateButton = navigationViewModel::createNote,
         onDeleteButton = {
             runBlocking {
-                val res = navigationViewModel.delete().await()
+                val res = navigationViewModel.deleteAsync().await()
                 if (res)
                     onDeleteBookButton()
             }
