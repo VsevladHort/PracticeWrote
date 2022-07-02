@@ -3,12 +3,14 @@ package com.dak.wrote.frontend.viewmodel
 import android.app.Application
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.*
 import com.dak.wrote.backend.contracts.database.EntryType
 import com.dak.wrote.backend.contracts.entities.Attribute
 import com.dak.wrote.backend.contracts.entities.BaseNote
 import com.dak.wrote.backend.contracts.entities.Book
+import com.dak.wrote.backend.contracts.entities.PresetManager
 import com.dak.wrote.backend.contracts.entities.constants.NoteType
 import com.dak.wrote.backend.implementations.file_system_impl.dao.getDAO
 import com.dak.wrote.backend.implementations.file_system_impl.database.getKeyGen
@@ -24,6 +26,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
+import kotlinx.serialization.json.encodeToStream
 import java.io.ByteArrayInputStream
 
 class ChangedValue<T> {
@@ -180,7 +183,7 @@ class EditorViewModel(val currentId: String, application: Application) :
             }
             val bookId = rep.getBookOfNote(note.currentId)
             val book: Book = rep.getBooks().find { bookId == it.uniqueKey }!!
-            val allAttributes = rep.getAttributes(book)
+            val allAttributes = rep.getAttributes(bookId).toMutableSet()
             addedAttributes.forEach { added ->
                 val found = allAttributes.find { it.name == added }
                 if (found != null) {
@@ -195,6 +198,7 @@ class EditorViewModel(val currentId: String, application: Application) :
             }
 
 
+//            rep.insertAttributes(bookId, allAttributes)
             val alternateNames = note.dAlternateNames.filter { !it.next.value.isNullOrBlank() }
                 .map { it.next.value!! }
             rep.insertAlternateTitles(note.currentId, alternateNames)

@@ -2,8 +2,6 @@ package com.dak.wrote.frontend.controller
 
 import android.app.Application
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -11,8 +9,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -27,6 +25,7 @@ import com.dak.wrote.frontend.editor.EditorScreen
 import com.dak.wrote.frontend.glossary.GlossaryScreen
 import com.dak.wrote.frontend.noteNavigation.NavigationNote
 import com.dak.wrote.frontend.noteNavigation.NoteNavigation
+import com.dak.wrote.frontend.viewmodel.ControllerViewModel
 import com.dak.wrote.utility.fromNav
 import com.dak.wrote.utility.toNav
 import compose.icons.FeatherIcons
@@ -75,7 +74,7 @@ fun ControllerBottomBar(
             onClick = {
                 if (currentRoute != NavigationScreens.Glossary.path)
                     navController.navigate(NavigationScreens.Glossary.path) {
-                        popUpTo(NavigationScreens.Glossary.path) {
+                        popUpTo(navController.currentBackStackEntry!!.destination.route!!) {
                             inclusive = true
                             saveState = true
                         }
@@ -103,20 +102,27 @@ fun ControllerBottomBar(
             onClick = {
                 if (currentRoute?.startsWith(prefix) != true) {
                     println("hohoho")
-                    navController.navigate(
-                        prefix +
-                                "${NavigationScreens.NoteNavigation.path}/" +
-                                "${book.uniqueKey.replace('/', '\\')}/" +
-                                book.title.replace('/', '\\')
-                    ) {
-                        println("Well")
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
-//                            inclusive = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
+                    navigateToSingleNoteNavigation(
+                        navController,
+                        prefix,
+                        book.uniqueKey.toNav(),
+                        book.title.toNav(),
+                        true
+                    )
+//                    navController.navigate(
+//                        prefix +
+//                                "${NavigationScreens.NoteNavigation.path}/" +
+//                                "${book.uniqueKey.replace('/', '\\')}/" +
+//                                book.title.replace('/', '\\')
+//                    ) {
+//                        println("Well")
+////                        popUpTo(navController.graph.findStartDestination().id) {
+////                            saveState = true
+//////                            inclusive = true
+////                        }
+//////                        launchSingleTop = true
+//                        restoreState = true
+//                    }
                 }
             },
             icon = {
@@ -144,6 +150,7 @@ fun NavigationHost(
 ) {
     val application: Application = LocalContext.current.applicationContext as Application
     val notePrefix = stringResource(id = R.string.note_prefix)
+    val controllerViewModel = viewModel<ControllerViewModel>()
     NavHost(
         navController = navController,
         modifier = modifier,
@@ -177,7 +184,8 @@ fun NavigationHost(
                 onEnterButton = {
                     navController.navigate("$notePrefix${NavigationScreens.Editor.path}/${it.toNav()}")
                 },
-                onDeleteBookButton = { navController.popBackStack() }
+                onDeleteBookButton = { goUp() },
+                controllerViewModel.update
             )
         }
 
@@ -190,14 +198,14 @@ fun NavigationHost(
                 { navController.popBackStack() },
                 { id, name ->
                     navigateToSingleNoteNavigation(navController, notePrefix, id, name, false)
-                })
+                }, controllerViewModel.update)
             Text("Glossary")
         }
 
         composable(notePrefix + NavigationScreens.Editor.path + "/{noteId}") {
             val id = it.arguments!!.getString("noteId")!!.fromNav()
             showDrawer.value = false
-            EditorScreen(navigateUp = { navController.popBackStack() }, selectedNote = id)
+            EditorScreen(navigateUp = { controllerViewModel.callUpdate(); navController.popBackStack() }, selectedNote = id)
         }
 
     }
@@ -217,7 +225,7 @@ private fun navigateToSingleNoteNavigation(
                 noteTitle.replace('/', '\\')
     ) {
         println("Well")
-        popUpTo(navController.graph.findStartDestination().id) {
+        popUpTo(navController.currentBackStackEntry!!.destination.route!!) {
             saveState = true
             inclusive = true
         }

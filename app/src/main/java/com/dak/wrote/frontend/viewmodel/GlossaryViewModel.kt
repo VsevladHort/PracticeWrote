@@ -14,9 +14,16 @@ import com.dak.wrote.backend.contracts.entities.Attribute
 import com.dak.wrote.backend.implementations.file_system_impl.dao.getDAO
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import java.util.*
 
-class GlossaryViewModel(private val bookId: String, application: Application) :
+class GlossaryViewModel(
+    private val bookId: String,
+    application: Application,
+    private val update: SharedFlow<Unit>
+) :
     AndroidViewModel(application) {
     data class PartialNote(
         val title: String,
@@ -44,6 +51,14 @@ class GlossaryViewModel(private val bookId: String, application: Application) :
     val data = MutableStateFlow<Data?>(null)
 
     init {
+        viewModelScope.launch {
+           update.collect {
+               update()
+           }
+        }
+    }
+
+    fun update() {
         viewModelScope.launch() {
             val attributes = kotlin.run {
                 val a =
@@ -87,6 +102,7 @@ class GlossaryViewModel(private val bookId: String, application: Application) :
                 allNotes,
                 allNames,
             )
+            println(data.value)
         }
     }
 
@@ -121,15 +137,15 @@ class GlossaryViewModel(private val bookId: String, application: Application) :
             }
         }
     }
-
 }
 
 class GlossaryViewModelFactory(
     private val selectedBook: String,
-    private val application: Application
+    private val application: Application,
+    private val update : SharedFlow<Unit>
 ) :
     ViewModelProvider.Factory {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return GlossaryViewModel(selectedBook, application) as T
+        return GlossaryViewModel(selectedBook, application, update) as T
     }
 }

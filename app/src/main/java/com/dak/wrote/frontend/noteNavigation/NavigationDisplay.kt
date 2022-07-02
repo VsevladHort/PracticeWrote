@@ -33,21 +33,30 @@ import com.dak.wrote.ui.theme.WroteTheme
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeft
 import compose.icons.feathericons.Trash2
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 @Composable
 fun NoteNavigation(
     initialNote: NavigationNote,
     onEnterButton: (String) -> Unit,
     onDeleteBookButton: () -> Unit,
+    update: MutableSharedFlow<Unit>,
     application: Application = LocalContext.current.applicationContext as Application
 ) {
     WroteTheme {
         Surface(color = Material3.colorScheme.background) {
-            val factory = NoteNavigationViewModelFactory(application = application, initialNote)
+            val factory = NoteNavigationViewModelFactory(
+                application = application,
+                initialNote,
+                update
+            )
 
             val navigationViewModel: NoteNavigationViewModel =
-               viewModel(key = null, factory = factory)
+                viewModel(key = null, factory = factory)
 
             val firstInit = rememberSaveable {
                 mutableStateOf(false)
@@ -88,19 +97,10 @@ fun NavigationDisplay(
         onEnterButton = { onEnterButton(state.currentNote.uniqueKey) },
         onCreateButton = navigationViewModel::createNote,
         onDeleteButton = {
-            coroutine.launch {
-                if (state.parents.isEmpty()) {
-                    navigationViewModel.rep.deleteEntityBook(
-                        entity = state.currentNote.uniqueKey
-                    )
-                    onDeleteBookButton() //go back to BookDisplay
-                } else {
-                    navigationViewModel.rep.deleteEntityNote(
-                        entity = state.currentNote.uniqueKey
-                    )
-
-                    navigationViewModel.goBack()
-                }
+            runBlocking {
+                val res = navigationViewModel.delete().await()
+                if(res)
+                    onDeleteBookButton()
             }
         }
     )

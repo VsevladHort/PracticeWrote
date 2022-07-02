@@ -33,13 +33,16 @@ import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeft
 import compose.icons.feathericons.Plus
 import compose.icons.feathericons.Trash2
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.StateFlow
 
 @Composable
-fun GlossaryScreen(currentBookId: String, back: () -> Unit, open: (id: String, name : String) -> Unit) {
+fun GlossaryScreen(currentBookId: String, back: () -> Unit, open: (id: String, name : String) -> Unit, update: MutableSharedFlow<Unit>) {
     val viewModel = viewModel<GlossaryViewModel>(
         factory = GlossaryViewModelFactory(
             currentBookId,
-            LocalContext.current.applicationContext as Application
+            LocalContext.current.applicationContext as Application,
+            update
         )
     )
     viewModel.data.collectAsState().value.let { data ->

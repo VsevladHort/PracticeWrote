@@ -411,7 +411,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         return true
     }
 
-    override suspend fun insertAttributes(uniqueKey: String, titles: List<Attribute>): Boolean {
+    override suspend fun insertAttributes(uniqueKey: String, titles: Set<Attribute>): Boolean {
         val file = File(uniqueKey)
         checkEntryValidity(file)
         val attributes = File(file, DATA_NOTE_ATTRIBUTES)
@@ -489,7 +489,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
 
     override suspend fun deleteEntityAttribute(entity: Attribute): Boolean {
         entity.associatedEntities.forEach {
-            val fixedAttrs = mutableListOf<Attribute>()
+            val fixedAttrs = mutableSetOf<Attribute>()
             fixedAttrs.addAll(getAttributes(it))
             fixedAttrs.remove(entity)
             insertAttributes(it, fixedAttrs)
