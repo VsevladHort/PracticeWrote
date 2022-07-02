@@ -5,6 +5,8 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.text.toLowerCase
 import androidx.lifecycle.*
 import com.dak.wrote.backend.contracts.database.EntryType
 import com.dak.wrote.backend.contracts.entities.Attribute
@@ -165,6 +167,9 @@ class EditorViewModel(val currentId: String, application: Application) :
             val parsedAttributes = note.dAttributes.filter {
                 it.old != null || !it.next.value.isNullOrBlank()
             }
+            for (it in parsedAttributes) {
+                it.next.value = it.next.value?.toLowerCase(Locale.current)
+            }
             val addedAttributes =
                 parsedAttributes.filter { it.updated && !it.next.value.isNullOrBlank() }
                     .map { it.next.value!! }.toSet()
@@ -179,6 +184,7 @@ class EditorViewModel(val currentId: String, application: Application) :
             val updatedAttributes = note.attributes.toMutableList()
             removedAttributes.forEach { attributeName ->
                 val attribute = note.attributes.find { it.name == attributeName }!!
+                rep.updateAttributeObject(attribute)
                 attribute.removeEntity(note.currentId)
                 rep.updateAttributeEntry(attribute)
                 updatedAttributes.remove(attribute)

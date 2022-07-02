@@ -159,16 +159,17 @@ fun NavigationHost(
         navController = navController,
         modifier = modifier,
         startDestination =
-        "$notePrefix${NavigationScreens.NoteNavigation.path}/{noteKey}/{noteTitle}"
+        "$notePrefix${NavigationScreens.NoteNavigation.path}/{noteKey}?noteTitle={noteTitle}"
     ) {
         composable(
-            route = notePrefix + "${NavigationScreens.NoteNavigation.path}/{noteKey}/{noteTitle}",
+            route = notePrefix + "${NavigationScreens.NoteNavigation.path}/{noteKey}?noteTitle={noteTitle}",
             arguments = listOf(
                 navArgument("noteKey") {
                     type = NavType.StringType
                 },
                 navArgument("noteTitle") {
                     type = NavType.StringType
+                    defaultValue = ""
                 }
             )
         ) { entry ->
@@ -238,7 +239,6 @@ fun NavigationHost(
                     navigateToSingleNoteNavigation(navController, notePrefix, id, name, false)
                 }, controllerViewModel.update
             )
-            Text("Glossary")
         }
 
         composable(notePrefix + NavigationScreens.Editor.path + "/{noteId}") {

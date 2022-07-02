@@ -15,6 +15,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Devices
@@ -259,23 +261,23 @@ fun SuggestionSearch(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SuggestionList(
     suggestions: List<GlossaryViewModel.PartialNote>,
     onClick: (id: String, name: String) -> Unit,
 ) {
-    Column(Modifier.padding(10.dp), Arrangement.spacedBy(15.dp)) {
+    Column(
+        Modifier
+            .padding(10.dp)
+            .verticalScroll(rememberScrollState()), Arrangement.spacedBy(15.dp)) {
         suggestions.forEach { suggestion ->
             Surface(
                 shape = RoundedCornerShape(30.dp),
                 tonalElevation = 3.dp,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable(
-                        remember { MutableInteractionSource() },
-                        rememberRipple(),
-                        onClick = { onClick(suggestion.keyId, suggestion.title) }
-                    )
+                    .fillMaxWidth(),
+                onClick = {onClick(suggestion.keyId, suggestion.title)}
             ) {
                 Column(Modifier.padding(20.dp)) {
 
