@@ -8,10 +8,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -27,16 +24,17 @@ import com.dak.wrote.ui.theme.customColors
 
 @Composable
 fun CreateButton(
-    modifier: Modifier,
-    onCreateButton: () -> Unit
+    modifier: Modifier = Modifier,
+    onCreateButton: () -> Unit,
 ) {
 
     Button(
         onClick = onCreateButton,
-        colors = ButtonDefaults.buttonColors(
-            backgroundColor = Material3.customColors.primary,
-            contentColor = Material3.colorScheme.onPrimary
-        ),
+//        colors =
+//        ButtonDefaults.buttonColors(
+//            containerColor = Material3.customColors.primary,
+//            contentColor = Material3.colorScheme.onPrimary
+//        ),
         modifier = modifier
             .fillMaxWidth()
             .padding(
@@ -65,7 +63,7 @@ fun NavigationButton(
 ) {
     Button(
         onClick = { onButtonClicked() },
-        shape = RoundedCornerShape(50.dp),
+//        shape = RoundedCornerShape(50.dp),
         enabled = buttonEnabled,
         modifier = modifier,
 //        colors =
@@ -84,6 +82,7 @@ fun NavigationButton(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ColoredIconButton(
     modifier: Modifier = Modifier,
@@ -92,24 +91,8 @@ fun ColoredIconButton(
     buttonEnabled: Boolean = true,
     onClick: () -> Unit
 ) {
-    Button(
-        onClick = { onClick() },
-        shape = CircleShape,
-        modifier = modifier
-            .size(45.dp),
-        colors = ButtonDefaults.buttonColors(
-            backgroundColor = if (buttonEnabled) Material3.customColors.primary else Material3.customColors.surface,
-            contentColor = Material3.customColors.onPrimary,
-            disabledContentColor = Material3.customColors.onSurface
-        ),
-        enabled = buttonEnabled
-    ) {
-        Icon(
-            imageVector = imageVector,
-            contentDescription = description,
-            modifier = Modifier
-                .scale(2.0f),
-        )
+    FilledIconButton(onClick = onClick, modifier.size(45.dp), enabled = buttonEnabled) {
+       Icon(imageVector = imageVector, contentDescription = description, modifier = Modifier.size(35.dp))
     }
 }
 
@@ -123,11 +106,11 @@ fun DialogButton(
             onClick()
         },
         shape = RoundedCornerShape(50.dp),
-        elevation = ButtonDefaults.elevation(
-            defaultElevation = 0.dp
-        ),
+//        elevation = ButtonDefaults.elevation(
+//            defaultElevation = 0.dp
+//        ),
         colors = ButtonDefaults.buttonColors(
-            backgroundColor = Material3.colorScheme.background,
+            containerColor = Material3.colorScheme.background,
             contentColor = Material3.colorScheme.onPrimary
         )
     ) {
@@ -150,27 +133,37 @@ fun GridButton(
     val color =
         if (isPressed) Material3.colorScheme.primaryContainer else Material3.colorScheme.background
 
-    Button(
-        onClick = { onNoteClicked(note) },
-        colors = ButtonDefaults.buttonColors(
-            backgroundColor = color,
-            contentColor = color,
-        ),
-        shape = RoundedCornerShape(10),
-        elevation = ButtonDefaults.elevation(
-            defaultElevation = 10.dp
-        ),
-        interactionSource = interactionSource,
-        modifier = Modifier
-            .sizeIn(minWidth = 100.dp, minHeight = 100.dp)
-
-
-    ) {
+//    Button(
+//        onClick = { onNoteClicked(note) },
+//        colors = ButtonDefaults.buttonColors(
+//            backgroundColor = color,
+//            contentColor = color,
+//        ),
+//        shape = RoundedCornerShape(10),
+//        elevation = ButtonDefaults.elevation(
+//            defaultElevation = 10.dp
+//        ),
+//        interactionSource = interactionSource,
+//        modifier = Modifier
+//            .sizeIn(minWidth = 100.dp, minHeight = 100.dp)
+//
+//
+//    ) {
+//        Text(
+//            text = note.title,
+//            textAlign = TextAlign.Center,
+//            color = Material3.colorScheme.onBackground,
+//            style = Material3.typography.bodyMedium
+//        )
+//    }
+    ElevatedButton(onClick = { onNoteClicked(note) }, modifier = Modifier.sizeIn(100.dp, 100.dp),
+    shape = RoundedCornerShape(10.dp)) {
         Text(
             text = note.title,
             textAlign = TextAlign.Center,
             color = Material3.colorScheme.onBackground,
-            style = Material3.typography.bodyMedium
+            style = Material3.typography.bodyMedium,
+            fontSize = 26.sp
         )
     }
 }
@@ -189,11 +182,11 @@ fun ColumnButton(
     Button(
         onClick = { onBookClicked(book) },
         colors = ButtonDefaults.buttonColors(
-            backgroundColor = color,
+            containerColor = color,
             contentColor = color,
         ),
         shape = RoundedCornerShape(25),
-        elevation = ButtonDefaults.elevation(
+        elevation = ButtonDefaults.buttonElevation(
             defaultElevation = 10.dp
         ),
         interactionSource = interactionSource,
