@@ -33,12 +33,12 @@ interface WroteDao {
     suspend fun <Display : UniqueEntity> updatePresetDisplay(
         presetManager: PresetManager<Display, *>,
         display: Display,
-    ) : Boolean
+    ): Boolean
 
     suspend fun <Full : UniqueEntity> updatePresetFull(
         presetManager: PresetManager<*, Full>,
         full: Full,
-    ) : Boolean
+    ): Boolean
 
     /**
      * Deletes the Preset identified by the given key
@@ -155,6 +155,7 @@ interface WroteDao {
     /**
      * @return A list of all attributes created within a book
      */
+    @Deprecated("Use the method that takes unique key instead")
     suspend fun getAttributes(book: Book): List<Attribute>
 
     /**
@@ -173,6 +174,7 @@ interface WroteDao {
     suspend fun getBooks(): List<Book>
 
     suspend fun getBook(uniqueKey: String): Book
+
     /**
      * @return A list of unique keys of children of the note identified by the given key
      */
@@ -238,5 +240,9 @@ interface WroteDao {
      */
     suspend fun deleteEntityAttribute(entity: Attribute): Boolean
 
-    suspend fun getOrCreateAttribute(book: Book, keyGenerator: UniqueEntityKeyGenerator, name: String) : Attribute
+    suspend fun getOrCreateAttribute(
+        book: Book,
+        keyGenerator: UniqueEntityKeyGenerator,
+        name: String
+    ): Attribute
 }
