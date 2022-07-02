@@ -316,7 +316,7 @@ fun DeleteDialog(
         text = {
             Text(
                 text = stringResource(id = R.string.delete_dialog_body, title),
-                style = Material3.typography.bodyMedium
+                style = Material3.typography.bodyLarge
             )
         },
         confirmButton = {
