@@ -78,8 +78,6 @@ class NavigationStateFactory {
             return paragraphs
         }
     }
-
-
 }
 
 class NoteNavigationViewModel(
@@ -110,23 +108,40 @@ class NoteNavigationViewModel(
         }
     }
 
-    fun changeNote(ignoreCurrent: Boolean = false): Job {
+    fun changeNote(ignoreCurrent: Boolean = false, initialUpdate: Boolean = false): Job {
         return viewModelScope.launch(Dispatchers.IO) {
             val currentNote =
                 if (ignoreCurrent || navigationState.value!!.currentNote.title == "")
                     null
                 else
                     navigationState.value!!.currentNote
+
             val newNote = noteState.value!!
             val key = newNote.uniqueKey
             val name = if (rep.getEntryType(key) == EntryType.BOOK)
                 rep.getBook(key).title
             else rep.getName(key)
+
+            val parents = navigationState.value!!.parents
+            if (initialUpdate && rep.getEntryType(newNote.uniqueKey) != EntryType.BOOK) {
+                val book = rep.getBookOfNote(newNote.uniqueKey)
+                var currentNoteKey = newNote.uniqueKey
+
+                while (true) {
+                    currentNoteKey = rep.getParentKey(currentNoteKey)
+                    if (currentNoteKey == book)
+                        break
+                    parents.addFirst(NavigationNote(currentNoteKey, rep.getName(currentNoteKey)))
+                }
+
+                parents.addFirst(NavigationNote(book, rep.getBook(book).title))
+            }
+
             val newNavigationState =
                 NavigationStateFactory.create(
                     newNote = newNote.copy(title = name),
                     currentNote = currentNote,
-                    parents = navigationState.value!!.parents,
+                    parents = parents,
                     application = getApplication<Application>()
                 )
 
@@ -216,7 +231,7 @@ class NoteNavigationViewModel(
 
     fun update() {
         viewModelScope.launch {
-            changeNote(true)
+            changeNote(true, true)
         }
     }
 

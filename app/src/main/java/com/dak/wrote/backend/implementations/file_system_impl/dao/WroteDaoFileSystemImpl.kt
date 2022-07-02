@@ -438,6 +438,10 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         return getFileParent(entry.uniqueKey)
     }
 
+    suspend fun getParentKey(uniqueKey: String): String {
+        return getFileParent(uniqueKey)
+    }
+
     private fun getFileParent(fileName: String): String {
         val file = File(fileName)
         return File(file.parent!!).absolutePath
