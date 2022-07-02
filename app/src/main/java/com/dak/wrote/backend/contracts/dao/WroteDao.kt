@@ -159,9 +159,14 @@ interface WroteDao {
     suspend fun getAttributes(book: Book): List<Attribute>
 
     /**
-     * @return A list of keys of notes created within the given book
+     * @return A set of keys of notes created within the given book
      */
     suspend fun getNoteKeys(book: Book): Set<String>
+
+    /**
+     * @return A set of keys of notes created within the given book that do not have attributes
+     */
+    suspend fun getNoteKeysWithoutAttributes(book: Book): Set<String>
 
     /**
      * @return A list of all preset keys created within the app
