@@ -102,7 +102,6 @@ private fun ListView(list: List<String>) {
         list.forEachIndexed { index, text ->
             Column {
                 Text(text = text, style = listEditStyle())
-//                Divider()
             }
         }
     }

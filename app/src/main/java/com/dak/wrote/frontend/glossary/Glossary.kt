@@ -25,6 +25,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dak.wrote.frontend.AligningOutlinedTextField
 import com.dak.wrote.frontend.editor.AdditionalValuesView
 import com.dak.wrote.frontend.noteNavigation.ColoredIconButton
+import com.dak.wrote.frontend.preset.AdditionalPresetView
 import com.dak.wrote.frontend.viewmodel.GlossaryViewModel
 import com.dak.wrote.frontend.viewmodel.GlossaryViewModelFactory
 import com.dak.wrote.ui.theme.Material3
@@ -37,7 +38,12 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
 @Composable
-fun GlossaryScreen(currentBookId: String, back: () -> Unit, open: (id: String, name : String) -> Unit, update: MutableSharedFlow<Unit>) {
+fun GlossaryScreen(
+    currentBookId: String,
+    back: () -> Unit,
+    open: (id: String, name: String) -> Unit,
+    update: MutableSharedFlow<Unit>
+) {
     val viewModel = viewModel<GlossaryViewModel>(
         factory = GlossaryViewModelFactory(
             currentBookId,
@@ -62,7 +68,7 @@ fun GlossaryScreen(currentBookId: String, back: () -> Unit, open: (id: String, n
 
 @Composable
 fun GlossaryScreenImpl(
-    back: () -> Unit, open: (id: String, name : String) -> Unit,
+    back: () -> Unit, open: (id: String, name: String) -> Unit,
     data: GlossaryViewModel.Data,
     searchAnew: () -> Unit
 ) {
@@ -89,9 +95,16 @@ fun GlossaryScreenImpl(
 @Composable
 fun GlossaryScreenPreview() {
     WroteTheme {
-        GlossaryScreenImpl(back = { }, open = {_, _ ->}, data = GlossaryViewModel.Data(
-            sortedMapOf(), sortedMapOf(), sortedMapOf()
+        GlossaryScreenImpl(back = { }, open = { _, _ -> }, data = GlossaryViewModel.Data(
+            sortedMapOf(), sortedMapOf(), sortedMapOf(), foundNotes = remember {
+                mutableStateOf(
+                    listOf(
+                        GlossaryViewModel.PartialNote("Hello", emptySet(), emptySet(), "")
+                    )
+                )
+            }
         )
+
         ) {
 
         }
@@ -249,32 +262,33 @@ fun SuggestionSearch(
 @Composable
 fun SuggestionList(
     suggestions: List<GlossaryViewModel.PartialNote>,
-    onClick: (id: String, name : String) -> Unit,
+    onClick: (id: String, name: String) -> Unit,
 ) {
     Column(Modifier.padding(10.dp), Arrangement.spacedBy(15.dp)) {
         suggestions.forEach { suggestion ->
             Surface(
                 shape = RoundedCornerShape(30.dp),
                 tonalElevation = 3.dp,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(
+                        remember { MutableInteractionSource() },
+                        rememberRipple(),
+                        onClick = { onClick(suggestion.keyId, suggestion.title) }
+                    )
             ) {
-                Column(Modifier.padding(10.dp)) {
+                Column(Modifier.padding(20.dp)) {
 
                     Text(
                         text = suggestion.title,
                         Modifier
-                            .fillMaxWidth()
-                            .clickable(
-                                remember { MutableInteractionSource() },
-                                rememberRipple(),
-                                onClick = { onClick(suggestion.keyId, suggestion.title) }
-                            ),
+                            .fillMaxWidth(),
                         style = Material3.typography.headlineMedium
                     )
                     Spacer(modifier = Modifier.height(10.dp))
-                    AdditionalValuesView(
-                        alternateNames = suggestion.alternateNames.toList(),
-                        attributes = suggestion.attributes.map { at -> at.name }.toList()
+                    AdditionalPresetView(
+                        alternateTitles = suggestion.alternateNames,
+                        attributes = suggestion.attributes.map { at -> at.name }.toSet()
                     )
                 }
             }

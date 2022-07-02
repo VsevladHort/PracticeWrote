@@ -57,7 +57,6 @@ interface DisplayPreset {
 @OptIn(ExperimentalSerializationApi::class)
 class UserPresetSaver : PresetManager<SerializableDisplayUserPreset, SerializableFullUserPreset> {
     override fun loadDisplay(byteData: ByteArray): SerializableDisplayUserPreset {
-        val a = byteData.decodeToString()
         return Json.decodeFromStream(ByteArrayInputStream(byteData))
     }
 
@@ -181,7 +180,6 @@ fun AdditionalPresetView(alternateTitles: Set<String>, attributes: Set<String>) 
             fun titles(text: String, list: List<String>) {
                 if (list.isNotEmpty())
                     OutlinedCard(
-//                        tonalElevation = 10.dp,
                         modifier = Modifier.padding(horizontal = 5.dp),
                         shape = RoundedCornerShape(10.dp)
                     ) {
@@ -228,38 +226,42 @@ fun UserPresetView(
             .clip(RoundedCornerShape(25.dp)),
         onClick = onSelect,
     ) {
-        Box(modifier = Modifier.padding(horizontal = 15.dp, vertical = 15.dp)) {
+        Box(modifier = Modifier.padding(start = 15.dp, end = 15.dp, top = 15.dp, bottom = 15.dp)) {
             Column(
                 Modifier.animateContentSize(),
                 verticalArrangement = Arrangement.spacedBy(5.dp)
             ) {
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 10.dp),
-                    Arrangement.spacedBy(10.dp, Alignment.End),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (!inEdit.value && editingValues != null) {
-                        IconButton(onClick = editingValues.delete) {
-                            Icon(imageVector = FeatherIcons.Delete, contentDescription = "Delete")
-                        }
-                        IconButton(onClick = { inEdit.value = true }) {
-                            Icon(imageVector = FeatherIcons.Edit2, contentDescription = "Edit")
-                        }
-                    }
-                    Box(
-                        modifier = Modifier.size(26.dp)
+                if (isSelected.value || (!inEdit.value && editingValues != null))
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 10.dp),
+                        Arrangement.spacedBy(10.dp, Alignment.End),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        if (isSelected.value)
-                            Box(
-                                modifier = Modifier
-                                    .size(26.dp)
-                                    .clip(CircleShape)
-                                    .background(Material3.colorScheme.tertiary)
-                            )
+                        if (!inEdit.value && editingValues != null) {
+                            IconButton(onClick = editingValues.delete) {
+                                Icon(
+                                    imageVector = FeatherIcons.Delete,
+                                    contentDescription = "Delete"
+                                )
+                            }
+                            IconButton(onClick = { inEdit.value = true }) {
+                                Icon(imageVector = FeatherIcons.Edit2, contentDescription = "Edit")
+                            }
+                        }
+                        Box(
+                            modifier = Modifier.size(26.dp)
+                        ) {
+                            if (isSelected.value)
+                                Box(
+                                    modifier = Modifier
+                                        .size(26.dp)
+                                        .clip(CircleShape)
+                                        .background(Material3.colorScheme.tertiary)
+                                )
+                        }
                     }
-                }
                 if (!inEdit.value) {
                     Text(
                         name,
@@ -286,10 +288,10 @@ fun UserPresetView(
                         horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End)
                     ) {
                         editingValues!!
-                        Button(onClick = {editingValues.submit(); inEdit.value = false}) {
+                        Button(onClick = { editingValues.submit(); inEdit.value = false }) {
                             Text(text = "Submit")
                         }
-                        TextButton(onClick = {editingValues.cancel(); inEdit.value = false}) {
+                        TextButton(onClick = { editingValues.cancel(); inEdit.value = false }) {
                             Text(text = "Cancel")
                         }
                     }
@@ -322,18 +324,6 @@ fun NormalPresetView(preset: BasicPreset, isSelected: State<Boolean>, onSelect: 
 }
 
 
-//@Preview(showSystemUi = true, device = Devices.PIXEL_3)
-//@Composable
-//fun PresetViewPreview() {
-//    UserPresetView(
-//        DisplayUserPreset(
-//            "Hehe",
-//            setOf("Honorable Knight"),
-//            setOf("я", "character", "king"),
-//            ""
-//        ), remember { mutableStateOf(true)}, {}
-//    )
-//}
 
 val presetImitations = listOf(
     DisplayUserPreset(
@@ -388,7 +378,8 @@ fun PresetListViewPreview() {
     WroteTheme() {
         PresetListView(
             normalPresets = predefinedPresets,
-            userPresets = presetImitations,
+//            userPresets = presetImitations,
+            userPresets = listOf(),
             remember { mutableStateOf(presetImitations[1]) },
             {},
             {}, {}, {})

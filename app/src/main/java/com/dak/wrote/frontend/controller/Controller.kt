@@ -145,7 +145,6 @@ fun ControllerBottomBar(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NavigationHost(
     navController: NavHostController,
@@ -178,10 +177,7 @@ fun NavigationHost(
                 .fromNav()
             val noteTitle = (entry.arguments?.getString("noteTitle") ?: book.title)
                 .fromNav()
-            Scaffold(
-                topBar = {
-                    TopAppBar(
-                        title = {
+
 //                        Text(
 //                            text = "Back to books",
 //                            text = book.title,
@@ -190,19 +186,15 @@ fun NavigationHost(
 //                            color = Material3.colorScheme.onBackground,
 //                            style = Material3.typography.headlineMedium
 //                        )
-                        },
-                        navigationIcon = {
-                            ColoredIconButton(
-                                modifier = Modifier.padding(start = 16.dp),
-                                onClick = goUp,
-                                imageVector = FeatherIcons.ArrowLeft,
-                                description = "Back"
-                            )
-                        },
 
-                        backgroundColor = Material3.colorScheme.surface,
-                        elevation = 10.dp
-                    )
+//                            ColoredIconButton(
+//                                modifier = Modifier.padding(start = 16.dp),
+//                                onClick = goUp,
+//                                imageVector = FeatherIcons.ArrowLeft,
+//                                description = "Back"
+//                            )
+
+
 //                {
 //                    Row(
 //                        modifier = Modifier.fillMaxWidth(),
@@ -224,19 +216,15 @@ fun NavigationHost(
 //                        Spacer(modifier = Modifier.size(45.dp))
 //                    }
 //                }
+            NoteNavigation(
+                modifier = Modifier,
+                initialNote = NavigationNote(noteKey, noteTitle),
+                onEnterButton = {
+                    navController.navigate("$notePrefix${NavigationScreens.Editor.path}/${it.toNav()}")
                 },
-            ) { padding ->
-                NoteNavigation(
-                    modifier = Modifier.padding(padding),
-                    initialNote = NavigationNote(noteKey, noteTitle),
-                    onEnterButton = {
-                        navController.navigate("$notePrefix${NavigationScreens.Editor.path}/${it.toNav()}")
-                    },
-                    onDeleteBookButton = { goUp() },
-                    controllerViewModel.update
-                )
-            }
-
+                onDeleteBookButton = goUp,
+                controllerViewModel.update
+            )
         }
 
         composable(

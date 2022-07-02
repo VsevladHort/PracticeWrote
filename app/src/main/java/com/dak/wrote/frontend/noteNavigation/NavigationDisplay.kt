@@ -6,10 +6,8 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Divider
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material.*
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -34,7 +32,6 @@ import com.dak.wrote.ui.theme.Material3
 import com.dak.wrote.ui.theme.WroteTheme
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeft
-import compose.icons.feathericons.CornerLeftUp
 import compose.icons.feathericons.Trash2
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.runBlocking
@@ -73,7 +70,7 @@ fun NoteNavigation(
             NavigationDisplay(
                 navigationViewModel = navigationViewModel,
                 onEnterButton = onEnterButton,
-                onDeleteBookButton = onDeleteBookButton
+                onBackToBookDisplay = onDeleteBookButton
             )
         }
     }
@@ -83,34 +80,36 @@ fun NoteNavigation(
 fun NavigationDisplay(
     navigationViewModel: NoteNavigationViewModel,
     onEnterButton: (String) -> Unit,
-    onDeleteBookButton: () -> Unit
+    onBackToBookDisplay: () -> Unit
 ) {
     val navigationState by navigationViewModel.navigationState.observeAsState()
     val state = navigationState ?: NavigationState()
 
-    MainNavigation(
-        state.currentNote.title, state.paragraphs,
+    NavigationAndTopBar(
+        state.currentNote.title,
+        state.paragraphs,
         onNoteClicked = { newNoteForNavigation ->
-            navigationViewModel.changeNote(
+            navigationViewModel.selectNote(
                 newNoteForNavigation
             )
         },
         backButtonEnabled = !state.parents.isEmpty(),
-        onBackButton = { navigationViewModel.goBack() },
+        onBackButton = { navigationViewModel.goBackAsync() },
         onEnterButton = { onEnterButton(state.currentNote.uniqueKey) },
         onCreateButton = navigationViewModel::createNote,
         onDeleteButton = {
             runBlocking {
-                val res = navigationViewModel.delete().await()
+                val res = navigationViewModel.deleteAsync().await()
                 if (res)
-                    onDeleteBookButton()
+                    onBackToBookDisplay()
             }
-        }
+        },
+        onBackToBookDisplay = onBackToBookDisplay
     )
 }
 
 @Composable
-fun MainNavigation(
+fun NavigationAndTopBar(
     title: String,
     paragraphs: List<NavigationNote>,
     onNoteClicked: (NavigationNote) -> Unit,
@@ -118,7 +117,76 @@ fun MainNavigation(
     onBackButton: () -> Unit,
     onEnterButton: () -> Unit,
     onCreateButton: (NoteCreation) -> Unit,
-    onDeleteButton: () -> Unit
+    onDeleteButton: () -> Unit,
+    onBackToBookDisplay: () -> Unit,
+) {
+    val openDeleteDialog = remember { mutableStateOf(false) }
+
+    if (openDeleteDialog.value)
+        DeleteDialog(
+            title = title,
+            onCloseDialog = { openDeleteDialog.value = false },
+            onDeleteButton = onDeleteButton
+        )
+
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+//                modifier = Modifier.padding(horizontal = 16.dp),
+                title = {
+//                    Text(
+//                        text = title,
+//                        textAlign = TextAlign.Center,
+//                        modifier = Modifier
+//                            .padding(horizontal = 24.dp),
+//                        color = Material3.colorScheme.onBackground,
+//                        style = Material3.typography.displaySmall
+//                    )
+                },
+                navigationIcon = {
+                    ColoredIconButton(
+                        modifier = Modifier.padding(start = 16.dp),
+                        onClick = onBackToBookDisplay,
+                        imageVector = FeatherIcons.ArrowLeft,
+                        description = "Back"
+                    )
+                },
+                actions = {
+                    ColoredIconButton(
+                        modifier = Modifier.padding(end = 16.dp),
+                        onClick = { openDeleteDialog.value = true },
+                        imageVector = FeatherIcons.Trash2,
+                        description = "Delete",
+
+                        )
+                },
+//                backgroundColor = Material3.colorScheme.background,
+            )
+        },
+    ) { padding ->
+        MainNavigation(
+            title = title,
+            modifier = Modifier.padding(padding),
+            paragraphs = paragraphs,
+            onNoteClicked = onNoteClicked,
+            backButtonEnabled = backButtonEnabled,
+            onBackButton = onBackButton,
+            onEnterButton = onEnterButton,
+            onCreateButton = onCreateButton,
+        )
+    }
+}
+
+@Composable
+fun MainNavigation(
+    title: String,
+    modifier: Modifier = Modifier,
+    paragraphs: List<NavigationNote>,
+    onNoteClicked: (NavigationNote) -> Unit,
+    backButtonEnabled: Boolean,
+    onBackButton: () -> Unit,
+    onEnterButton: () -> Unit,
+    onCreateButton: (NoteCreation) -> Unit,
 ) {
     val createDialog = remember { mutableStateOf(false) }
     if (createDialog.value)
@@ -128,22 +196,23 @@ fun MainNavigation(
                 exit = { createDialog.value = false })
         }
 
-    Column {
+    Column(
+        modifier = modifier
+    ) {
         Divider(color = Material3.colorScheme.primary, thickness = 3.dp)
 
-        val modifier = Modifier
+        val gridModifier = Modifier
             .weight(1f)
             .fillMaxWidth()
-        Box(modifier = modifier) {
+        Box(modifier = gridModifier) {
             NoteWithParagraphs(
-                modifier = modifier,
                 title = title,
+                modifier = gridModifier,
                 paragraphs = paragraphs,
                 onNoteClicked = onNoteClicked,
                 backButtonEnabled = backButtonEnabled,
                 onBackButton = onBackButton,
                 onEnterButton = onEnterButton,
-                onDeleteButton = onDeleteButton
             )
             CreateButton(
                 modifier = Modifier.align(Alignment.BottomCenter),
@@ -155,23 +224,22 @@ fun MainNavigation(
 
 @Composable
 fun NoteWithParagraphs(
-    modifier: Modifier,
     title: String,
+    modifier: Modifier,
     paragraphs: List<NavigationNote>,
     onNoteClicked: (NavigationNote) -> Unit,
     backButtonEnabled: Boolean,
     onBackButton: () -> Unit,
     onEnterButton: () -> Unit,
-    onDeleteButton: () -> Unit
 ) {
-    val openDeleteDialog = remember { mutableStateOf(false) }
-
-    if (openDeleteDialog.value)
-        DeleteDialog(
-            title = title,
-            onCloseDialog = { openDeleteDialog.value = false },
-            onDeleteButton = onDeleteButton
-        )
+//    val openDeleteDialog = remember { mutableStateOf(false) }
+//
+//    if (openDeleteDialog.value)
+//        DeleteDialog(
+//            title = title,
+//            onCloseDialog = { openDeleteDialog.value = false },
+//            onDeleteButton = onDeleteButton
+//        )
 
 
     LazyVerticalGrid(
@@ -188,7 +256,6 @@ fun NoteWithParagraphs(
         item(
             span = { GridItemSpan(maxLineSpan) }
         ) {
-//            if (backButtonEnabled) // to ignore book title
             Text(
                 text = title,
                 textAlign = TextAlign.Center,
@@ -204,9 +271,8 @@ fun NoteWithParagraphs(
             Column {
                 Divider(color = Material3.colorScheme.primary, thickness = 2.dp)
                 NavigationButtons(
-                    onDeleteButton = { openDeleteDialog.value = true },
                     onBackButton = onBackButton,
-                    backButtonEnabled = backButtonEnabled,
+                    buttonsEnabled = backButtonEnabled,
                     onEnterButton = onEnterButton,
                 )
                 Divider(
@@ -271,12 +337,12 @@ fun DeleteDialog(
 
 @Composable
 private fun NavigationButtons(
-    onDeleteButton: () -> Unit,
-    backButtonEnabled: Boolean,
+    buttonsEnabled: Boolean,
     onBackButton: () -> Unit,
     onEnterButton: () -> Unit
 ) {
 
+/*
     Row(
         modifier = Modifier
             .padding(
@@ -309,6 +375,33 @@ private fun NavigationButtons(
             imageVector = FeatherIcons.Trash2,
             description = "Delete",
             onClick = onDeleteButton
+        )
+    }
+
+*/
+
+    Row(
+        modifier = Modifier
+            .padding(20.dp)
+            .fillMaxSize(),
+        horizontalArrangement = Arrangement.SpaceAround
+    ) {
+        // Back button
+        NavigationButton(
+            label = "Back",
+            buttonEnabled = buttonsEnabled,
+            modifier = Modifier.weight(1f),
+            onButtonClicked = onBackButton
+        )
+
+        Spacer(modifier = Modifier.weight(0.4f))
+
+        // Enter button
+        NavigationButton(
+            label = "Enter",
+            buttonEnabled = buttonsEnabled,
+            modifier = Modifier.weight(1f),
+            onButtonClicked = onEnterButton
         )
     }
 }

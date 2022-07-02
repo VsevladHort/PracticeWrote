@@ -20,7 +20,9 @@ import androidx.compose.ui.unit.dp
 import com.dak.wrote.frontend.AligningBasicTextField
 import com.dak.wrote.ui.theme.Material3
 import com.dak.wrote.ui.theme.WroteTheme
+import com.google.accompanist.flowlayout.FlowRow
 import compose.icons.FeatherIcons
+import compose.icons.feathericons.Bold
 import compose.icons.feathericons.Italic
 import compose.icons.feathericons.List
 import kotlinx.coroutines.delay
@@ -148,18 +150,21 @@ fun DataLayoutAdditionBox(addLayout: (DataLayout) -> Unit) {
         ) {
             @Composable
             fun item(imageVector: ImageVector, text: String, onClick: () -> Unit) {
-                OutlinedButton(onClick = onClick) {
+                OutlinedButton(onClick = onClick, modifier = Modifier.padding(horizontal = 5.dp)) {
                     Icon(imageVector = imageVector, contentDescription = null)
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(text = text)
                 }
             }
             if (expanded.value)
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                FlowRow() {
                     item(
                         imageVector = FeatherIcons.Italic,
                         text = "Text"
                     ) { addLayout(TextDataLayout("")) }
+                    item(imageVector = FeatherIcons.Bold, text = "Bold") {
+                        addLayout(BoldDL(""))
+                    }
                     item(imageVector = FeatherIcons.List, text = "List") {
                         addLayout(
                             ItemListLayout(

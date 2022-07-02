@@ -174,6 +174,8 @@ class EditorViewModel(val currentId: String, application: Application) :
                 parsedAttributes.filter { !it.updated && !it.next.value.isNullOrBlank() }
                     .map { it.next.value!! }.toSet()
 
+            println(addedAttributes)
+
             val updatedAttributes = note.attributes.toMutableList()
             removedAttributes.forEach { attributeName ->
                 val attribute = note.attributes.find { it.name == attributeName }!!
@@ -185,16 +187,19 @@ class EditorViewModel(val currentId: String, application: Application) :
             val book: Book = rep.getBooks().find { bookId == it.uniqueKey }!!
             val allAttributes = rep.getAttributes(bookId).toMutableSet()
             addedAttributes.forEach { added ->
-                val found = allAttributes.find { it.name == added }
-                if (found != null) {
-                    found.addEntity(note.currentId)
-                    rep.insertAttribute(found)
-                } else {
-                    val key = keyGen.getKey(book, EntryType.ATTRIBUTE)
-                    val attribute = Attribute(key, added)
-                    rep.insertAttribute(attribute)
-                    updatedAttributes.add(attribute)
-                }
+                val attribute = rep.getOrCreateAttribute(book, keyGen, added)
+                rep.updateAttributeObject(attribute)
+                attribute.addEntity(note.currentId)
+                rep.insertAttribute(attribute)
+//                if (found != null) {
+//                    found.addEntity(note.currentId)
+//                    rep.insertAttribute(found)
+//                } else {
+//                    val key = keyGen.getKey(book, EntryType.ATTRIBUTE)
+//                    val attribute = Attribute(key, added)
+//                    rep.insertAttribute(attribute)
+//                    updatedAttributes.add(attribute)
+//                }
             }
 
 
@@ -215,6 +220,7 @@ class EditorViewModel(val currentId: String, application: Application) :
             note.page.value = note.sPage.toDisplayable()
 
             rep.updateNoteEntry(note)
+
 
             note.processing.value = false
         }
