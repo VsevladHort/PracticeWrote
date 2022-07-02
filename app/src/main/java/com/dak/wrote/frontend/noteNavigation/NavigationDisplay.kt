@@ -34,12 +34,14 @@ import com.dak.wrote.ui.theme.Material3
 import com.dak.wrote.ui.theme.WroteTheme
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeft
+import compose.icons.feathericons.CornerLeftUp
 import compose.icons.feathericons.Trash2
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.runBlocking
 
 @Composable
 fun NoteNavigation(
+    modifier: Modifier = Modifier,
     initialNote: NavigationNote,
     onEnterButton: (String) -> Unit,
     onDeleteBookButton: () -> Unit,
@@ -47,7 +49,10 @@ fun NoteNavigation(
     application: Application = LocalContext.current.applicationContext as Application
 ) {
     WroteTheme {
-        Surface(color = Material3.colorScheme.background) {
+        Surface(
+            modifier = modifier,
+            color = Material3.colorScheme.background
+        ) {
             val factory = NoteNavigationViewModelFactory(
                 application = application,
                 initialNote,
@@ -283,7 +288,7 @@ private fun NavigationButtons(
     ) {
         // Back button
         ColoredIconButton(
-            imageVector = FeatherIcons.ArrowLeft,
+            imageVector = FeatherIcons.CornerLeftUp,
             modifier = Modifier,
             description = "Back",
             buttonEnabled = backButtonEnabled,

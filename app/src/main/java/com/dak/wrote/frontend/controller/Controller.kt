@@ -34,9 +34,7 @@ import com.dak.wrote.utility.fromNav
 import com.dak.wrote.utility.navigateToSingleNoteNavigation
 import com.dak.wrote.utility.toNav
 import compose.icons.FeatherIcons
-import compose.icons.feathericons.ArrowLeft
-import compose.icons.feathericons.Book
-import compose.icons.feathericons.FileText
+import compose.icons.feathericons.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,53 +45,7 @@ fun ControllerDisplay(
     val controller = rememberNavController()
     val showDrawer = rememberSaveable { mutableStateOf(true) }
     Scaffold(
-        topBar = {
-            if (showDrawer.value)
-                TopAppBar(
 
-                    title = {
-//                        Text(
-//                            text = "Back to books",
-//                            text = book.title,
-//                            textAlign = TextAlign.Center,
-//                            modifier = Modifier.fillMaxWidth(),
-//                            color = Material3.colorScheme.onBackground,
-//                            style = Material3.typography.headlineMedium
-//                        )
-                    },
-                    navigationIcon = {
-                        ColoredIconButton(
-                            onClick = goUp,
-                            imageVector = FeatherIcons.ArrowLeft,
-                            description = "Back"
-                        )
-                    },
-
-                    backgroundColor = Material3.colorScheme.surface,
-                    elevation = 10.dp
-                )
-//                {
-//                    Row(
-//                        modifier = Modifier.fillMaxWidth(),
-//                        verticalAlignment = Alignment.CenterVertically,
-//                        horizontalArrangement = Arrangement.SpaceBetween
-//                    ) {
-//                        ColoredIconButton(
-//                            onClick = goUp,
-//                            imageVector = FeatherIcons.ArrowLeft,
-//                            description = "Back"
-//                        )
-//                        Text(
-//                            text = book.title,
-//                            textAlign = TextAlign.Center,
-//                            modifier = Modifier.wrapContentSize(),
-//                            color = Material3.colorScheme.onBackground,
-//                            style = Material3.typography.headlineMedium
-//                        )
-//                        Spacer(modifier = Modifier.size(45.dp))
-//                    }
-//                }
-        },
         bottomBar = {
             if (showDrawer.value)
                 ControllerBottomBar(
@@ -193,6 +145,7 @@ fun ControllerBottomBar(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NavigationHost(
     navController: NavHostController,
@@ -225,14 +178,65 @@ fun NavigationHost(
                 .fromNav()
             val noteTitle = (entry.arguments?.getString("noteTitle") ?: book.title)
                 .fromNav()
-            NoteNavigation(
-                initialNote = NavigationNote(noteKey, noteTitle),
-                onEnterButton = {
-                    navController.navigate("$notePrefix${NavigationScreens.Editor.path}/${it.toNav()}")
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = {
+//                        Text(
+//                            text = "Back to books",
+//                            text = book.title,
+//                            textAlign = TextAlign.Center,
+//                            modifier = Modifier.fillMaxWidth(),
+//                            color = Material3.colorScheme.onBackground,
+//                            style = Material3.typography.headlineMedium
+//                        )
+                        },
+                        navigationIcon = {
+                            ColoredIconButton(
+                                modifier = Modifier.padding(start = 16.dp),
+                                onClick = goUp,
+                                imageVector = FeatherIcons.ArrowLeft,
+                                description = "Back"
+                            )
+                        },
+
+                        backgroundColor = Material3.colorScheme.surface,
+                        elevation = 10.dp
+                    )
+//                {
+//                    Row(
+//                        modifier = Modifier.fillMaxWidth(),
+//                        verticalAlignment = Alignment.CenterVertically,
+//                        horizontalArrangement = Arrangement.SpaceBetween
+//                    ) {
+//                        ColoredIconButton(
+//                            onClick = goUp,
+//                            imageVector = FeatherIcons.ArrowLeft,
+//                            description = "Back"
+//                        )
+//                        Text(
+//                            text = book.title,
+//                            textAlign = TextAlign.Center,
+//                            modifier = Modifier.wrapContentSize(),
+//                            color = Material3.colorScheme.onBackground,
+//                            style = Material3.typography.headlineMedium
+//                        )
+//                        Spacer(modifier = Modifier.size(45.dp))
+//                    }
+//                }
                 },
-                onDeleteBookButton = { goUp() },
-                controllerViewModel.update
-            )
+            ) { padding ->
+                NoteNavigation(
+                    modifier = Modifier.padding(padding),
+                    initialNote = NavigationNote(noteKey, noteTitle),
+                    onEnterButton = {
+                        navController.navigate("$notePrefix${NavigationScreens.Editor.path}/${it.toNav()}")
+                    },
+                    onDeleteBookButton = { goUp() },
+                    controllerViewModel.update
+                )
+            }
+
         }
 
         composable(
@@ -241,7 +245,7 @@ fun NavigationHost(
             showDrawer.value = true
             GlossaryScreen(
                 book.uniqueKey,
-                { navController.popBackStack() },
+                { goUp() },
                 { id, name ->
                     navigateToSingleNoteNavigation(navController, notePrefix, id, name, false)
                 }, controllerViewModel.update
