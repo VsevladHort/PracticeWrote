@@ -4,11 +4,13 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.dak.wrote.backend.contracts.database.EntryType
 import com.dak.wrote.backend.contracts.database.UniqueEntityKeyGenerator
+import com.dak.wrote.backend.contracts.entities.Attribute
 import com.dak.wrote.backend.contracts.entities.Book
 import com.dak.wrote.backend.contracts.entities.UniqueEntity
 import com.dak.wrote.backend.implementations.file_system_impl.DIR_ATTRIBUTES
 import com.dak.wrote.backend.implementations.file_system_impl.DIR_BOOKS
 import com.dak.wrote.backend.implementations.file_system_impl.DIR_PRESETS
+import com.dak.wrote.backend.implementations.file_system_impl.dao.WroteDaoFileSystemImpl
 import com.dak.wrote.backend.implementations.file_system_impl.database.UniqueKeyGeneratorFileSystemImpl
 import kotlinx.coroutines.*
 import org.junit.AfterClass

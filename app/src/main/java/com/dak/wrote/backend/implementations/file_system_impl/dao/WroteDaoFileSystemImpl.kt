@@ -42,7 +42,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         return true
     }
 
-    override suspend fun insetNote(parent: UniqueEntity, note: BaseNote): Boolean {
+    override suspend fun insertNote(parent: UniqueEntity, note: BaseNote): Boolean {
         val file = File(note.uniqueKey)
         if (!file.exists())
             return false
@@ -72,7 +72,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
     }
 
 
-    override suspend fun <Display : UniqueEntity, Full : UniqueEntity> insetPreset(
+    override suspend fun <Display : UniqueEntity, Full : UniqueEntity> insertPreset(
         presetManager: PresetManager<Display, Full>,
         display: Display,
         full: Full
@@ -142,7 +142,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         return presetManager.loadFull(File(file, DATA_MAIN_FILE_NAME).readBytes())
     }
 
-    override suspend fun insetAttribute(attribute: Attribute): Boolean {
+    override suspend fun insertAttribute(attribute: Attribute): Boolean {
         val file = File(attribute.uniqueKey)
         if (!file.exists())
             return false
@@ -157,7 +157,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
     }
 
     override suspend fun updateAttributeEntry(value: Attribute): Boolean {
-        return insetAttribute(value)
+        return insertAttribute(value)
     }
 
     override suspend fun updateAttributeObject(value: Attribute): Boolean {
@@ -321,8 +321,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
                     emptySet()
             }
             EntryType.BOOK -> {
-                val fileBooks = File(baseDir, DIR_BOOKS)
-                val fileAttributes = File(fileBooks, DIR_ATTRIBUTES)
+                val fileAttributes = File(file, DIR_ATTRIBUTES)
                 val attrSet = mutableSetOf<Attribute>()
                 fileAttributes.listFiles()?.let { stream ->
                     stream.asSequence().filter { checkIfInserted(it) }

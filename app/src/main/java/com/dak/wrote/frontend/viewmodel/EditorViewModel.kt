@@ -3,14 +3,12 @@ package com.dak.wrote.frontend.viewmodel
 import android.app.Application
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.*
 import com.dak.wrote.backend.contracts.database.EntryType
 import com.dak.wrote.backend.contracts.entities.Attribute
 import com.dak.wrote.backend.contracts.entities.BaseNote
 import com.dak.wrote.backend.contracts.entities.Book
-import com.dak.wrote.backend.contracts.entities.PresetManager
 import com.dak.wrote.backend.contracts.entities.constants.NoteType
 import com.dak.wrote.backend.implementations.file_system_impl.dao.getDAO
 import com.dak.wrote.backend.implementations.file_system_impl.database.getKeyGen
@@ -26,7 +24,6 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
-import kotlinx.serialization.json.encodeToStream
 import java.io.ByteArrayInputStream
 
 class ChangedValue<T> {
@@ -143,7 +140,7 @@ class EditorViewModel(val currentId: String, application: Application) :
         viewModelScope.launch {
             note.processing.value = true
             val key = keyGen.getKey(null, EntryType.PRESET)
-            rep.insetPreset(
+            rep.insertPreset(
                 UserPresetSaver(),
                 SerializableDisplayUserPreset(
                     note.name.value,
@@ -188,11 +185,11 @@ class EditorViewModel(val currentId: String, application: Application) :
                 val found = allAttributes.find { it.name == added }
                 if (found != null) {
                     found.addEntity(note.currentId)
-                    rep.insetAttribute(found)
+                    rep.insertAttribute(found)
                 } else {
                     val key = keyGen.getKey(book, EntryType.ATTRIBUTE)
                     val attribute = Attribute(key, added)
-                    rep.insetAttribute(attribute)
+                    rep.insertAttribute(attribute)
                     updatedAttributes.add(attribute)
                 }
             }

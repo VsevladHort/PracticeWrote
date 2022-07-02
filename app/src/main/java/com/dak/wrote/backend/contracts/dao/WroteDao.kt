@@ -18,14 +18,14 @@ interface WroteDao {
      *
      * @return true if the insert was successful, false otherwise
      */
-    suspend fun insetNote(parent: UniqueEntity, note: BaseNote): Boolean
+    suspend fun insertNote(parent: UniqueEntity, note: BaseNote): Boolean
 
     /**
      * Creates a Preset entry in the database
      *
      * @return true if the insert was successful, false otherwise
      */
-    suspend fun <Display : UniqueEntity, Full : UniqueEntity> insetPreset(
+    suspend fun <Display : UniqueEntity, Full : UniqueEntity> insertPreset(
         presetManager: PresetManager<Display, Full>, display: Display,
         full: Full
     ): Boolean
@@ -72,7 +72,7 @@ interface WroteDao {
      *
      * @return true if the insert was successful, false otherwise
      */
-    suspend fun insetAttribute(attribute: Attribute): Boolean
+    suspend fun insertAttribute(attribute: Attribute): Boolean
 
     /**
      * Updates an Attribute entry in the database
