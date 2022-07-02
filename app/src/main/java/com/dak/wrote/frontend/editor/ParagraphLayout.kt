@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
@@ -20,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import com.dak.wrote.frontend.AligningBasicTextField
 import com.dak.wrote.ui.theme.Material3
 import com.dak.wrote.ui.theme.WroteTheme
+import com.google.accompanist.flowlayout.FlowMainAxisAlignment
 import com.google.accompanist.flowlayout.FlowRow
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.Bold
@@ -137,7 +139,7 @@ fun DataLayoutAdditionBox(addLayout: (DataLayout) -> Unit) {
                 .padding(10.dp)
                 .defaultMinSize(minHeight = 20.dp)
                 .fillMaxWidth()
-                .clip(CircleShape)
+                .clip(RoundedCornerShape(30.dp))
                 .clipToBounds()
                 .clickable(
                     remember { MutableInteractionSource() },
@@ -157,7 +159,7 @@ fun DataLayoutAdditionBox(addLayout: (DataLayout) -> Unit) {
                 }
             }
             if (expanded.value)
-                FlowRow() {
+                FlowRow(mainAxisAlignment = FlowMainAxisAlignment.Center) {
                     item(
                         imageVector = FeatherIcons.Italic,
                         text = "Text"

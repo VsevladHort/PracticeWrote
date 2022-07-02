@@ -130,13 +130,11 @@ class GlossaryViewModel(
         fun nextStr(text: String): String {
             return text.substring(0 until text.lastIndex) + text.last().inc()
         }
-        println("anew")
         data.searchJob?.cancel()
         data.searchJob = viewModelScope.launch {
             val filtered = data.searchedAttributes.filter { it.value.isNotBlank() }
             val name = data.searchedName.value.toLowerCase(Locale.current)
             if (filtered.isNotEmpty() || name.isNotBlank()) {
-                println("input passed")
                 val result = when {
                     filtered.isEmpty() -> {
                         data.allNames.subMap(name, nextStr(name)).toList().flatMap { it.second!! }
@@ -144,17 +142,24 @@ class GlossaryViewModel(
                     }
                     else -> {
                         val attributes = filtered.mapNotNull {
-                            data.allAttributes[it.value.trim()]
+                            data.allAttributes[it.value.trim().toLowerCase(Locale.current)]
                         }
+                        println(attributes)
                         val notes =
-                            attributes.flatMap { it.associatedEntities.map { entity -> data.allNotes[entity]!! } }
+                            attributes.map { it.associatedEntities }.let {
+                                if (attributes.isNotEmpty()) {
+                                    it.reduce { f, s ->
+                                        f.intersect(s)
+                                    }
+                                } else emptySet()
+
+                            }.map { data.allNotes[it]!! }
                                 .filter { it.title.startsWith(name) }
-                                .sortedBy { it.title }
+                                .sortedBy { it.title }.toList()
                         notes
                     }
                 }
                 data.searchJob = null
-                println("result")
                 data.foundNotes.value = result
             }
         }

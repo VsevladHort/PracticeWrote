@@ -196,6 +196,7 @@ class NoteNavigationViewModel(
                 override val uniqueKey: String = key
             }
             attributes.forEach {
+                rep.updateAttributeObject(it)
                 it.addEntity(key)
                 rep.updateAttributeEntry(it)
             }
@@ -205,7 +206,7 @@ class NoteNavigationViewModel(
             )
 
 //              update for new note to appear
-            changeNote(ignoreCurrent = true)
+//            changeNote(ignoreCurrent = true)
             update.emit(Unit)
         }
     }
@@ -219,6 +220,7 @@ class NoteNavigationViewModel(
                 )
                 true
             } else {
+
                 rep.deleteEntityNote(
                     entity = state.currentNote.uniqueKey
                 )

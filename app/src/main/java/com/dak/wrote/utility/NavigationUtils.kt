@@ -16,8 +16,8 @@ fun navigateToSingleNoteNavigation(
     navController.navigate(
         prefix +
                 "${NavigationScreens.NoteNavigation.path}/" +
-                "${noteKey.toNav()}/" +
-                noteTitle.toNav()
+                "${noteKey.toNav()}" +
+                "?noteTitle=${noteTitle.toNav()}"
     ) {
         println("Well")
         popUpTo(navController.currentBackStackEntry!!.destination.route!!) {
