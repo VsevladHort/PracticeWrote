@@ -294,7 +294,9 @@ fun AdditionalValuesEdit(
                                         value = name.next.value ?: "",
                                         { name.next.value = it },
                                         singleLine = true,
-                                        textStyle = MaterialTheme.typography.subtitle1.copy(fontSize = 20.sp),
+                                        textStyle = MaterialTheme.typography.subtitle1.copy(fontSize = 20.sp)
+                                            .copy(Material3.colorScheme.onSurface),
+                                        cursorBrush = SolidColor(Material3.colorScheme.primary)
                                     )
                                 }
                         }
