@@ -548,8 +548,11 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
     }
 
     private fun checkEntryValidity(file: File) {
-        if (!file.exists())
+        println("${file.exists()} $file")
+        if (!file.exists()) {
+            println("AAAAA ${file.exists()} $file")
             throw UnknownKeyException("Provided key leads nowhere")
+        }
         if (!checkIfInserted(file))
             throw KeyException("Entry has not been properly inserted")
     }

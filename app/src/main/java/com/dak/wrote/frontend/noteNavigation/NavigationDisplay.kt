@@ -13,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -39,27 +40,16 @@ import kotlinx.coroutines.runBlocking
 
 @Composable
 fun NoteNavigation(
+    navigationViewModel: NoteNavigationViewModel,
     modifier: Modifier = Modifier,
-    initialNote: NavigationNote,
     onEnterButton: (String) -> Unit,
     onDeleteBookButton: () -> Unit,
-    update: MutableSharedFlow<Unit>,
-    application: Application = LocalContext.current.applicationContext as Application
 ) {
     WroteTheme {
         Surface(
             modifier = modifier,
             color = Material3.colorScheme.background
         ) {
-            val factory = NoteNavigationViewModelFactory(
-                application = application,
-                initialNote,
-                update
-            )
-
-            val navigationViewModel: NoteNavigationViewModel =
-                viewModel(key = null, factory = factory)
-
 //            val firstInit = rememberSaveable {
 //                mutableStateOf(false)
 //            }

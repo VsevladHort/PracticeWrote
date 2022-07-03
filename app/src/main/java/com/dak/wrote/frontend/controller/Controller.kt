@@ -1,18 +1,20 @@
 package com.dak.wrote.frontend.controller
 
+import android.app.Application
+import android.os.Bundle
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Icon
-import androidx.compose.material.TopAppBar
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.whenCreated
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -25,16 +27,17 @@ import com.dak.wrote.backend.contracts.entities.Book
 import com.dak.wrote.frontend.NavigationScreens
 import com.dak.wrote.frontend.editor.EditorScreen
 import com.dak.wrote.frontend.glossary.GlossaryScreen
-import com.dak.wrote.frontend.noteNavigation.ColoredIconButton
 import com.dak.wrote.frontend.noteNavigation.NavigationNote
 import com.dak.wrote.frontend.noteNavigation.NoteNavigation
 import com.dak.wrote.frontend.viewmodel.ControllerViewModel
-import com.dak.wrote.ui.theme.Material3
+import com.dak.wrote.frontend.viewmodel.NoteNavigationViewModel
+import com.dak.wrote.frontend.viewmodel.NoteNavigationViewModelFactory
 import com.dak.wrote.utility.fromNav
 import com.dak.wrote.utility.navigateToSingleNoteNavigation
 import com.dak.wrote.utility.toNav
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.*
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,17 +47,20 @@ fun ControllerDisplay(
 ) {
     val controller = rememberNavController()
     val showDrawer = rememberSaveable { mutableStateOf(true) }
+    val controllerViewModel = viewModel<ControllerViewModel>()
     Scaffold(
 
         bottomBar = {
             if (showDrawer.value)
                 ControllerBottomBar(
+                    controllerViewModel,
                     navController = controller,
                     book = book
                 )
         }
     ) { padding ->
         NavigationHost(
+            controllerViewModel,
             navController = controller,
             book = book,
             modifier = Modifier.padding(padding),
@@ -67,6 +73,7 @@ fun ControllerDisplay(
 
 @Composable
 fun ControllerBottomBar(
+    controllerViewModel: ControllerViewModel,
     navController: NavHostController,
     book: Book
 ) {
@@ -77,7 +84,7 @@ fun ControllerBottomBar(
         NavigationBarItem(
             selected = currentRoute == NavigationScreens.Glossary.path,
             onClick = {
-                if (currentRoute != NavigationScreens.Glossary.path)
+                if (currentRoute != NavigationScreens.Glossary.path) {
                     navController.navigate(NavigationScreens.Glossary.path) {
                         popUpTo(navController.currentBackStackEntry!!.destination.route!!) {
                             inclusive = true
@@ -85,8 +92,8 @@ fun ControllerBottomBar(
                         }
                         launchSingleTop = true
                         restoreState = true
-
                     }
+                }
             },
             icon = {
                 Icon(
@@ -147,6 +154,7 @@ fun ControllerBottomBar(
 
 @Composable
 fun NavigationHost(
+    controllerViewModel: ControllerViewModel,
     navController: NavHostController,
     book: Book,
     modifier: Modifier = Modifier,
@@ -154,7 +162,6 @@ fun NavigationHost(
     goUp: () -> Unit
 ) {
     val notePrefix = stringResource(id = R.string.note_prefix)
-    val controllerViewModel = viewModel<ControllerViewModel>()
     NavHost(
         navController = navController,
         modifier = modifier,
@@ -178,53 +185,43 @@ fun NavigationHost(
                 .fromNav()
             val noteTitle = (entry.arguments?.getString("noteTitle") ?: book.title)
                 .fromNav()
+            val application = LocalContext.current.applicationContext as Application
+            val factory = NoteNavigationViewModelFactory(
+                application = application,
+                NavigationNote(noteKey, noteTitle),
+                controllerViewModel.update
+            )
 
-//                        Text(
-//                            text = "Back to books",
-//                            text = book.title,
-//                            textAlign = TextAlign.Center,
-//                            modifier = Modifier.fillMaxWidth(),
-//                            color = Material3.colorScheme.onBackground,
-//                            style = Material3.typography.headlineMedium
-//                        )
+            val navigationViewModel: NoteNavigationViewModel =
+                viewModel(key = null, factory = factory)
 
-//                            ColoredIconButton(
-//                                modifier = Modifier.padding(start = 16.dp),
-//                                onClick = goUp,
-//                                imageVector = FeatherIcons.ArrowLeft,
-//                                description = "Back"
-//                            )
-
-
-//                {
-//                    Row(
-//                        modifier = Modifier.fillMaxWidth(),
-//                        verticalAlignment = Alignment.CenterVertically,
-//                        horizontalArrangement = Arrangement.SpaceBetween
-//                    ) {
-//                        ColoredIconButton(
-//                            onClick = goUp,
-//                            imageVector = FeatherIcons.ArrowLeft,
-//                            description = "Back"
-//                        )
-//                        Text(
-//                            text = book.title,
-//                            textAlign = TextAlign.Center,
-//                            modifier = Modifier.wrapContentSize(),
-//                            color = Material3.colorScheme.onBackground,
-//                            style = Material3.typography.headlineMedium
-//                        )
-//                        Spacer(modifier = Modifier.size(45.dp))
-//                    }
+//            entry.lifecycleScope.launchWhenStarted {
+//                val check = entry.savedStateHandle.get<Boolean>("check")
+//                if (check != false) {
+//                    println("Started")
+//                    navigationViewModel.startupUpdate(noteKey, noteTitle)
 //                }
+//            }
+//            entry.savedStateHandle.set("check", false)
+            entry.lifecycleScope.launchWhenStarted {
+                println("Created")
+                println("Passed $noteKey $noteTitle")
+                if (controllerViewModel.checkNavigation.value) {
+                    println("Created truly")
+                    navigationViewModel.startupUpdate(
+                        controllerViewModel.currentNote.value?.uniqueKey ?: noteKey,
+                        controllerViewModel.currentNote.value?.title ?: noteTitle
+                    )
+                    controllerViewModel.checkNavigation.value = false
+                }
+            }
             NoteNavigation(
+                navigationViewModel,
                 modifier = Modifier,
-                initialNote = NavigationNote(noteKey, noteTitle),
                 onEnterButton = {
                     navController.navigate("$notePrefix${NavigationScreens.Editor.path}/${it.toNav()}")
                 },
                 onDeleteBookButton = goUp,
-                controllerViewModel.update
             )
         }
 
@@ -236,7 +233,10 @@ fun NavigationHost(
                 book.uniqueKey,
                 { goUp() },
                 { id, name ->
-                    navigateToSingleNoteNavigation(navController, notePrefix, id, name, false)
+                    println("Actually passed $id")
+                    controllerViewModel.currentNote.value = NavigationNote(id, name)
+                    controllerViewModel.checkNavigation.value = true
+                    navigateToSingleNoteNavigation(navController, notePrefix, id, name, true)
                 }, controllerViewModel.update
             )
         }

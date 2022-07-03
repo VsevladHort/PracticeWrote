@@ -1,6 +1,7 @@
 package com.dak.wrote.frontend.viewmodel
 
 import android.app.Application
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.*
 import com.dak.wrote.backend.contracts.database.EntryType
 import com.dak.wrote.backend.contracts.entities.Attribute
@@ -12,7 +13,7 @@ import com.dak.wrote.backend.implementations.file_system_impl.database.getKeyGen
 import com.dak.wrote.frontend.noteNavigation.NavigationNote
 import com.dak.wrote.frontend.preset.NoteCreation
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToStream
@@ -90,8 +91,9 @@ class NoteNavigationViewModel(
     val rep = getDAO(application)
     val keyGen = getKeyGen(application)
 
-    private val _noteState = MutableLiveData(initialNote)
-    val noteState: LiveData<NavigationNote> = _noteState
+    private val _noteState = MutableStateFlow(initialNote)
+    val noteState: StateFlow<NavigationNote> = _noteState
+
     private val _navigationState = MutableLiveData(
         NavigationState(
             currentNote = initialNote,
@@ -103,26 +105,36 @@ class NoteNavigationViewModel(
 
     fun selectNote(note: NavigationNote) {
         viewModelScope.launch {
-            _noteState.value = note
-            changeNote().join()
+            _noteState.emit(note)
+            println("go back")
+            changeNote(note).join()
         }
     }
 
-    fun changeNote(ignoreCurrent: Boolean = false, initialUpdate: Boolean = false): Job {
-        return viewModelScope.launch(Dispatchers.IO) {
+    fun changeNote(
+        note: NavigationNote,
+        ignoreCurrent: Boolean = false,
+        initialUpdate: Boolean = false
+    ): Job {
+        return viewModelScope.launch() {
             val currentNote =
                 if (ignoreCurrent || navigationState.value!!.currentNote.title == "")
                     null
                 else
                     navigationState.value!!.currentNote
-
-            val newNote = noteState.value!!
+            println("Current $currentNote")
+            val newNote = note
+            println("New $newNote")
             val key = newNote.uniqueKey
+            println("Key $key")
             val name = if (rep.getEntryType(key) == EntryType.BOOK)
                 rep.getBook(key).title
             else rep.getName(key)
 
+            println("Hahahahah")
+
             val parents = navigationState.value!!.parents
+            parents.clear()
             if (initialUpdate && rep.getEntryType(newNote.uniqueKey) != EntryType.BOOK) {
                 val book = rep.getBookOfNote(newNote.uniqueKey)
                 var currentNoteKey = newNote.uniqueKey
@@ -153,8 +165,9 @@ class NoteNavigationViewModel(
     fun goBackAsync() =
         viewModelScope.launch {
             val last = navigationState.value!!.parents.removeLast()
-            _noteState.value = last
-            changeNote(ignoreCurrent = true)
+            println("Go back $last")
+            _noteState.emit(last)
+            changeNote(last, ignoreCurrent = true)
         }
 
 
@@ -207,6 +220,7 @@ class NoteNavigationViewModel(
 
 //              update for new note to appear
 //            changeNote(ignoreCurrent = true)
+            println("create note")
             update.emit(Unit)
         }
     }
@@ -214,7 +228,7 @@ class NoteNavigationViewModel(
     fun deleteAsync(): Deferred<Boolean> {
         return viewModelScope.async {
             val state = navigationState.value!!
-            (if (state.parents.isEmpty()) {
+            if (rep.getEntryType(state.currentNote.uniqueKey) == EntryType.BOOK) {
                 rep.deleteEntityBook(
                     entity = state.currentNote.uniqueKey
                 )
@@ -224,24 +238,52 @@ class NoteNavigationViewModel(
                 rep.deleteEntityNote(
                     entity = state.currentNote.uniqueKey
                 )
-                _noteState.value = navigationState.value!!.parents.removeLast()
+//                _noteState.value = navigationState.value!!.parents.removeLast()
+                println("A1")
+                println(navigationState.value!!.parents)
+                val next = navigationState.value!!.parents.removeLast()
+                _noteState.emit(next)
+                println(_noteState.value)
+                println("A2")
+//                changeNote(next, true, true).join()
                 update.emit(Unit)
                 false
-            })
+            }
         }
     }
 
     fun update() {
         viewModelScope.launch {
-            changeNote(true, true)
+            println("update $_noteState.value")
+            changeNote(_noteState.value, true, true)
         }
     }
+
+    fun startupUpdate(noteKey: String, noteTitle: String) {
+        viewModelScope.launch {
+            if(rep.getEntryType(noteKey) != EntryType.BOOK) {
+               _noteState.emit(NavigationNote(noteKey, noteTitle))
+                println("emitted $noteKey $noteTitle")
+                update()
+            }
+        }
+    }
+
 
     init {
         update()
         viewModelScope.launch {
+            println("i'm once again")
             update.collect {
-                update()
+                val cur = _noteState.value
+                println("Whyyyyyy ${cur}")
+                changeNote(cur, true, true).join()
+            }
+
+        }
+        viewModelScope.launch {
+            _noteState.collect {
+                println("Latest $it")
             }
         }
     }
