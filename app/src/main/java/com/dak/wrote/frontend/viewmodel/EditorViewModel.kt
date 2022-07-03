@@ -191,7 +191,6 @@ class EditorViewModel(val currentId: String, application: Application) :
             }
             val bookId = rep.getBookOfNote(note.currentId)
             val book: Book = rep.getBooks().find { bookId == it.uniqueKey }!!
-            val allAttributes = rep.getAttributes(bookId).toMutableSet()
             addedAttributes.forEach { added ->
                 val attribute = rep.getOrCreateAttribute(book, keyGen, added)
                 rep.updateAttributeObject(attribute)
