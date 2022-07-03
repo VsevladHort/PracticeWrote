@@ -11,12 +11,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dak.wrote.backend.contracts.entities.Attribute
+import com.dak.wrote.backend.implementations.file_system_impl.DATA_AUXILIARY_FILE_NAME
 import com.dak.wrote.backend.implementations.file_system_impl.dao.getDAO
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
+import java.io.File
 import java.util.*
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -102,6 +104,9 @@ class GlossaryViewModel(
                     note.alternateNames.forEach { addToName(it, note) }
                 }
                 attributes.forEach { attribute ->
+                    println(attribute.value.associatedEntities + " THIS HERE")
+                    println(File(attribute.value.uniqueKey, DATA_AUXILIARY_FILE_NAME).readLines())
+                    println(attribute.value.name)
                     attribute.value.associatedEntities.forEach { id ->
                         if (!ac.contains(id)) {
                             val note =
