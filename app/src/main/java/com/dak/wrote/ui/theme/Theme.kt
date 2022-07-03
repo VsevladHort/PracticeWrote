@@ -14,7 +14,10 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.unit.dp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import kotlin.math.ln
 
 typealias Material3 = MaterialTheme
 typealias Material2 = androidx.compose.material.MaterialTheme
@@ -98,11 +101,13 @@ fun WroteTheme(
         DarkColors
     }
 
-//    val systemUiController = rememberSystemUiController()
-//    if (!useDarkTheme)
-//        systemUiController.setSystemBarsColor(Color.White)
-//    else
-//        systemUiController.setSystemBarsColor(Color.White)
+
+    val elevation = 3.dp
+    val alpha = ((4.5f * ln(elevation.value + 1)) + 2f) / 100f
+    val color = colors.surfaceTint.copy(alpha = alpha).compositeOver(colors.surface)
+
+    val systemUiController = rememberSystemUiController()
+    systemUiController.setSystemBarsColor(color)
 
     MaterialTheme(
         colorScheme = colors,

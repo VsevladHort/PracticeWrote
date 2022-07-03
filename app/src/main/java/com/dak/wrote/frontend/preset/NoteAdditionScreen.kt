@@ -2,11 +2,15 @@ package com.dak.wrote.frontend.preset
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -65,6 +69,9 @@ fun NoteAdditionScreenImpl(
     updateUserPreset: (DisplayUserPreset) -> Unit,
     delete: (Int) -> Unit
 ) {
+    val focusManager = LocalFocusManager.current
+
+
     Box(Modifier.imePadding()) {
         Box(modifier = Modifier.padding(start = 0.dp, end = 0.dp, top = 50.dp, bottom = 60.dp)) {
             ElevatedCard(shape = RoundedCornerShape(10.dp)) {
@@ -105,6 +112,12 @@ fun NoteAdditionScreenImpl(
                                             style = Material3.typography.titleLarge
                                         )
                                     },
+                                    keyboardOptions = KeyboardOptions.Default.copy(
+                                        imeAction = ImeAction.Done
+                                    ),
+                                    keyboardActions = KeyboardActions(
+                                        onDone = { focusManager.clearFocus() }
+                                    ),
                                     singleLine = true,
                                     textStyle = Material3.typography.titleLarge,
                                 )
