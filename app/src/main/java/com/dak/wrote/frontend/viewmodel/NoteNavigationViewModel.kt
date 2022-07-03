@@ -1,7 +1,6 @@
 package com.dak.wrote.frontend.viewmodel
 
 import android.app.Application
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.*
 import com.dak.wrote.backend.contracts.database.EntryType
 import com.dak.wrote.backend.contracts.entities.Attribute
@@ -123,22 +122,20 @@ class NoteNavigationViewModel(
                 else
                     navigationState.value!!.currentNote
             println("Current $currentNote")
-            val newNote = note
-            println("New $newNote")
-            val key = newNote.uniqueKey
+            println("New $note")
+            val key = note.uniqueKey
             println("Key $key")
             val name = if (rep.getEntryType(key) == EntryType.BOOK)
                 rep.getBook(key).title
             else rep.getName(key)
 
-            println("Hahahahah")
 
             val parents = navigationState.value!!.parents
             parents.clear()
-            if (initialUpdate && rep.getEntryType(newNote.uniqueKey) != EntryType.BOOK) {
-                val book = rep.getBookOfNote(newNote.uniqueKey)
-                var currentNoteKey = newNote.uniqueKey
-
+            if (rep.getEntryType(note.uniqueKey) != EntryType.BOOK) {
+                val book = rep.getBookOfNote(note.uniqueKey)
+                var currentNoteKey = note.uniqueKey
+                println("$currentNoteKey")
                 while (true) {
                     currentNoteKey = rep.getParentKey(currentNoteKey)
                     if (currentNoteKey == book)
@@ -149,9 +146,11 @@ class NoteNavigationViewModel(
                 parents.addFirst(NavigationNote(book, rep.getBook(book).title))
             }
 
+            println("Parent $parents")
+
             val newNavigationState =
                 NavigationStateFactory.create(
-                    newNote = newNote.copy(title = name),
+                    newNote = note.copy(title = name),
                     currentNote = currentNote,
                     parents = parents,
                     application = getApplication<Application>()
