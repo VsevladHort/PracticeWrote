@@ -362,6 +362,8 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
         val file = File(book.uniqueKey)
         checkEntryValidity(file)
         val result = mutableSetOf<String>()
+        if (!File(file, FILE_NOTES_OF_BOOK).exists())
+            return emptySet()
         File(file, FILE_NOTES_OF_BOOK).readLines()
             .filter {
                 checkIfInserted(File(it)) && File(it, DATA_NOTE_ATTRIBUTES).readLines().isEmpty()
