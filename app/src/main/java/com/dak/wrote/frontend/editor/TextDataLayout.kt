@@ -8,6 +8,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.dak.wrote.frontend.AligningBasicTextField
@@ -24,7 +25,8 @@ class TextDataLayout(text: String) : DataLayout() {
                 value = text.value,
                 onValueChange = { text.value = it },
                 textStyle = textStyle(),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                cursorBrush = SolidColor(Material3.colorScheme.primary)
             )
             Divider(thickness = 1.dp, modifier = Modifier.fillMaxWidth())
         }
@@ -60,7 +62,10 @@ class BoldDL(text: String) : DataLayout() {
                 value = text.value,
                 onValueChange = { text.value = it },
                 textStyle = boldTextStyle(),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+
+                cursorBrush = SolidColor(Material3.colorScheme.primary)
+
             )
             Divider(thickness = 1.dp, modifier = Modifier.fillMaxWidth())
         }
@@ -87,7 +92,7 @@ class SBoldDL(val text: String) : SerializableDataLayout() {
 }
 
 @Composable
-private fun textStyle() = Material3.typography.titleLarge
+private fun textStyle() = Material3.typography.titleLarge.copy(color = Material3.colorScheme.onBackground)
 
 @Composable
 private fun boldTextStyle() = textStyle().copy(fontWeight = FontWeight.Bold)

@@ -15,6 +15,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Devices
@@ -214,8 +217,12 @@ fun PageEdit(
             AligningBasicTextField(
                 value = name.value,
                 name.component2(),
-                textStyle = Material3.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
-                modifier = Modifier.fillMaxWidth()
+                textStyle = Material3.typography.headlineLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = Material3.colorScheme.onBackground
+                ),
+                modifier = Modifier.fillMaxWidth(),
+                cursorBrush = SolidColor(Material3.colorScheme.primary)
             )
         }
         AdditionalValuesEdit(alternateNames = alternateNames, attributes = attributes)

@@ -14,6 +14,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
@@ -80,7 +81,8 @@ fun ParagraphEdit(
                 AligningBasicTextField(
                     value = title.value,
                     { title.value = it },
-                    textStyle = Material3.typography.headlineLarge,
+                    textStyle = Material3.typography.headlineMedium.copy(Material3.colorScheme.onSurface),
+                    cursorBrush = SolidColor(Material3.colorScheme.primary)
                 )
             }
             Divider(

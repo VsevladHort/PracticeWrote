@@ -1,6 +1,5 @@
 package com.dak.wrote.frontend.noteNavigation
 
-import android.app.Application
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -13,30 +12,27 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dak.wrote.R
 import com.dak.wrote.frontend.preset.NoteAdditionScreen
 import com.dak.wrote.frontend.preset.NoteCreation
 import com.dak.wrote.frontend.viewmodel.NavigationState
 import com.dak.wrote.frontend.viewmodel.NoteNavigationViewModel
-import com.dak.wrote.frontend.viewmodel.NoteNavigationViewModelFactory
 import com.dak.wrote.ui.theme.Material3
 import com.dak.wrote.ui.theme.WroteTheme
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeft
 import compose.icons.feathericons.Trash2
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.runBlocking
+import kotlin.math.ln
 
 @Composable
 fun NoteNavigation(
@@ -123,6 +119,11 @@ fun NavigationAndTopBar(
 
     Scaffold(
         topBar = {
+            val elevation = 3.dp
+            val alpha = ((4.5f * ln(elevation.value + 1)) + 2f) / 100f
+            val color = Material3.colorScheme.surfaceTint.copy(alpha = alpha)
+                .compositeOver(Material3.colorScheme.surface)
+
             CenterAlignedTopAppBar(
 //                modifier = Modifier.padding(horizontal = 16.dp),
                 title = {
@@ -152,7 +153,7 @@ fun NavigationAndTopBar(
 
                         )
                 },
-//                backgroundColor = Material3.colorScheme.background,
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = color)
             )
         },
     ) { padding ->
@@ -392,7 +393,7 @@ private fun NavigationButtons(
             onButtonClicked = onBackButton
         )
 
-        Spacer(modifier = Modifier.weight(0.4f))
+        Spacer(modifier = Modifier.weight(0.15f))
 
         // Enter button
         NavigationButton(
