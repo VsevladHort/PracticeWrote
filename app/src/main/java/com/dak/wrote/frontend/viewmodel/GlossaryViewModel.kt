@@ -18,6 +18,11 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import java.util.*
+import java.util.logging.Level
+import java.util.logging.Logger
+
+private val logger =
+    Logger.getLogger(GlossaryViewModel::class.java.canonicalName)
 
 class GlossaryViewModel(
     private val bookId: String,
@@ -72,7 +77,7 @@ class GlossaryViewModel(
                 }
             }
             attributes.forEach {
-                println(it.value.associatedEntities)
+                logger.log(Level.INFO, it.value.associatedEntities.toString())
             }
             val (allNotes, allNames) = kotlin.run {
                 val ac = TreeMap<String, PartialNote>()
@@ -115,9 +120,9 @@ class GlossaryViewModel(
                 }
                 ac to (names.mapValues { it.value as List<PartialNote> }.toSortedMap())
             }
-            println(attributes)
-            println(allNotes)
-            println(allNames)
+            logger.log(Level.INFO, attributes.toString())
+            logger.log(Level.INFO, allNotes.toString())
+            logger.log(Level.INFO, allNames.toString())
             data.value = Data(
                 attributes,
                 allNotes,
@@ -144,7 +149,8 @@ class GlossaryViewModel(
                         val attributes = filtered.mapNotNull {
                             data.allAttributes[it.value.trim().toLowerCase(Locale.current)]
                         }
-                        println(attributes)
+                        // println(attributes)
+                        logger.log(Level.INFO, attributes.toString())
                         val notes =
                             attributes.map { it.associatedEntities }.let {
                                 if (attributes.isNotEmpty()) {

@@ -10,8 +10,14 @@ import com.dak.wrote.backend.implementations.file_system_impl.*
 import com.dak.wrote.backend.implementations.file_system_impl.dao.exceptions.KeyException
 import com.dak.wrote.backend.implementations.file_system_impl.dao.exceptions.KeyForWrongEntityException
 import com.dak.wrote.backend.implementations.file_system_impl.dao.exceptions.UnknownKeyException
+import com.dak.wrote.frontend.viewmodel.NavigationState
 import java.io.File
 import java.lang.IllegalStateException
+import java.util.logging.Level
+import java.util.logging.Logger
+
+private val logger =
+    Logger.getLogger(WroteDaoFileSystemImpl::class.java.canonicalName)
 
 class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : WroteDao {
 
@@ -253,6 +259,7 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
 
     override suspend fun getEntryType(uniqueKey: String): EntryType {
         val file = File(uniqueKey)
+        logger.log(Level.INFO, file.absolutePath)
         checkEntryValidity(file)
         val markerFile = File(file, MARKER_OF_USE)
         return when (markerFile.readLines()[0]) {
@@ -548,8 +555,10 @@ class WroteDaoFileSystemImpl private constructor(private val baseDir: File) : Wr
     }
 
     private fun checkEntryValidity(file: File) {
-        if (!file.exists())
+        if (!file.exists()) {
+            logger.log(Level.INFO, "I am the problem (validity): " + file.absolutePath)
             throw UnknownKeyException("Provided key leads nowhere")
+        }
         if (!checkIfInserted(file))
             throw KeyException("Entry has not been properly inserted")
     }

@@ -17,8 +17,14 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToStream
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.util.*
+import java.util.logging.Level
+import java.util.logging.Logger
 import kotlin.collections.ArrayDeque
+
+private val logger =
+    Logger.getLogger(NavigationState::class.java.canonicalName)
 
 class NavigationState {
     val currentNote: NavigationNote
@@ -118,6 +124,7 @@ class NoteNavigationViewModel(
 
             val newNote = noteState.value!!
             val key = newNote.uniqueKey
+            logger.log(Level.INFO, File(key).exists().toString())
             val name = if (rep.getEntryType(key) == EntryType.BOOK)
                 rep.getBook(key).title
             else rep.getName(key)
