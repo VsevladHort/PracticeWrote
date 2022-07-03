@@ -1,5 +1,6 @@
 package com.dak.wrote.frontend.preset
 
+import android.app.Application
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -9,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Devices
@@ -19,8 +21,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dak.wrote.frontend.AligningOutlinedTextField
 import com.dak.wrote.frontend.editor.mutStateListOf
 import com.dak.wrote.frontend.viewmodel.NoteAdditionViewModel
+import com.dak.wrote.frontend.viewmodel.NoteAdditionViewModelFactory
 import com.dak.wrote.ui.theme.Material3
 import com.dak.wrote.ui.theme.WroteTheme
+import kotlinx.coroutines.flow.SharedFlow
 
 data class NoteCreation(
     val name: String, val displayPreset: DisplayPreset,
@@ -31,8 +35,10 @@ data class NoteCreation(
 fun NoteAdditionScreen(
     confirmValue: (NoteCreation) -> Unit,
     exit: () -> Unit,
+    updatePreset: SharedFlow<Unit>,
 ) {
-    val noteAdditionViewModel = viewModel<NoteAdditionViewModel>()
+    val noteAdditionViewModel = viewModel<NoteAdditionViewModel>(factory = NoteAdditionViewModelFactory(
+        LocalContext.current.applicationContext as Application, updatePreset))
 
     noteAdditionViewModel.data.collectAsState().value.let { data ->
         when (data) {

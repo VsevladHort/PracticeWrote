@@ -65,7 +65,7 @@ class UpdateHolder<T>(old: T) {
 
 
 @OptIn(ExperimentalSerializationApi::class)
-class EditorViewModel(val currentId: String, application: Application) :
+class EditorViewModel(val currentId: String, val presetUpdate : MutableSharedFlow<Unit>, application: Application) :
     AndroidViewModel(application) {
     data class ObjectNote(
         val currentId: String,
@@ -156,6 +156,7 @@ class EditorViewModel(val currentId: String, application: Application) :
                 SerializableFullUserPreset(note.sPage, key)
             )
             note.processing.value = false
+            presetUpdate.emit(Unit)
         }
     }
 
@@ -210,7 +211,8 @@ class EditorViewModel(val currentId: String, application: Application) :
             note.attributes = updatedAttributes.toSet()
             note.alternateTitles = alternateNames.toSet()
             note.dAttributes.clear()
-            note.dAttributes.addAll(note.attributes.map { UpdateHolder(it.name) })
+            note.dAttributes.addAll(note.attributes.toSortedSet { f, s -> f.name.compareTo(s.name) }
+                .map { UpdateHolder(it.name) })
             note.dAlternateNames.clear()
             note.dAlternateNames.addAll(note.alternateTitles.map { UpdateHolder(it) })
 
@@ -227,10 +229,11 @@ class EditorViewModel(val currentId: String, application: Application) :
 
 class EditorViewModelFactory(
     private val selectedNote: String,
+    private val presetUpdate: MutableSharedFlow<Unit>,
     private val application: Application
 ) :
     ViewModelProvider.Factory {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        return EditorViewModel(selectedNote, application) as T
+        return EditorViewModel(selectedNote, presetUpdate, application) as T
     }
 }

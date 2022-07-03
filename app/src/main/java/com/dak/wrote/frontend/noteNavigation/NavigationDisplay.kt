@@ -31,12 +31,14 @@ import com.dak.wrote.ui.theme.WroteTheme
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeft
 import compose.icons.feathericons.Trash2
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.runBlocking
 import kotlin.math.ln
 
 @Composable
 fun NoteNavigation(
     navigationViewModel: NoteNavigationViewModel,
+    updatePreset : SharedFlow<Unit>,
     modifier: Modifier = Modifier,
     onEnterButton: (String) -> Unit,
     onDeleteBookButton: () -> Unit,
@@ -57,7 +59,8 @@ fun NoteNavigation(
             NavigationDisplay(
                 navigationViewModel = navigationViewModel,
                 onEnterButton = onEnterButton,
-                onBackToBookDisplay = onDeleteBookButton
+                onBackToBookDisplay = onDeleteBookButton,
+                updatePreset,
             )
         }
     }
@@ -67,7 +70,8 @@ fun NoteNavigation(
 fun NavigationDisplay(
     navigationViewModel: NoteNavigationViewModel,
     onEnterButton: (String) -> Unit,
-    onBackToBookDisplay: () -> Unit
+    onBackToBookDisplay: () -> Unit,
+    updatePreset: SharedFlow<Unit>
 ) {
     val navigationState by navigationViewModel.navigationState.observeAsState()
     val state = navigationState ?: NavigationState()
@@ -75,6 +79,7 @@ fun NavigationDisplay(
     NavigationAndTopBar(
         state.currentNote.title,
         state.paragraphs,
+        updatePreset,
         onNoteClicked = { newNoteForNavigation ->
             navigationViewModel.selectNote(
                 newNoteForNavigation
@@ -100,6 +105,7 @@ fun NavigationDisplay(
 fun NavigationAndTopBar(
     title: String,
     paragraphs: List<NavigationNote>,
+    updatePreset: SharedFlow<Unit>,
     onNoteClicked: (NavigationNote) -> Unit,
     backButtonEnabled: Boolean,
     onBackButton: () -> Unit,
@@ -166,6 +172,7 @@ fun NavigationAndTopBar(
             onBackButton = onBackButton,
             onEnterButton = onEnterButton,
             onCreateButton = onCreateButton,
+            updatePreset
         )
     }
 }
@@ -180,13 +187,15 @@ fun MainNavigation(
     onBackButton: () -> Unit,
     onEnterButton: () -> Unit,
     onCreateButton: (NoteCreation) -> Unit,
+    updatePreset: SharedFlow<Unit>,
 ) {
     val createDialog = remember { mutableStateOf(false) }
     if (createDialog.value)
         Dialog(onDismissRequest = { createDialog.value = false }, DialogProperties()) {
             NoteAdditionScreen(
                 confirmValue = { onCreateButton(it); createDialog.value = false },
-                exit = { createDialog.value = false })
+                exit = { createDialog.value = false },
+            updatePreset)
         }
 
     Column(

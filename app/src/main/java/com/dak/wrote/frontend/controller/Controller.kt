@@ -1,7 +1,6 @@
 package com.dak.wrote.frontend.controller
 
 import android.app.Application
-import android.os.Bundle
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Icon
 import androidx.compose.material3.*
@@ -10,11 +9,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.whenCreated
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -37,7 +33,6 @@ import com.dak.wrote.utility.navigateToSingleNoteNavigation
 import com.dak.wrote.utility.toNav
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.*
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -189,25 +184,14 @@ fun NavigationHost(
             val factory = NoteNavigationViewModelFactory(
                 application = application,
                 NavigationNote(noteKey, noteTitle),
-                controllerViewModel.update
+                controllerViewModel.updateNotes
             )
 
             val navigationViewModel: NoteNavigationViewModel =
                 viewModel(key = null, factory = factory)
 
-//            entry.lifecycleScope.launchWhenStarted {
-//                val check = entry.savedStateHandle.get<Boolean>("check")
-//                if (check != false) {
-//                    println("Started")
-//                    navigationViewModel.startupUpdate(noteKey, noteTitle)
-//                }
-//            }
-//            entry.savedStateHandle.set("check", false)
             entry.lifecycleScope.launchWhenStarted {
-                println("Created")
-                println("Passed $noteKey $noteTitle")
                 if (controllerViewModel.checkNavigation.value) {
-                    println("Created truly")
                     navigationViewModel.startupUpdate(
                         controllerViewModel.currentNote.value?.uniqueKey ?: noteKey,
                         controllerViewModel.currentNote.value?.title ?: noteTitle
@@ -217,6 +201,7 @@ fun NavigationHost(
             }
             NoteNavigation(
                 navigationViewModel,
+                controllerViewModel.updatePresets,
                 modifier = Modifier,
                 onEnterButton = {
                     navController.navigate("$notePrefix${NavigationScreens.Editor.path}/${it.toNav()}")
@@ -237,7 +222,7 @@ fun NavigationHost(
                     controllerViewModel.currentNote.value = NavigationNote(id, name)
                     controllerViewModel.checkNavigation.value = true
                     navigateToSingleNoteNavigation(navController, notePrefix, id, name, true)
-                }, controllerViewModel.update
+                }, controllerViewModel.updateNotes,
             )
         }
 
@@ -246,6 +231,7 @@ fun NavigationHost(
             showDrawer.value = false
             EditorScreen(
                 navigateUp = { controllerViewModel.callUpdate(); navController.popBackStack() },
+                presetUpdate = controllerViewModel.updatePresets,
                 selectedNote = id
             )
         }

@@ -5,6 +5,8 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dak.wrote.backend.implementations.file_system_impl.dao.getDAO
 import com.dak.wrote.frontend.editor.mutStateListOf
@@ -12,13 +14,11 @@ import com.dak.wrote.frontend.preset.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-class NoteAdditionViewModel(application: Application) : AndroidViewModel(application) {
+class NoteAdditionViewModel(application: Application, val updatePreset: SharedFlow<Unit>) :
+    AndroidViewModel(application) {
     data class Data(
         val userPresets: SnapshotStateList<DisplayUserPreset>,
         var loadingJob: Job? = null,
@@ -77,7 +77,7 @@ class NoteAdditionViewModel(application: Application) : AndroidViewModel(applica
     }
 
     fun remove(data: Data, ind: Int) {
-       val displayValue = data.userPresets.removeAt(ind)
+        val displayValue = data.userPresets.removeAt(ind)
         viewModelScope.launch {
             rep.deletePreset(displayValue.uniqueKey)
         }
@@ -85,5 +85,20 @@ class NoteAdditionViewModel(application: Application) : AndroidViewModel(applica
 
     init {
         update()
+        viewModelScope.launch {
+            updatePreset.collect {
+               update()
+            }
+        }
     }
+}
+
+class NoteAdditionViewModelFactory(
+    private val application: Application,
+    private val updatePreset: SharedFlow<Unit>
+) : ViewModelProvider.Factory {
+    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+        return NoteAdditionViewModel(application, updatePreset) as T
+    }
+
 }

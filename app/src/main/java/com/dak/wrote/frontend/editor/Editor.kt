@@ -19,6 +19,8 @@ import com.dak.wrote.frontend.viewmodel.EditorViewModelFactory
 import com.dak.wrote.ui.theme.WroteTheme
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
 
 private fun goUp(inEdit: MutableState<Boolean>): Boolean {
     return if (inEdit.value) {
@@ -30,11 +32,13 @@ private fun goUp(inEdit: MutableState<Boolean>): Boolean {
 @Composable
 fun EditorScreen(
     navigateUp: () -> Unit,
+    presetUpdate : MutableSharedFlow<Unit>,
     selectedNote: String,
     editorViewModel: EditorViewModel = viewModel(
         factory = EditorViewModelFactory(
             selectedNote,
-            LocalContext.current.applicationContext as Application
+            presetUpdate,
+            LocalContext.current.applicationContext as Application,
         )
     )
 ) {
