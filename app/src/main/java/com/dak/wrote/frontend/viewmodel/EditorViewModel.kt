@@ -196,16 +196,9 @@ class EditorViewModel(val currentId: String, application: Application) :
                 val attribute = rep.getOrCreateAttribute(book, keyGen, added)
                 rep.updateAttributeObject(attribute)
                 attribute.addEntity(note.currentId)
+                println("inserting $attribute")
                 rep.insertAttribute(attribute)
-//                if (found != null) {
-//                    found.addEntity(note.currentId)
-//                    rep.insertAttribute(found)
-//                } else {
-//                    val key = keyGen.getKey(book, EntryType.ATTRIBUTE)
-//                    val attribute = Attribute(key, added)
-//                    rep.insertAttribute(attribute)
-//                    updatedAttributes.add(attribute)
-//                }
+                updatedAttributes.add(attribute)
             }
 
 

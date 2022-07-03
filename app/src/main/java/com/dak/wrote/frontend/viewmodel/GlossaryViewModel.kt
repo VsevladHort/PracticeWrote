@@ -165,7 +165,17 @@ class GlossaryViewModel(
                                 } else emptySet()
 
                             }.map { data.allNotes[it]!! }
-                                .filter { it.title.startsWith(name) }
+                                .filter {
+                                    it.title.startsWith(
+                                        name,
+                                        true
+                                    ) || it.alternateNames.any { name ->
+                                        name.startsWith(
+                                            name,
+                                            true
+                                        )
+                                    }
+                                }
                                 .sortedBy { it.title }.toList()
                         notes
                     }
