@@ -172,7 +172,6 @@ class EditorViewModel(val currentId: String, val presetUpdate : MutableSharedFlo
                 parsedAttributes.filter { !it.updated && !it.next.value.isNullOrBlank() }
                     .map { it.next.value!! }.toSet()
 
-            println(addedAttributes)
 
             val updatedAttributes = note.attributes.toMutableList()
             removedAttributes.forEach { attributeName ->
@@ -188,7 +187,6 @@ class EditorViewModel(val currentId: String, val presetUpdate : MutableSharedFlo
                 val attribute = rep.getOrCreateAttribute(book, keyGen, added)
                 rep.updateAttributeObject(attribute)
                 attribute.addEntity(note.currentId)
-                println("inserting $attribute")
                 rep.insertAttribute(attribute)
                 updatedAttributes.add(attribute)
             }

@@ -111,7 +111,6 @@ class NoteNavigationViewModel(
     fun selectNote(note: NavigationNote) {
         viewModelScope.launch {
             _noteState.emit(note)
-            println("go back")
             changeNote(note).join()
         }
     }
@@ -127,10 +126,7 @@ class NoteNavigationViewModel(
                     null
                 else
                     navigationState.value!!.currentNote
-            println("Current $currentNote")
-            println("New $note")
             val key = note.uniqueKey
-            println("Key $key")
             val name = if (rep.getEntryType(key) == EntryType.BOOK)
                 rep.getBook(key).title
             else rep.getName(key)
@@ -141,7 +137,6 @@ class NoteNavigationViewModel(
             if (rep.getEntryType(note.uniqueKey) != EntryType.BOOK) {
                 val book = rep.getBookOfNote(note.uniqueKey)
                 var currentNoteKey = note.uniqueKey
-                println("$currentNoteKey")
                 while (true) {
                     currentNoteKey = rep.getParentKey(currentNoteKey)
                     if (currentNoteKey == book)
@@ -152,7 +147,6 @@ class NoteNavigationViewModel(
                 parents.addFirst(NavigationNote(book, rep.getBook(book).title))
             }
 
-            println("Parent $parents")
 
             val newNavigationState =
                 NavigationStateFactory.create(
@@ -170,7 +164,6 @@ class NoteNavigationViewModel(
     fun goBackAsync() =
         viewModelScope.launch {
             val last = navigationState.value!!.parents.removeLast()
-            println("Go back $last")
             _noteState.emit(last)
             changeNote(last, ignoreCurrent = true)
         }
@@ -225,7 +218,6 @@ class NoteNavigationViewModel(
 
 //              update for new note to appear
 //            changeNote(ignoreCurrent = true)
-            println("create note")
             update.emit(Unit)
         }
     }
@@ -243,14 +235,8 @@ class NoteNavigationViewModel(
                 rep.deleteEntityNote(
                     entity = state.currentNote.uniqueKey
                 )
-//                _noteState.value = navigationState.value!!.parents.removeLast()
-                println("A1")
-                println(navigationState.value!!.parents)
                 val next = navigationState.value!!.parents.removeLast()
                 _noteState.emit(next)
-                println(_noteState.value)
-                println("A2")
-//                changeNote(next, true, true).join()
                 update.emit(Unit)
                 false
             }
@@ -259,7 +245,6 @@ class NoteNavigationViewModel(
 
     fun update() {
         viewModelScope.launch {
-            println("update $_noteState.value")
             changeNote(_noteState.value, true, true)
         }
     }
@@ -268,7 +253,6 @@ class NoteNavigationViewModel(
         viewModelScope.launch {
             if(rep.getEntryType(noteKey) != EntryType.BOOK) {
                _noteState.emit(NavigationNote(noteKey, noteTitle))
-                println("emitted $noteKey $noteTitle")
                 update()
             }
         }
@@ -278,18 +262,11 @@ class NoteNavigationViewModel(
     init {
         update()
         viewModelScope.launch {
-            println("i'm once again")
             update.collect {
                 val cur = _noteState.value
-                println("Whyyyyyy ${cur}")
                 changeNote(cur, true, true).join()
             }
 
-        }
-        viewModelScope.launch {
-            _noteState.collect {
-                println("Latest $it")
-            }
         }
     }
 }

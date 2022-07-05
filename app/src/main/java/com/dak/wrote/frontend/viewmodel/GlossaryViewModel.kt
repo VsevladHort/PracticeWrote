@@ -73,9 +73,6 @@ class GlossaryViewModel(
                     putAll(a.map { it.name to it })
                 }
             }
-            attributes.forEach {
-                println(it.value.associatedEntities)
-            }
             val (allNotes, allNames) = kotlin.run {
                 val ac = TreeMap<String, PartialNote>()
                 val names = TreeMap<String, MutableList<PartialNote>>()
@@ -117,9 +114,6 @@ class GlossaryViewModel(
                 }
                 ac to (names.mapValues { it.value as List<PartialNote> }.toSortedMap())
             }
-            println(attributes)
-            println(allNotes)
-            println(allNames)
             data.value = Data(
                 attributes,
                 allNotes,
@@ -146,7 +140,6 @@ class GlossaryViewModel(
                         val attributes = filtered.mapNotNull {
                             data.allAttributes[it.value.trim().toLowerCase(Locale.current)]
                         }
-                        println(attributes)
                         val notes =
                             attributes.map { it.associatedEntities }.let {
                                 if (attributes.isNotEmpty()) {
