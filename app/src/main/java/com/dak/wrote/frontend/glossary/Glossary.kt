@@ -2,21 +2,16 @@ package com.dak.wrote.frontend.glossary
 
 import android.app.Application
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Devices
@@ -25,7 +20,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dak.wrote.frontend.AligningOutlinedTextField
-import com.dak.wrote.frontend.editor.AdditionalValuesView
 import com.dak.wrote.frontend.noteNavigation.ColoredIconButton
 import com.dak.wrote.frontend.preset.AdditionalPresetView
 import com.dak.wrote.frontend.viewmodel.GlossaryViewModel
@@ -37,20 +31,22 @@ import compose.icons.feathericons.ArrowLeft
 import compose.icons.feathericons.Plus
 import compose.icons.feathericons.Trash2
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.StateFlow
 
+/**
+ * Screen for searching for notes
+ */
 @Composable
 fun GlossaryScreen(
     currentBookId: String,
     back: () -> Unit,
     open: (id: String, name: String) -> Unit,
-    update: MutableSharedFlow<Unit>
+    updateNotes: MutableSharedFlow<Unit>,
 ) {
     val viewModel = viewModel<GlossaryViewModel>(
         factory = GlossaryViewModelFactory(
             currentBookId,
             LocalContext.current.applicationContext as Application,
-            update
+            updateNotes
         )
     )
     viewModel.data.collectAsState().value.let { data ->
@@ -222,26 +218,6 @@ fun SuggestionSearch(
                         shape = MaterialTheme.shapes.small.copy(CornerSize(20.dp)),
                         singleLine = true
                     )
-//                    Box(
-//                        Modifier
-//                            .fillMaxWidth()
-//                            .border(
-//                                1.dp,
-//                                MaterialTheme.colors.onBackground,
-//                                shape = RoundedCornerShape(20.dp)
-//                            )
-//                            .padding(7.dp)
-//                    ) {
-//                        AligningBasicTextField(
-//                            value = text,
-//                            onValueChange = { updateAttributeText(i, it) },
-//                            modifier = Modifier
-//                                .fillMaxWidth()
-//                                .padding(7.dp),
-//                            textStyle = TextStyle.Default.copy(fontSize = 20.sp),
-//                            singleLine = true
-//                        )
-//                    }
                 }
             }
             if (attributesState.size > 1)

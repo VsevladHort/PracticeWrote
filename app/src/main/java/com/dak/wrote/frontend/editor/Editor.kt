@@ -18,7 +18,11 @@ import com.dak.wrote.frontend.viewmodel.EditorViewModel
 import com.dak.wrote.frontend.viewmodel.EditorViewModelFactory
 import com.dak.wrote.ui.theme.WroteTheme
 import compose.icons.FeatherIcons
-import compose.icons.feathericons.*
+import compose.icons.feathericons.ArrowLeft
+import compose.icons.feathericons.Edit2
+import compose.icons.feathericons.MoreVertical
+import compose.icons.feathericons.Save
+import kotlinx.coroutines.flow.MutableSharedFlow
 
 private fun goUp(inEdit: MutableState<Boolean>): Boolean {
     return if (inEdit.value) {
@@ -27,14 +31,19 @@ private fun goUp(inEdit: MutableState<Boolean>): Boolean {
     } else true
 }
 
+/**
+ * Screen responsible for allowing edit
+ */
 @Composable
 fun EditorScreen(
     navigateUp: () -> Unit,
+    presetUpdate : MutableSharedFlow<Unit>,
     selectedNote: String,
     editorViewModel: EditorViewModel = viewModel(
         factory = EditorViewModelFactory(
             selectedNote,
-            LocalContext.current.applicationContext as Application
+            presetUpdate,
+            LocalContext.current.applicationContext as Application,
         )
     )
 ) {

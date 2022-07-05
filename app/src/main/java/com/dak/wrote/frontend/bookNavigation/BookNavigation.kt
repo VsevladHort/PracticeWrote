@@ -23,6 +23,9 @@ import com.dak.wrote.frontend.noteNavigation.CreateButton
 import com.dak.wrote.frontend.viewmodel.BookNavigationViewModel
 import com.dak.wrote.ui.theme.Material3
 
+/**
+ * Creates a display to view user books
+ */
 @Composable
 fun BookDisplay(
     onBookClicked: (Book) -> Unit,
@@ -46,6 +49,9 @@ fun BookDisplay(
     )
 }
 
+/**
+ * Shows book column and a button to create a book
+ */
 @Composable
 fun BookNavigation(
     title: String,
@@ -75,6 +81,9 @@ fun BookNavigation(
     }
 }
 
+/**
+ * Displays user books
+ */
 @Composable
 fun BooksColumn(
     modifier: Modifier,

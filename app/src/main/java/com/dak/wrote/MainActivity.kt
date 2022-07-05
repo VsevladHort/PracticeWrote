@@ -1,13 +1,11 @@
 package com.dak.wrote
 
-import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -22,6 +20,9 @@ import com.dak.wrote.ui.theme.WroteTheme
 import com.dak.wrote.utility.fromNav
 import com.dak.wrote.utility.navigateToControllerWithBook
 
+/**
+ * Main activity of the application
+ */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,6 +33,9 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * Starting point of the display
+ */
 @Composable
 fun ApplicationStart() {
     WroteTheme {
@@ -43,10 +47,13 @@ fun ApplicationStart() {
     }
 }
 
+/**
+ * Navigation host to
+ * move between book selection and note navigation
+ */
 @Composable
 fun NavigationHost(
-    controller: NavHostController,
-    application: Application = LocalContext.current.applicationContext as Application
+    controller: NavHostController
 ) {
     NavHost(
         navController = controller,

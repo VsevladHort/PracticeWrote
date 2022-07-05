@@ -6,21 +6,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dak.wrote.backend.contracts.entities.Book
 import com.dak.wrote.ui.theme.Material3
-import com.dak.wrote.ui.theme.customColors
 
 @Composable
 fun CreateButton(
@@ -30,11 +27,6 @@ fun CreateButton(
 
     Button(
         onClick = onCreateButton,
-//        colors =
-//        ButtonDefaults.buttonColors(
-//            containerColor = Material3.customColors.primary,
-//            contentColor = Material3.colorScheme.onPrimary
-//        ),
         modifier = modifier
             .fillMaxWidth()
             .padding(
@@ -63,15 +55,8 @@ fun NavigationButton(
 ) {
     Button(
         onClick = { onButtonClicked() },
-//        shape = RoundedCornerShape(50.dp),
         enabled = buttonEnabled,
         modifier = modifier,
-//        colors =
-//        ButtonDefaults.buttonColors(
-//            backgroundColor = SoftBlueTransparent,
-//            disabledBackgroundColor = Color.LightGray,
-//            contentColor = Color.White
-//        )
     ) {
         Text(
             text = label,
@@ -120,34 +105,6 @@ fun GridButton(
     note: NavigationNote,
     onNoteClicked: (NavigationNote) -> Unit = {}
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val color =
-        if (isPressed) Material3.colorScheme.primaryContainer else Material3.colorScheme.background
-
-//    Button(
-//        onClick = { onNoteClicked(note) },
-//        colors = ButtonDefaults.buttonColors(
-//            backgroundColor = color,
-//            contentColor = color,
-//        ),
-//        shape = RoundedCornerShape(10),
-//        elevation = ButtonDefaults.elevation(
-//            defaultElevation = 10.dp
-//        ),
-//        interactionSource = interactionSource,
-//        modifier = Modifier
-//            .sizeIn(minWidth = 100.dp, minHeight = 100.dp)
-//
-//
-//    ) {
-//        Text(
-//            text = note.title,
-//            textAlign = TextAlign.Center,
-//            color = Material3.colorScheme.onBackground,
-//            style = Material3.typography.bodyMedium
-//        )
-//    }
     ElevatedButton(onClick = { onNoteClicked(note) }, modifier = Modifier.sizeIn(100.dp, 100.dp),
     shape = RoundedCornerShape(10.dp)) {
         Text(
