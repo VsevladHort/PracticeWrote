@@ -28,7 +28,7 @@ import kotlinx.coroutines.flow.SharedFlow
 
 data class NoteCreation(
     val name: String, val displayPreset: DisplayPreset,
-    val fullPreset: FullPreset
+    val fullPreset: FilledPreset
 )
 
 @Composable

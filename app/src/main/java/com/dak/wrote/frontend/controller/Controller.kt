@@ -4,7 +4,10 @@ import android.app.Application
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Icon
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -32,7 +35,8 @@ import com.dak.wrote.utility.fromNav
 import com.dak.wrote.utility.navigateToSingleNoteNavigation
 import com.dak.wrote.utility.toNav
 import compose.icons.FeatherIcons
-import compose.icons.feathericons.*
+import compose.icons.feathericons.Book
+import compose.icons.feathericons.FileText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -116,20 +120,6 @@ fun ControllerBottomBar(
                         book.title.toNav(),
                         true
                     )
-//                    navController.navigate(
-//                        prefix +
-//                                "${NavigationScreens.NoteNavigation.path}/" +
-//                                "${book.uniqueKey.replace('/', '\\')}/" +
-//                                book.title.replace('/', '\\')
-//                    ) {
-//                        println("Well")
-////                        popUpTo(navController.graph.findStartDestination().id) {
-////                            saveState = true
-//////                            inclusive = true
-////                        }
-//////                        launchSingleTop = true
-//                        restoreState = true
-//                    }
                 }
             },
             icon = {

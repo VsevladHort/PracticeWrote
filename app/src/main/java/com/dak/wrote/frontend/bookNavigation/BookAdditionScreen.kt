@@ -11,10 +11,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.dak.wrote.frontend.AligningOutlinedTextField
-import com.dak.wrote.frontend.AligningTextField
 import com.dak.wrote.ui.theme.Material3
 import com.dak.wrote.ui.theme.WroteTheme
 
+/**
+ * Creates a dialog to add a book
+ */
 @Composable
 fun BookAdditionDialog(exit: () -> Unit, submit: (String) -> Unit) {
     val name = rememberSaveable { mutableStateOf("") }

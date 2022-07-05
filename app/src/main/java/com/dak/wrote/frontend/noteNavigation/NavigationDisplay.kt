@@ -6,7 +6,6 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.*
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -48,13 +47,6 @@ fun NoteNavigation(
             modifier = modifier,
             color = Material3.colorScheme.background
         ) {
-//            val firstInit = rememberSaveable {
-//                mutableStateOf(false)
-//            }
-//            if (!firstInit.value) {
-//                navigationViewModel.changeNote(initialNote, true)
-//                firstInit.value = true
-//            }
 
             NavigationDisplay(
                 navigationViewModel = navigationViewModel,
@@ -131,16 +123,7 @@ fun NavigationAndTopBar(
                 .compositeOver(Material3.colorScheme.surface)
 
             CenterAlignedTopAppBar(
-//                modifier = Modifier.padding(horizontal = 16.dp),
                 title = {
-//                    Text(
-//                        text = title,
-//                        textAlign = TextAlign.Center,
-//                        modifier = Modifier
-//                            .padding(horizontal = 24.dp),
-//                        color = Material3.colorScheme.onBackground,
-//                        style = Material3.typography.displaySmall
-//                    )
                 },
                 navigationIcon = {
                     ColoredIconButton(
@@ -234,15 +217,6 @@ fun NoteWithParagraphs(
     onBackButton: () -> Unit,
     onEnterButton: () -> Unit,
 ) {
-//    val openDeleteDialog = remember { mutableStateOf(false) }
-//
-//    if (openDeleteDialog.value)
-//        DeleteDialog(
-//            title = title,
-//            onCloseDialog = { openDeleteDialog.value = false },
-//            onDeleteButton = onDeleteButton
-//        )
-
 
     LazyVerticalGrid(
         columns = GridCells.Adaptive(120.dp),
@@ -349,44 +323,6 @@ private fun NavigationButtons(
     onBackButton: () -> Unit,
     onEnterButton: () -> Unit
 ) {
-
-/*
-    Row(
-        modifier = Modifier
-            .padding(
-                vertical = 20.dp,
-                horizontal = 16.dp
-            )
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        // Back button
-        ColoredIconButton(
-            imageVector = FeatherIcons.CornerLeftUp,
-            modifier = Modifier,
-            description = "Back",
-            buttonEnabled = backButtonEnabled,
-            onClick = onBackButton
-        )
-
-
-        // Enter button
-        NavigationButton(
-            label = "Enter",
-            modifier = Modifier,
-            buttonEnabled = backButtonEnabled,
-            onButtonClicked = onEnterButton
-        )
-
-        //Delete button
-        ColoredIconButton(
-            imageVector = FeatherIcons.Trash2,
-            description = "Delete",
-            onClick = onDeleteButton
-        )
-    }
-
-*/
 
     Row(
         modifier = Modifier

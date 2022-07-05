@@ -3,16 +3,17 @@ package com.dak.wrote.frontend.viewmodel
 import android.app.Application
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.toLowerCase
-import androidx.lifecycle.*
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.dak.wrote.backend.contracts.database.EntryType
 import com.dak.wrote.backend.contracts.entities.Attribute
 import com.dak.wrote.backend.contracts.entities.BaseNote
 import com.dak.wrote.backend.contracts.entities.Book
-import com.dak.wrote.backend.contracts.entities.PresetManager
 import com.dak.wrote.backend.contracts.entities.constants.NoteType
 import com.dak.wrote.backend.implementations.file_system_impl.dao.getDAO
 import com.dak.wrote.backend.implementations.file_system_impl.database.getKeyGen
@@ -20,32 +21,21 @@ import com.dak.wrote.frontend.editor.PageLayout
 import com.dak.wrote.frontend.editor.SerializablePageLayout
 import com.dak.wrote.frontend.editor.mutStateListOf
 import com.dak.wrote.frontend.preset.SerializableDisplayUserPreset
-import com.dak.wrote.frontend.preset.SerializableFullUserPreset
+import com.dak.wrote.frontend.preset.SerializableFilledUserPreset
 import com.dak.wrote.frontend.preset.UserPresetSaver
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
-import kotlinx.serialization.json.encodeToStream
 import java.io.ByteArrayInputStream
 
-class ChangedValue<T> {
-    var changed: Boolean = true
-        private set
-    private var _field: T? = null
 
-    @Suppress("UNCHECKED_CAST")
-    var field: T
-        get() = _field as T
-        set(value) {
-            changed = true
-            _field = value
-        }
-}
-
-
+/**
+ * Checks for changed values
+ */
 class UpdateHolder<T>(old: T) {
     var old: T = old
         private set
@@ -63,7 +53,9 @@ class UpdateHolder<T>(old: T) {
     }
 }
 
-
+/**
+ * Responsible for handling notes and changing them
+ */
 @OptIn(ExperimentalSerializationApi::class)
 class EditorViewModel(val currentId: String, val presetUpdate : MutableSharedFlow<Unit>, application: Application) :
     AndroidViewModel(application) {
@@ -153,7 +145,7 @@ class EditorViewModel(val currentId: String, val presetUpdate : MutableSharedFlo
                     note.attributes.map { it.name }.toSet(),
                     key
                 ),
-                SerializableFullUserPreset(note.sPage, key)
+                SerializableFilledUserPreset(note.sPage, key)
             )
             note.processing.value = false
             presetUpdate.emit(Unit)

@@ -1,20 +1,15 @@
 package com.dak.wrote.ui.theme
 
+import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.Colors
-import androidx.compose.material.Typography
-import androidx.compose.material.darkColors
-import androidx.compose.material.lightColors
-import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.lightColorScheme
-import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlin.math.ln
@@ -90,15 +85,26 @@ val MaterialTheme.customColors: ColorScheme
     @ReadOnlyComposable
     get() = LocalColors.current
 
+/**
+ * Create a Material theme for the application
+ */
 @Composable
 fun WroteTheme(
     useDarkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable() () -> Unit
 ) {
-    val colors = if (!useDarkTheme) {
-        LightColors
-    } else {
-        DarkColors
+    val colors = when {
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            if (!useDarkTheme) dynamicLightColorScheme(LocalContext.current)
+            else dynamicDarkColorScheme(LocalContext.current)
+        }
+        else -> {
+            if (!useDarkTheme) {
+                LightColors
+            } else {
+                DarkColors
+            }
+        }
     }
 
 

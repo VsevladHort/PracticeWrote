@@ -12,7 +12,9 @@ import com.dak.wrote.backend.implementations.file_system_impl.database.getKeyGen
 import com.dak.wrote.frontend.noteNavigation.NavigationNote
 import com.dak.wrote.frontend.preset.NoteCreation
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToStream
@@ -20,6 +22,10 @@ import java.io.ByteArrayOutputStream
 import java.util.*
 import kotlin.collections.ArrayDeque
 
+/**
+ * Responsible for navigation between notes and holding
+ * current note
+ */
 class NavigationState {
     val currentNote: NavigationNote
     val paragraphs: List<NavigationNote>

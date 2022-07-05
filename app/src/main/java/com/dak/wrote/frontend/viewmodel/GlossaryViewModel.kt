@@ -12,13 +12,15 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dak.wrote.backend.contracts.entities.Attribute
 import com.dak.wrote.backend.implementations.file_system_impl.dao.getDAO
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import java.util.*
 
+/**
+ * Responsible for search of notes with attributes and names
+ */
 class GlossaryViewModel(
     private val bookId: String,
     application: Application,

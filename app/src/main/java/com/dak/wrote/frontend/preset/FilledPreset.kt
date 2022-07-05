@@ -2,14 +2,11 @@ package com.dak.wrote.frontend.preset
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -20,14 +17,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.Dimension
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dak.wrote.backend.contracts.entities.PresetManager
 import com.dak.wrote.backend.contracts.entities.UniqueEntity
 import com.dak.wrote.frontend.AligningBasicTextField
-import com.dak.wrote.frontend.editor.*
-import com.dak.wrote.frontend.viewmodel.NoteAdditionViewModel
+import com.dak.wrote.frontend.editor.SerializablePageLayout
 import com.dak.wrote.frontend.viewmodel.UpdateHolder
 import com.dak.wrote.ui.theme.Material3
 import com.dak.wrote.ui.theme.WroteTheme
@@ -44,23 +37,32 @@ import kotlinx.serialization.json.encodeToStream
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
-interface FullPreset {
+/**
+ * Second part of preset with page layout
+ */
+interface FilledPreset {
     val pageLayout: SerializablePageLayout
 }
 
+/**
+ * First part of a preset with displayed values
+ */
 interface DisplayPreset {
     val name: String
     val alternateTitles: Set<String>
     val attributes: Set<String>
 }
 
+/**
+ * Saves and loads presets
+ */
 @OptIn(ExperimentalSerializationApi::class)
-class UserPresetSaver : PresetManager<SerializableDisplayUserPreset, SerializableFullUserPreset> {
+class UserPresetSaver : PresetManager<SerializableDisplayUserPreset, SerializableFilledUserPreset> {
     override fun loadDisplay(byteData: ByteArray): SerializableDisplayUserPreset {
         return Json.decodeFromStream(ByteArrayInputStream(byteData))
     }
 
-    override fun loadFull(byteData: ByteArray): SerializableFullUserPreset {
+    override fun loadFull(byteData: ByteArray): SerializableFilledUserPreset {
         return Json.decodeFromStream(ByteArrayInputStream(byteData))
     }
 
@@ -70,7 +72,7 @@ class UserPresetSaver : PresetManager<SerializableDisplayUserPreset, Serializabl
         return output.toByteArray()
     }
 
-    override fun saveFull(full: SerializableFullUserPreset): ByteArray {
+    override fun saveFull(full: SerializableFilledUserPreset): ByteArray {
         val output = ByteArrayOutputStream()
         Json.encodeToStream(full, output)
         return output.toByteArray()
@@ -78,6 +80,9 @@ class UserPresetSaver : PresetManager<SerializableDisplayUserPreset, Serializabl
 
 }
 
+/**
+ * Saveable display part of a preset made by user
+ */
 @Serializable
 class SerializableDisplayUserPreset(
     val name: String,
@@ -87,6 +92,9 @@ class SerializableDisplayUserPreset(
     fun toPreset() = DisplayUserPreset(name, alternateTitles, attributes, uniqueKey)
 }
 
+/**
+ * Display part of a preset made by a user
+ */
 class DisplayUserPreset(
     name: String,
     override val alternateTitles: Set<String>,
@@ -103,10 +111,14 @@ class DisplayUserPreset(
         SerializableDisplayUserPreset(name, alternateTitles, attributes, uniqueKey)
 }
 
+
+/**
+ * Filled part of a preset made by a user
+ */
 @Serializable
-class SerializableFullUserPreset(
+class SerializableFilledUserPreset(
     override val pageLayout: SerializablePageLayout, override val uniqueKey: String
-) : FullPreset, UniqueEntity
+) : FilledPreset, UniqueEntity
 
 open class BasicPreset(
     override val name: String,
@@ -114,7 +126,7 @@ open class BasicPreset(
     override val attributes: Set<String>,
     override val pageLayout: SerializablePageLayout,
 
-    ) : DisplayPreset, FullPreset
+    ) : DisplayPreset, FilledPreset
 
 @Composable
 fun PresetListView(
@@ -159,6 +171,7 @@ fun PresetListView(
     }
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdditionalPresetView(alternateTitles: Set<String>, attributes: Set<String>) {
@@ -199,6 +212,9 @@ fun AdditionalPresetView(alternateTitles: Set<String>, attributes: Set<String>) 
     }
 }
 
+/**
+ * Values needed to edit a preset
+ */
 data class EditingValues(
     val updateText: (String) -> Unit,
     val submit: () -> Unit,
@@ -206,6 +222,9 @@ data class EditingValues(
     val delete: () -> Unit
 )
 
+/**
+ * View to select a preset
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserPresetView(
@@ -299,31 +318,6 @@ fun UserPresetView(
         }
     }
 }
-
-@Composable
-fun NormalPresetView(preset: BasicPreset, isSelected: State<Boolean>, onSelect: () -> Unit) {
-    Surface(
-        tonalElevation = 2.dp,
-        shape = RoundedCornerShape(25.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Box(modifier = Modifier.padding(horizontal = 10.dp, vertical = 15.dp)) {
-            Column(
-                Modifier.animateContentSize(),
-                verticalArrangement = Arrangement.spacedBy(5.dp)
-            ) {
-                Text(
-                    preset.name,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(start = 10.dp)
-                )
-                AdditionalPresetView(preset.alternateTitles, preset.attributes)
-            }
-        }
-    }
-}
-
-
 
 val presetImitations = listOf(
     DisplayUserPreset(

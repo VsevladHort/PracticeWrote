@@ -32,13 +32,16 @@ import compose.icons.feathericons.Plus
 import compose.icons.feathericons.Trash2
 import kotlinx.coroutines.flow.MutableSharedFlow
 
+/**
+ * Screen for searching for notes
+ */
 @Composable
 fun GlossaryScreen(
     currentBookId: String,
     back: () -> Unit,
     open: (id: String, name: String) -> Unit,
     updateNotes: MutableSharedFlow<Unit>,
-    ) {
+) {
     val viewModel = viewModel<GlossaryViewModel>(
         factory = GlossaryViewModelFactory(
             currentBookId,
@@ -215,26 +218,6 @@ fun SuggestionSearch(
                         shape = MaterialTheme.shapes.small.copy(CornerSize(20.dp)),
                         singleLine = true
                     )
-//                    Box(
-//                        Modifier
-//                            .fillMaxWidth()
-//                            .border(
-//                                1.dp,
-//                                MaterialTheme.colors.onBackground,
-//                                shape = RoundedCornerShape(20.dp)
-//                            )
-//                            .padding(7.dp)
-//                    ) {
-//                        AligningBasicTextField(
-//                            value = text,
-//                            onValueChange = { updateAttributeText(i, it) },
-//                            modifier = Modifier
-//                                .fillMaxWidth()
-//                                .padding(7.dp),
-//                            textStyle = TextStyle.Default.copy(fontSize = 20.sp),
-//                            singleLine = true
-//                        )
-//                    }
                 }
             }
             if (attributesState.size > 1)

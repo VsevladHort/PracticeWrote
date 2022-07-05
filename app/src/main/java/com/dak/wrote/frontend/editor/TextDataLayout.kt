@@ -4,9 +4,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
@@ -15,6 +16,9 @@ import com.dak.wrote.frontend.AligningBasicTextField
 import com.dak.wrote.ui.theme.Material3
 import kotlinx.serialization.Serializable
 
+/**
+ * Layout for basic text
+ */
 class TextDataLayout(text: String) : DataLayout() {
     private val text = mutableStateOf(text)
 
@@ -52,6 +56,9 @@ class STextDL(val text: String) : SerializableDataLayout() {
     }
 }
 
+/**
+ * Layout for bold text
+ */
 class BoldDL(text: String) : DataLayout() {
     val text = mutableStateOf(text)
 

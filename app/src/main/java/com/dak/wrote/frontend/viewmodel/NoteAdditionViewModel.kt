@@ -12,11 +12,14 @@ import com.dak.wrote.backend.implementations.file_system_impl.dao.getDAO
 import com.dak.wrote.frontend.editor.mutStateListOf
 import com.dak.wrote.frontend.preset.*
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
 
+/**
+ * Responsible for loading presets and holding selected preset
+ * information
+ */
 class NoteAdditionViewModel(application: Application, val updatePreset: SharedFlow<Unit>) :
     AndroidViewModel(application) {
     data class Data(
@@ -25,7 +28,7 @@ class NoteAdditionViewModel(application: Application, val updatePreset: SharedFl
         val name: MutableState<String> = mutableStateOf(""),
         val loading: MutableState<Boolean> = mutableStateOf(false),
         val currentSelected: MutableState<DisplayPreset?> = mutableStateOf(null),
-        val loadedSelected: MutableState<FullPreset?> = mutableStateOf(null),
+        val loadedSelected: MutableState<FilledPreset?> = mutableStateOf(null),
         val canCreate: MutableState<Boolean> = mutableStateOf(false)
     )
 
@@ -87,7 +90,7 @@ class NoteAdditionViewModel(application: Application, val updatePreset: SharedFl
         update()
         viewModelScope.launch {
             updatePreset.collect {
-               update()
+                update()
             }
         }
     }

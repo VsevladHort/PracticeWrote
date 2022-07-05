@@ -13,15 +13,15 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.dak.wrote.backend.contracts.entities.BaseNote
 import com.dak.wrote.frontend.AligningBasicTextField
-import com.dak.wrote.frontend.viewmodel.EditorViewModel
 import com.dak.wrote.utility.EasyKeyId
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.Plus
 import kotlinx.serialization.Serializable
 
+/**
+ * Layout to show a list of items
+ */
 class ItemListLayout(items: List<String>) : DataLayout() {
     private val easyKeyId = EasyKeyId()
     private val list =
@@ -117,7 +117,6 @@ private fun ListSurface(content: @Composable ColumnScope.() -> Unit) {
         Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-//            .background(MaterialTheme.colors.primary, RoundedCornerShape(20.dp))
             .border(1.5.dp, MaterialTheme.colors.primaryVariant, RoundedCornerShape(20.dp))
             .padding(start = 30.dp, end = 30.dp, top = 25.dp, bottom = 25.dp),
         verticalArrangement = Arrangement.spacedBy(30.dp),

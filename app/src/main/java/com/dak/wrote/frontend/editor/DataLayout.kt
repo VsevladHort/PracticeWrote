@@ -1,12 +1,14 @@
 package com.dak.wrote.frontend.editor
 
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.spring
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
@@ -15,32 +17,29 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.dak.wrote.backend.contracts.entities.BaseNote
 import com.dak.wrote.frontend.AligningBasicTextField
-import com.dak.wrote.frontend.viewmodel.EditorViewModel
 import com.dak.wrote.frontend.viewmodel.UpdateHolder
 import com.dak.wrote.ui.theme.Material3
-import com.dak.wrote.ui.theme.Shapes
 import com.dak.wrote.ui.theme.WroteTheme
 import compose.icons.FeatherIcons
-import compose.icons.feathericons.*
+import compose.icons.feathericons.ChevronDown
+import compose.icons.feathericons.ChevronUp
+import compose.icons.feathericons.Trash
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
-
+/**
+ * Defines block layout with edit and normal options
+ */
 abstract class DataLayout {
     @Composable
     abstract fun DrawEdit()
@@ -51,6 +50,9 @@ abstract class DataLayout {
     abstract fun toSerializable(): SerializableDataLayout
 }
 
+/**
+ * Defines block layout in a saveable state
+ */
 @Serializable
 sealed class SerializableDataLayout {
     abstract fun toDisplayable(): DataLayout
@@ -111,14 +113,14 @@ class PageLayout(paragraphs: List<SerializableParagraphLayout>) {
         }
     }
 
-    fun onSubmit(node: BaseNote) {
-    }
-
     fun toSerializable(): SerializablePageLayout {
         return SerializablePageLayout(paragraphs.map { it.toSerializable() })
     }
 }
 
+/**
+ * Saveable version of the entry
+ */
 @Serializable
 class SerializablePageLayout(val paragraphs: List<SerializableParagraphLayout>) {
     fun toDisplayable(): PageLayout {
@@ -126,6 +128,9 @@ class SerializablePageLayout(val paragraphs: List<SerializableParagraphLayout>) 
     }
 }
 
+/**
+ * Display for the page in view mode
+ */
 @Composable
 fun PageView(
     name: String,
@@ -201,6 +206,9 @@ fun AdditionalValuesView(
 }
 
 
+/**
+ * Display for the page in edit mode
+ */
 @Composable
 fun PageEdit(
     name: MutableState<String>,
@@ -394,7 +402,6 @@ fun ItemNavigation(
                         .padding(5.dp)
                 )
         }
-//    var deleteNum = remember { mutableStateOf(0) }
     Row(
         Modifier
             .fillMaxWidth()
@@ -405,13 +412,6 @@ fun ItemNavigation(
         icon(up, FeatherIcons.ChevronUp, navigationSize)
         icon(down, FeatherIcons.ChevronDown, navigationSize)
         icon(delete, FeatherIcons.Trash, deleteSize)
-//        IconButton(onClick = delete, Modifier.wrapContentSize()) {
-//        Icon(
-//            imageVector = FeatherIcons.Trash,
-//            contentDescription = "Move down",
-//            Modifier.size(deleteSize)
-//        )
-//        }
     }
 }
 
