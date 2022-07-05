@@ -37,7 +37,7 @@ private fun goUp(inEdit: MutableState<Boolean>): Boolean {
 @Composable
 fun EditorScreen(
     navigateUp: () -> Unit,
-    presetUpdate : MutableSharedFlow<Unit>,
+    presetUpdate: MutableSharedFlow<Unit>,
     selectedNote: String,
     editorViewModel: EditorViewModel = viewModel(
         factory = EditorViewModelFactory(
@@ -106,8 +106,8 @@ fun EditorScreenImpl(
                     val expandedMenu = remember { mutableStateOf(false) }
                     IconButton(
                         onClick = {
-                        expandedMenu.value = !expandedMenu.value
-                    },
+                            expandedMenu.value = !expandedMenu.value
+                        },
                         Modifier.size(40.dp)
                     ) {
                         Icon(
@@ -143,8 +143,8 @@ fun EditorScreenImpl(
             else
                 PageView(
                     note.name.value,
-                    note.dAlternateNames.map { it.next.value!! },
-                    note.dAttributes.map { it.next.value!! },
+                    note.dAlternateNames.map { it.next.value ?: "" },
+                    note.dAttributes.map { it.next.value ?: "" },
                     note.page.value
                 )
         }
