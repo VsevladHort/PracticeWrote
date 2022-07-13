@@ -4,7 +4,10 @@ import android.app.Application
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -16,6 +19,7 @@ import com.dak.wrote.backend.contracts.entities.Attribute
 import com.dak.wrote.frontend.noteNavigation.ColoredIconButton
 import com.dak.wrote.frontend.viewmodel.EditorViewModel
 import com.dak.wrote.frontend.viewmodel.EditorViewModelFactory
+import com.dak.wrote.frontend.viewmodel.UpdateHolder
 import com.dak.wrote.ui.theme.WroteTheme
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeft
@@ -23,13 +27,6 @@ import compose.icons.feathericons.Edit2
 import compose.icons.feathericons.MoreVertical
 import compose.icons.feathericons.Save
 import kotlinx.coroutines.flow.MutableSharedFlow
-
-private fun goUp(inEdit: MutableState<Boolean>): Boolean {
-    return if (inEdit.value) {
-        inEdit.value = false
-        false
-    } else true
-}
 
 /**
  * Screen responsible for allowing edit
@@ -57,7 +54,7 @@ fun EditorScreen(
                 EditorScreenImpl(
                     note = note,
                     updatePage = { editorViewModel.updatePage(note) },
-                    navigateUp = navigateUp
+                    navigateUp = { if (editorViewModel.goUp(note)) navigateUp() }
                 ) {
                     editorViewModel.savePreset(note)
                 }
@@ -86,7 +83,7 @@ fun EditorScreenImpl(
                 imageVector = FeatherIcons.ArrowLeft,
                 description = "Back",
                 onClick = {
-                    if (goUp(note.inEdit)) navigateUp()
+                    navigateUp()
                 }
             )
         }, actions = {
@@ -139,10 +136,10 @@ fun EditorScreenImpl(
     }) {
         Box(modifier = Modifier.padding(it)) {
             if (note.inEdit.value)
-                PageEdit(note.name, note.dAlternateNames, note.dAttributes, note.page.value)
+                PageEdit(note.name.next, note.dAlternateNames, note.dAttributes, note.page.value)
             else
                 PageView(
-                    note.name.value,
+                    note.name.next.value,
                     note.dAlternateNames.map { it.next.value ?: "" },
                     note.dAttributes.map { it.next.value ?: "" },
                     note.page.value
@@ -159,7 +156,7 @@ fun EditorScreenPreview() {
             note = remember {
                 EditorViewModel.ObjectNote(
                     "",
-                    mutableStateOf(""),
+                    UpdateHolder(""),
                     alternateTitles = setOf("King of the florals", "Horn of the tribe"),
                     attributes = setOf("character", "king", "floral").map { Attribute("", it) }
                         .toSet(),

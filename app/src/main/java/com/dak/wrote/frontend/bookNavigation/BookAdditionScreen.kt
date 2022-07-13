@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.tooling.preview.Preview
 import com.dak.wrote.frontend.AligningOutlinedTextField
 import com.dak.wrote.ui.theme.Material3
@@ -22,7 +23,7 @@ fun BookAdditionDialog(exit: () -> Unit, submit: (String) -> Unit) {
     val name = rememberSaveable { mutableStateOf("") }
     AlertDialog(onDismissRequest = exit,
         confirmButton = {
-            Button(onClick = { submit(name.value) }) {
+            Button(onClick = { submit(name.value) }, Modifier.testTag("Create book dialog")) {
                 Text(text = "Create")
             }
         },
@@ -33,7 +34,9 @@ fun BookAdditionDialog(exit: () -> Unit, submit: (String) -> Unit) {
             AligningOutlinedTextField(
                 value = name.value,
                 onValueChange = name.component2(),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("Add book"),
                 textStyle = Material3.typography.titleLarge,
                 singleLine = true
             )

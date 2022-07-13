@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.dak.wrote.backend.contracts.entities.Attribute
 import com.dak.wrote.backend.implementations.file_system_impl.dao.getDAO
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -122,51 +123,56 @@ class GlossaryViewModel(
         }
     }
 
-    fun searchAnew(data: Data) {
-        fun nextStr(text: String): String {
-            return text.substring(0 until text.lastIndex) + text.last().inc()
-        }
-        data.searchJob?.cancel()
-        data.searchJob = viewModelScope.launch {
-            val filtered = data.searchedAttributes.filter { it.value.isNotBlank() }
-            val name = data.searchedName.value.toLowerCase(Locale.current)
-            if (filtered.isNotEmpty() || name.isNotBlank()) {
-                val result = when {
-                    filtered.isEmpty() -> {
-                        data.allNames.subMap(name, nextStr(name)).toList().flatMap { it.second!! }
-                            .sortedBy { it.title }
-                    }
-                    else -> {
-                        val attributes = filtered.mapNotNull {
-                            data.allAttributes[it.value.trim().toLowerCase(Locale.current)]
-                        }
-                        val notes =
-                            attributes.map { it.associatedEntities }.let {
-                                if (attributes.isNotEmpty()) {
-                                    it.reduce { f, s ->
-                                        f.intersect(s)
-                                    }
-                                } else emptySet()
+    fun searchAnew(data: Data) =
+        searchAnew(data, viewModelScope)
 
-                            }.map { data.allNotes[it]!! }
-                                .filter {
-                                    it.title.startsWith(
+
+}
+
+fun searchAnew(data: GlossaryViewModel.Data, scope: CoroutineScope) {
+    fun nextStr(text: String): String {
+        return text.substring(0 until text.lastIndex) + text.last().inc()
+    }
+    data.searchJob?.cancel()
+    data.searchJob = scope.launch {
+        val filtered = data.searchedAttributes.filter { it.value.isNotBlank() }
+        val name = data.searchedName.value.toLowerCase(Locale.current)
+        if (filtered.isNotEmpty() || name.isNotBlank()) {
+            val result = when {
+                filtered.isEmpty() -> {
+                    data.allNames.subMap(name, nextStr(name)).toList().flatMap { it.second!! }
+                        .sortedBy { it.title }
+                }
+                else -> {
+                    val attributes = filtered.mapNotNull {
+                        data.allAttributes[it.value.trim().toLowerCase(Locale.current)]
+                    }
+                    val notes =
+                        attributes.map { it.associatedEntities }.let {
+                            if (attributes.isNotEmpty()) {
+                                it.reduce { f, s ->
+                                    f.intersect(s)
+                                }
+                            } else emptySet()
+
+                        }.map { data.allNotes[it]!! }
+                            .filter {
+                                it.title.startsWith(
+                                    name,
+                                    true
+                                ) || it.alternateNames.any { name ->
+                                    name.startsWith(
                                         name,
                                         true
-                                    ) || it.alternateNames.any { name ->
-                                        name.startsWith(
-                                            name,
-                                            true
-                                        )
-                                    }
+                                    )
                                 }
-                                .sortedBy { it.title }.toList()
-                        notes
-                    }
+                            }
+                            .sortedBy { it.title }.toList()
+                    notes
                 }
-                data.searchJob = null
-                data.foundNotes.value = result
             }
+            data.searchJob = null
+            data.foundNotes.value = result
         }
     }
 }

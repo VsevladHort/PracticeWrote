@@ -51,17 +51,25 @@ class UpdateHolder<T>(old: T) {
     fun refresh() {
         old = next.value
     }
+
+    fun back() {
+        next.value = old
+    }
 }
 
 /**
  * Responsible for handling notes and changing them
  */
 @OptIn(ExperimentalSerializationApi::class)
-class EditorViewModel(val currentId: String, val presetUpdate : MutableSharedFlow<Unit>, application: Application) :
+class EditorViewModel(
+    val currentId: String,
+    val presetUpdate: MutableSharedFlow<Unit>,
+    application: Application
+) :
     AndroidViewModel(application) {
     data class ObjectNote(
         val currentId: String,
-        val name: MutableState<String>,
+        val name: UpdateHolder<String>,
         override var alternateTitles: Set<String>,
         override var attributes: Set<Attribute>,
         var sPage: SerializablePageLayout,
@@ -77,9 +85,9 @@ class EditorViewModel(val currentId: String, val presetUpdate : MutableSharedFlo
         var processing: MutableState<Boolean> = mutableStateOf(false)
     ) : BaseNote {
         override var title: String
-            get() = name.value
+            get() = name.next.value
             set(value) {
-                name.value = value
+                name.next.value = value
             }
         override val type: NoteType
             get() = NoteType.PLAIN_TEXT
@@ -124,7 +132,7 @@ class EditorViewModel(val currentId: String, val presetUpdate : MutableSharedFlo
             note.value =
                 ObjectNote(
                     id,
-                    mutableStateOf(rep.getName(id)),
+                    UpdateHolder(rep.getName(id)),
                     alternateNames,
                     attributes,
                     page,
@@ -140,7 +148,7 @@ class EditorViewModel(val currentId: String, val presetUpdate : MutableSharedFlo
             rep.insertPreset(
                 UserPresetSaver(),
                 SerializableDisplayUserPreset(
-                    note.name.value,
+                    note.name.next.value,
                     note.alternateTitles,
                     note.attributes.map { it.name }.toSet(),
                     key
@@ -157,6 +165,7 @@ class EditorViewModel(val currentId: String, val presetUpdate : MutableSharedFlo
     ) {
         note.processing.value = true
         viewModelScope.launch {
+            note.name.refresh()
             val parsedAttributes = note.dAttributes.filter {
                 it.old != null || !it.next.value.isNullOrBlank()
             }
@@ -214,6 +223,23 @@ class EditorViewModel(val currentId: String, val presetUpdate : MutableSharedFlo
 
             note.processing.value = false
         }
+    }
+
+    fun goUp(data: ObjectNote): Boolean {
+        return if (data.inEdit.value) {
+            data.inEdit.value = false
+            data.processing.value = true
+            viewModelScope.launch {
+                data.name.back()
+                data.dAlternateNames.clear()
+                data.dAlternateNames.addAll(data.alternateTitles.map { UpdateHolder(it) })
+                data.dAttributes.clear()
+                data.dAttributes.addAll(data.attributes.map { UpdateHolder(it.name) })
+                data.page.value = data.sPage.toDisplayable()
+            }
+            data.processing.value = false
+            false
+        } else true
     }
 }
 
