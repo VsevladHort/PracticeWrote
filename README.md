@@ -1,5 +1,5 @@
 # PracticeWrote
-
+Authors: Andrii Zahorulko, Danylo Nechyporchuk, Vsevolod Kalinblet.
 **app/release** has an apk for the application
 
 ---
