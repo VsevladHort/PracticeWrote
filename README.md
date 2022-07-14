@@ -10,6 +10,9 @@ Wrote gives you an ability to write notes in an organized fashion
 while also allowing to easily search for them, in case
 you forgot the name of an item from your world or where you put it.
 
+
+**Authors: Andrii Zahorulko, Danylo Nechyporchuk, Vsevolod Kalinblet.**
+
 ---
 
 # Images
