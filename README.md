@@ -1,6 +1,14 @@
-# PracticeWrote
+# Wrote
 
-**app/release** has an apk for the application
+**app/release** has an apk with the application
+
+**An application for writing notes for authors.**
+
+Supports Material You.
+
+Wrote gives you an ability to write notes in an organized fashion
+while also allowing to easily search for them, in case
+you forgot the name of an item from your world or where you put it.
 
 ---
 
